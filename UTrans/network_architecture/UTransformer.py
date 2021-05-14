@@ -251,7 +251,7 @@ class UTransformer(SegmentationNetwork):
 
         self.combin = nn.Conv2d(num_classes*2, num_classes, 1)
 
-        self.combin_ds = nn.ModuleList([nn.Conv2d(num_classes*2, num_classes, 1) for i in 4])
+        self.combin_ds = nn.ModuleList([nn.Conv2d(num_classes*2, num_classes, 1) for i in range(4)])
 
         if self.weightInitializer is not None:
             self.apply(self.weightInitializer)
