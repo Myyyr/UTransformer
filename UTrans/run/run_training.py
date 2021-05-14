@@ -57,6 +57,7 @@ def main():
     args = parser.parse_args()
 
     os.environ["CUDA_VISIBLE_DEVICES"]=args.gpu
+    print("---- GPU ----", os.environ["CUDA_VISIBLE_DEVICES"])
 
     norm_cfg = args.norm_cfg
     activation_cfg = args.activation_cfg
