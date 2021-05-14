@@ -26,10 +26,10 @@ def get_default_configuration(outname, network, task, network_trainer, plans_ide
 
     if network == '2d':
         plans_file = join(preprocessing_output_dir, task, plans_identifier + "_plans_2D.pkl")
-        print('---->',plans_file)
+        print('2d ---->',plans_file)
     else:
         plans_file = join(preprocessing_output_dir, task, plans_identifier + "_plans_3D.pkl")
-
+        print('3d ---->',plans_file)
     plans = load_pickle(plans_file)
     possible_stages = list(plans['plans_per_stage'].keys())
 
