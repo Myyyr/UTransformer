@@ -99,7 +99,7 @@ def main():
                                               base_module='UTrans.training.network_training')
 
     print("---->",output_folder_name)
-    trainer = trainer_class(plans_file, fold, norm_cfg, activation_cfg, output_folder=output_folder_name, dataset_directory=dataset_directory,
+    trainer = trainer_class(plans_file, fold, norm_cfg, activation_cfg, dataset_directory=dataset_directory,
                             batch_dice=batch_dice, stage=stage, unpack_data=decompress_data,
                             deterministic=deterministic,
                             fp16=run_mixed_precision)
