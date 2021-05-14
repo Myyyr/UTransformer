@@ -947,7 +947,7 @@ class MHCA(nn.Module):
 
         if self.pe == None:
             self.y_pe = positionalencoding2d(dy, hy, wy).cuda()
-            self.s_pe = positionalencoding2d(ds, hs, ws.cuda()
+            self.s_pe = positionalencoding2d(ds, hs, ws).cuda()
 
 
         # Positionnal encodding
