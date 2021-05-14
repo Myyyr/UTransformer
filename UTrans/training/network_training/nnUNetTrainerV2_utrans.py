@@ -108,7 +108,7 @@ class nnUNetTrainerV2_utrans(nnUNetTrainer):
                     self.data_aug_params[
                         'patch_size_for_spatialtransform'],
                     self.data_aug_params,
-                    deep_supervision_scales=self.deep_supervision_scales,
+                    #deep_supervision_scales=self.deep_supervision_scales,
                     pin_memory=self.pin_memory,
                     use_nondetMultiThreadedAugmenter=False
                 )
