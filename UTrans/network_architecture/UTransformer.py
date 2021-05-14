@@ -845,7 +845,7 @@ class UTransformer_mhsa(SegmentationNetwork):
         x = rearrange(x, 'b n d -> n b d')
         x = self.mhsa(x)
         x = rearrange(x, 'n b d -> b n d')
-        x = rearrange(x 'b (h w) d -> b d h w', h=h)
+        x = rearrange(x, 'b (h w) d -> b d h w', h=h)
 
         print("---> x shape :", x.shape)
         exit(0)
