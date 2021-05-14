@@ -1,6 +1,7 @@
 # ------------------------------------------------------------------------
 # Main
 # ------------------------------------------------------------------------
+# python run_training.py -network=2d -network_trainer=nnUNetTrainerV2_utrans -task=062 -fold='all' -gpu=0
 
 import argparse
 from batchgenerators.utilities.file_and_folder_operations import *
@@ -11,7 +12,7 @@ from UTrans.training.network_training.nnUNetTrainer import nnUNetTrainer
 from nnunet.utilities.task_name_id_conversion import convert_id_to_task_name
 import os
 import UTrans
-os.environ['nnUNet_raw_data_base'] = '/local/DEEPLEARNING/MULTI_ATLAS/MULTI_ATLAS/Task017_BCV/'
+# os.environ['nnUNet_raw_data_base'] = '/local/DEEPLEARNING/MULTI_ATLAS/MULTI_ATLAS/Task017_BCV/'
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("-gpu", type=str, default='0')

@@ -34,7 +34,7 @@ from torch import nn
 from torch.cuda.amp import autocast
 from nnunet.training.learning_rate.poly_lr import poly_lr
 from batchgenerators.utilities.file_and_folder_operations import *
-from nnunet.network_architecture.UTransformer import UTransformer
+from UTrans.network_architecture.UTransformer import UTransformer
 
 
 class nnUNetTrainerV2_utrans(nnUNetTrainer):
