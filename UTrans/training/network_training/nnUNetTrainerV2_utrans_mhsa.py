@@ -39,9 +39,9 @@ from UTrans.network_architecture.UTransformer_mhsa import UTransformer_mhsa
 
 # python run_training.py -network='2d' -network_trainer=nnUNetTrainerV2_utrans_mhsa -task=062 -fold='all' -gpu=1 -outpath='MHSA'
 
-class nnUNetTrainerV2_utrans_mhca(nnUNetTrainer):
+class nnUNetTrainerV2_utrans_mhsa(nnUNetTrainer):
     """
-    Info for Fabian: same as internal nnUNetTrainerV2_utrans_mhca_2
+    Info for Fabian: same as internal nnUNetTrainerV2_utrans_mhsa_2
     """
 
     def __init__(self, plans_file, fold, output_folder=None, dataset_directory=None, batch_dice=True, stage=None,
@@ -418,7 +418,7 @@ class nnUNetTrainerV2_utrans_mhca(nnUNetTrainer):
         super().on_epoch_end()
         continue_training = self.epoch < self.max_num_epochs
 
-        # it can rarely happen that the momentum of nnUNetTrainerV2_utrans_mhca is too high for some dataset. If at epoch 100 the
+        # it can rarely happen that the momentum of nnUNetTrainerV2_utrans_mhsa is too high for some dataset. If at epoch 100 the
         # estimated validation Dice is still 0 then we reduce the momentum from 0.99 to 0.95
         if self.epoch == 100:
             if self.all_val_eval_metrics[-1] == 0:
