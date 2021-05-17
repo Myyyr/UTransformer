@@ -548,7 +548,7 @@ class MHCA(nn.Module):
         # y_c1 = y_c1.permute(0,2,1)
         # s_c2 = torch.reshape(s_c2, (bs, self.d, self.ns))
         # s_c2 = s_c2.permute(0,2,1)
-
+        print(y_c1.shape, s_c2.shape)
         Q = self.wq(y_c1)
         K = self.wk(y_c1)
         V = self.wv(s_c2)
