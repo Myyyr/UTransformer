@@ -513,14 +513,14 @@ class MHCA(nn.Module):
         self.ws = ws
         self.hs = hs
 
-        if self.pe == None:
+        if self.s_pe == None:
             self.y_pe = positionalencoding2d(dy, hy, wy).cuda()
             self.s_pe = positionalencoding2d(ds, hs, ws).cuda()
 
 
         # Positionnal encodding
-        y = y + repeat(y_pe, 'c h w -> b c h w', b=bs)
-        s = s + repeat(s_pe, 'c h w -> b c h w', b=bs)
+        y = y + repeat(self.y_pe, 'c h w -> b c h w', b=bs)
+        s = s + repeat(self.s_pe, 'c h w -> b c h w', b=bs)
 
         # Convs and up
         y_c1 = self.conv1(y)
