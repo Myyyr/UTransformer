@@ -423,7 +423,7 @@ class UTransformer_mhca(SegmentationNetwork):
 
         for u in range(len(self.tu)):
             if u!=len(self.tu)-1:
-                x = self.mhca[-(u + 1)](x, skips[-(u + 1)])
+                x = self.mhca[u](x, skips[-(u + 1)])
             else:
                 x = self.tu[u](x)
                 x = torch.cat((x, skips[-(u + 1)]), dim=1)
