@@ -34,14 +34,13 @@ from torch import nn
 from torch.cuda.amp import autocast
 from nnunet.training.learning_rate.poly_lr import poly_lr
 from batchgenerators.utilities.file_and_folder_operations import *
-
 from UTrans.network_architecture.UTransformer_mhca import UTransformer_mhca
 
 # python run_training.py -network='2d' -network_trainer=nnUNetTrainerV2_utrans_mhca -task=062 -fold='all' -gpu=1 -outpath='MHCA'
 
-class nnUNetTrainerV2(nnUNetTrainer):
+class nnUNetTrainerV2_utrans_mhca(nnUNetTrainer):
     """
-    Info for Fabian: same as internal nnUNetTrainerV2_2
+    Info for Fabian: same as internal nnUNetTrainerV2_utrans_mhca_2
     """
 
     def __init__(self, plans_file, fold, output_folder=None, dataset_directory=None, batch_dice=True, stage=None,
@@ -110,9 +109,9 @@ class nnUNetTrainerV2(nnUNetTrainer):
                     self.data_aug_params[
                         'patch_size_for_spatialtransform'],
                     self.data_aug_params,
-                    # deep_supervision_scales=self.deep_supervision_scales,
+                    #deep_supervision_scales=self.deep_supervision_scales,
                     pin_memory=self.pin_memory,
-                    # use_nondetMultiThreadedAugmenter=False
+                    #use_nondetMultiThreadedAugmenter=False
                 )
                 self.print_to_log_file("TRAINING KEYS:\n %s" % (str(self.dataset_tr.keys())),
                                        also_print_to_console=False)
@@ -418,7 +417,7 @@ class nnUNetTrainerV2(nnUNetTrainer):
         super().on_epoch_end()
         continue_training = self.epoch < self.max_num_epochs
 
-        # it can rarely happen that the momentum of nnUNetTrainerV2 is too high for some dataset. If at epoch 100 the
+        # it can rarely happen that the momentum of nnUNetTrainerV2_utrans_mhca is too high for some dataset. If at epoch 100 the
         # estimated validation Dice is still 0 then we reduce the momentum from 0.99 to 0.95
         if self.epoch == 100:
             if self.all_val_eval_metrics[-1] == 0:
