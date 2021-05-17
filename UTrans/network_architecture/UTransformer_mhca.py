@@ -496,20 +496,20 @@ class MHCA(nn.Module):
         self.up = nn.Sequential(nn.UpsamplingBilinear2d(scale_factor=2),
                             nn.Conv2d(self.sd, self.sd, 3, 1, 1),)
 
-        self.conv_y1 = nn.Sequential(nn.Conv2d(self.yd, self.yd, 1, 1, 1),
+        self.conv_y1 = nn.Sequential(nn.Conv2d(self.yd, self.yd, 1, 1, 0),
                                    nn.BatchNorm2d(self.yd),
                                    nn.ReLU(inplace=True),)
         # self.conv_y2 = nn.Sequential(nn.Conv2d(self.yd, self.yd, 1, 1, 1),
         #                            nn.BatchNorm2d(self.yd),
         #                            nn.ReLU(inplace=True),)
-        self.conv_y2 = nn.Sequential(nn.Conv2d(self.yd, self.sd, 1, 1, 1),
+        self.conv_y2 = nn.Sequential(nn.Conv2d(self.yd, self.sd, 1, 1, 0),
                                    nn.BatchNorm2d(self.sd),
                                    nn.ReLU(inplace=True),)
         self.conv_s = nn.Sequential(nn.Conv2d(self.sd, self.sd, 2, 2, 0),
                                    nn.BatchNorm2d(self.sd),
                                    nn.ReLU(inplace=True),)
 
-        self.sigConv = nn.Sequential(nn.Conv2d(self.sd, self.sd, 1, 1, 1),
+        self.sigConv = nn.Sequential(nn.Conv2d(self.sd, self.sd, 1, 1, 0),
                                    nn.BatchNorm2d(self.sd),
                                    nn.Sigmoid(),
                                    nn.UpsamplingBilinear2d(scale_factor=2),)
