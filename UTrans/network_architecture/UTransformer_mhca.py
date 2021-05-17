@@ -499,7 +499,7 @@ class MHCA(nn.Module):
         self.wv = nn.Linear(self.sd, self.sd)
 
         self.up = nn.Sequential(nn.UpsamplingBilinear2d(scale_factor=2),
-                            nn.Conv2d(self.sd, self.sd, 3, 1, 1),)
+                            nn.Conv2d(self.yd, self.yd, 3, 1, 1),)
 
         self.conv_y1 = nn.Sequential(nn.Conv2d(self.yd, self.yd, 1, 1, 0),
                                    nn.BatchNorm2d(self.yd),
