@@ -481,6 +481,7 @@ class MHCA(nn.Module):
 
         self.d = d
 
+
         self.wq = nn.Linear(2*self.d, 2*self.d)
         self.wk = nn.Linear(2*self.d, 2*self.d)
         self.wv = nn.Linear(self.d, self.d)
@@ -524,6 +525,7 @@ class MHCA(nn.Module):
         s = s + repeat(self.s_pe, 'c h w -> b c h w', b=bs)
 
         # Convs and up
+        print(self.d)
         print(y.shape)
         print(s.shape)
         y_c1 = self.conv1(y)
