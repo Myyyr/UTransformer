@@ -491,8 +491,8 @@ class MHSA(nn.Module):
         self.wv = nn.Linear(self.d, self.d)
 
         #initialise the blocks
-        for m in self.children():
-            init_weights(m, init_type='kaiming')
+        # for m in self.children():
+        #     init_weights(m, init_type='kaiming')
         
         
     def forward(self, x):
