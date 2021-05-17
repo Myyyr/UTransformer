@@ -486,19 +486,19 @@ class MHCA(nn.Module):
         self.wv = nn.Linear(self.d, self.d)
 
         self.up = nn.Sequential(nn.UpsamplingBilinear2d(scale_factor=2),
-                            nn.Conv3d(2*self.d, 2*self.d, 3, 1, 1),)
+                            nn.Conv2d(2*self.d, 2*self.d, 3, 1, 1),)
 
-        self.conv1 = nn.Sequential(nn.Conv3d(2*self.d, 2*self.d, 1, 1, 1),
+        self.conv1 = nn.Sequential(nn.Conv2d(2*self.d, 2*self.d, 1, 1, 1),
                                    nn.BatchNorm3d(2*self.d),
                                    nn.ReLU(inplace=True),)
-        self.conv2 = nn.Sequential(nn.Conv3d(self.d, self.d, 1, 1, 1),
+        self.conv2 = nn.Sequential(nn.Conv2d(self.d, self.d, 1, 1, 1),
                                    nn.BatchNorm3d(self.d),
                                    nn.ReLU(inplace=True),)
-        self.conv3 = nn.Sequential(nn.Conv3d(2*self.d, self.d, 1, 1, 1),
+        self.conv3 = nn.Sequential(nn.Conv2d(2*self.d, self.d, 1, 1, 1),
                                    nn.BatchNorm3d(self.d),
                                    nn.ReLU(inplace=True),)
 
-        self.sigConv = nn.Sequential(nn.Conv3d(self.d, self.d, 1, 1, 1),
+        self.sigConv = nn.Sequential(nn.Conv2d(self.d, self.d, 1, 1, 1),
                                    nn.BatchNorm3d(2*self.d),
                                    nn.Sigmoid(),
                                    nn.UpsamplingBilinear2d(scale_factor=2),)
@@ -524,8 +524,8 @@ class MHCA(nn.Module):
         s = s + repeat(self.s_pe, 'c h w -> b c h w', b=bs)
 
         # Convs and up
-        print(y.shape)
-        print(s.shape)
+        # print(y.shape)
+        # print(s.shape)
         y_c1 = self.conv1(y)
         s_c2 = self.conv2(s)
         y_c3 = self.up(y)
