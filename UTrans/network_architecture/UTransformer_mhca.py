@@ -482,30 +482,33 @@ class MHCA(nn.Module):
         self.s_pe = None
         self.y_pe = None
 
-        self.sd = sd
         self.yd = yd
+        self.sd = sd
 
 
 
-        self.wq = nn.Linear(self.sd, self.sd)
-        self.wk = nn.Linear(self.sd, self.sd)
-        self.wv = nn.Linear(self.yd, self.yd)
+        self.wq = nn.Linear(self.yd, self.yd)
+        self.wk = nn.Linear(self.yd, self.yd)
+        self.wv = nn.Linear(self.sd, self.sd)
 
         self.up = nn.Sequential(nn.UpsamplingBilinear2d(scale_factor=2),
-                            nn.Conv2d(2*self.d, 2*self.d, 3, 1, 1),)
+                            nn.Conv2d(self.sd, self.sd, 3, 1, 1),)
 
-        self.conv1 = nn.Sequential(nn.Conv2d(2*self.d, 2*self.d, 1, 1, 1),
-                                   nn.BatchNorm2d(2*self.d),
+        self.conv_y1 = nn.Sequential(nn.Conv2d(self.yd, self.yd, 1, 1, 1),
+                                   nn.BatchNorm2d(self.yd),
                                    nn.ReLU(inplace=True),)
-        self.conv2 = nn.Sequential(nn.Conv2d(self.d, self.d, 1, 1, 1),
-                                   nn.BatchNorm2d(self.d),
+        self.conv_y2 = nn.Sequential(nn.Conv2d(self.yd, self.yd, 1, 1, 1),
+                                   nn.BatchNorm2d(self.yd),
                                    nn.ReLU(inplace=True),)
-        self.conv3 = nn.Sequential(nn.Conv2d(2*self.d, self.d, 1, 1, 1),
-                                   nn.BatchNorm2d(self.d),
+        self.conv_y3 = nn.Sequential(nn.Conv2d(self.yd, self.sd, 1, 1, 1),
+                                   nn.BatchNorm2d(self.sd),
+                                   nn.ReLU(inplace=True),)
+        self.conv_s = nn.Sequential(nn.Conv2d(self.sd, self.sd, 1, 1, 1),
+                                   nn.BatchNorm2d(self.sd),
                                    nn.ReLU(inplace=True),)
 
-        self.sigConv = nn.Sequential(nn.Conv2d(self.d, self.d, 1, 1, 1),
-                                   nn.BatchNorm2d(2*self.d),
+        self.sigConv = nn.Sequential(nn.Conv2d(self.sd, self.sd, 1, 1, 1),
+                                   nn.BatchNorm2d(self.sd),
                                    nn.Sigmoid(),
                                    nn.UpsamplingBilinear2d(scale_factor=2),)
 
@@ -590,7 +593,7 @@ class MHCA(nn.Module):
         return Z, Q, K, V
 
     def attention(self, Q, K, V):
-        M = torch.matmul(Q,K)/(self.sd**0.5)
+        M = torch.matmul(Q,K)/(self.yd**0.5)
         A = nn.functional.softmax(M, dim = -1)
         return torch.matmul(A,V)
 
