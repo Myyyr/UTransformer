@@ -515,6 +515,7 @@ class MHCA(nn.Module):
                                    nn.UpsamplingBilinear2d(scale_factor=2),)
 
     def forward(self, y, s):
+        print(y.shape,s.shape)
         bs, dy, hy, wy = y.shape
         self.ny = wy*hy
         self.wy = wy
