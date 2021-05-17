@@ -489,17 +489,17 @@ class MHCA(nn.Module):
                             nn.Conv2d(2*self.d, 2*self.d, 3, 1, 1),)
 
         self.conv1 = nn.Sequential(nn.Conv2d(2*self.d, 2*self.d, 1, 1, 1),
-                                   nn.BatchNorm3d(2*self.d),
+                                   nn.BatchNorm2d(2*self.d),
                                    nn.ReLU(inplace=True),)
         self.conv2 = nn.Sequential(nn.Conv2d(self.d, self.d, 1, 1, 1),
-                                   nn.BatchNorm3d(self.d),
+                                   nn.BatchNorm2d(self.d),
                                    nn.ReLU(inplace=True),)
         self.conv3 = nn.Sequential(nn.Conv2d(2*self.d, self.d, 1, 1, 1),
-                                   nn.BatchNorm3d(self.d),
+                                   nn.BatchNorm2d(self.d),
                                    nn.ReLU(inplace=True),)
 
         self.sigConv = nn.Sequential(nn.Conv2d(self.d, self.d, 1, 1, 1),
-                                   nn.BatchNorm3d(2*self.d),
+                                   nn.BatchNorm2d(2*self.d),
                                    nn.Sigmoid(),
                                    nn.UpsamplingBilinear2d(scale_factor=2),)
 
