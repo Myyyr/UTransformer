@@ -280,8 +280,7 @@ class UTransformer_mhca(SegmentationNetwork):
             else:
                 first_stride = None
 
-            if d!=0:
-                self.mhca.append(MHCA(input_features, output_features))
+            
 
 
             self.conv_kwargs['kernel_size'] = self.conv_kernel_sizes[d]
@@ -336,11 +335,17 @@ class UTransformer_mhca(SegmentationNetwork):
 
         # now lets build the localization pathway
         for u in range(num_pool):
+            
+
             nfeatures_from_down = final_num_features
             nfeatures_from_skip = self.conv_blocks_context[
                 -(2 + u)].output_channels  # self.conv_blocks_context[-1] is bottleneck, so start with -2
             n_features_after_tu_and_concat = nfeatures_from_skip * 2
 
+            if d!=num_pool-1:
+                self.mhca.append(MHCA(nfeatures_from_down, nfeatures_from_skip))
+
+                
             # the first conv reduces the number of features to match those of skip
             # the following convs work on that number of features
             # if not convolutional upsampling then the final conv reduces the num of features again
