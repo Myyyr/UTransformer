@@ -505,7 +505,7 @@ class MHCA(nn.Module):
         self.conv_y2 = nn.Sequential(nn.Conv2d(self.yd, self.sd, 1, 1, 1),
                                    nn.BatchNorm2d(self.sd),
                                    nn.ReLU(inplace=True),)
-        self.conv_s = nn.Sequential(nn.Conv2d(self.sd, self.sd, 1, 1, 1),
+        self.conv_s = nn.Sequential(nn.Conv2d(self.sd, self.sd, 2, 2, 0),
                                    nn.BatchNorm2d(self.sd),
                                    nn.ReLU(inplace=True),)
 
