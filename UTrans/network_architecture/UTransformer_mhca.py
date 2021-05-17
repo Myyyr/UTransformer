@@ -576,7 +576,7 @@ class MHCA(nn.Module):
         # Inverse permute reshape
         Z = rearrange(Z, 'b h n d -> b n h d')
         Z = rearrange(Z, 'b n h d -> b n (h d)')
-        Z = rearrange(Z, 'b (h w) d -> b d h w', h=hs, w=ws)
+        Z = rearrange(Z, 'b (h w) d -> b d h w', h=hy, w=wy)
 
         # Z = Z.permute(0,2,1,3)
         # Z = torch.reshape(Z, (bs, self.n, self.d))
