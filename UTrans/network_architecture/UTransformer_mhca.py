@@ -270,6 +270,8 @@ class UTransformer_mhca(SegmentationNetwork):
         output_features = base_num_features
         input_features = input_channels
 
+        self.mhca = []
+
         for d in range(num_pool):
             # determine the first stride
             if d != 0 and self.convolutional_pooling:
@@ -285,6 +287,7 @@ class UTransformer_mhca(SegmentationNetwork):
                                                               self.norm_op_kwargs, self.dropout_op,
                                                               self.dropout_op_kwargs, self.nonlin, self.nonlin_kwargs,
                                                               first_stride, basic_block=basic_block))
+
             if not self.convolutional_pooling:
                 self.td.append(pool_op(pool_op_kernel_sizes[d]))
             input_features = output_features
@@ -292,12 +295,17 @@ class UTransformer_mhca(SegmentationNetwork):
 
             output_features = min(output_features, self.max_num_features)
 
+            if d!=0:
+                self.mhca.append(MHCA(output_features))
+
         # now the bottleneck.
         # determine the first stride
         if self.convolutional_pooling:
             first_stride = pool_op_kernel_sizes[-1]
         else:
             first_stride = None
+
+        
 
         # the output of the last conv must match the number of features from the skip connection if we are not using
         # convolutional upsampling. If we use convolutional upsampling then the reduction in feature maps will be
@@ -370,12 +378,12 @@ class UTransformer_mhca(SegmentationNetwork):
         if not dropout_in_localization:
             self.dropout_op_kwargs['p'] = old_dropout_p
 
-        # d_model = ?
-        # self.mhca = MHCA(d_model)
+        
 
         # register all modules properly
         self.conv_blocks_localization = nn.ModuleList(self.conv_blocks_localization)
         self.conv_blocks_context = nn.ModuleList(self.conv_blocks_context)
+        self.mhca = nn.ModuleList(self.mhca)
         self.td = nn.ModuleList(self.td)
         self.tu = nn.ModuleList(self.tu)
         self.seg_outputs = nn.ModuleList(self.seg_outputs)
@@ -390,23 +398,26 @@ class UTransformer_mhca(SegmentationNetwork):
     def forward(self, x):
         skips = []
         seg_outputs = []
-        print('==> stage',0, ':', x.shape)
+        # print('==> stage',0, ':', x.shape)
         for d in range(len(self.conv_blocks_context) - 1):
             x = self.conv_blocks_context[d](x)
-            print('--> stage',d, ':', x.shape)
+            # print('--> stage',d, ':', x.shape)
             skips.append(x)
             if not self.convolutional_pooling:
                 x = self.td[d](x)
 
         x = self.conv_blocks_context[-1](x)
 
-        print("---> x shape :", x.shape)
-        exit(0)
+        # print("---> x shape :", x.shape)
+        # exit(0)
+        # x = self.mhca()
 
         for u in range(len(self.tu)):
-            x = self.mhca(x, skips[-(u + 1)])
-            # x = self.tu[u](x)
-            # x = torch.cat((x, skips[-(u + 1)]), dim=1)
+            if u!=len(self.tu)-1:
+                x = self.mhca[-(u + 1)](x, skips[-(u + 1)])
+            else:
+                x = self.tu[u](x)
+                x = torch.cat((x, skips[-(u + 1)]), dim=1)
             x = self.conv_blocks_localization[u](x)
             seg_outputs.append(self.final_nonlin(self.seg_outputs[u](x)))
 
