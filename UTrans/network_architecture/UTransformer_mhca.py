@@ -279,10 +279,11 @@ class UTransformer_mhca(SegmentationNetwork):
                 first_stride = pool_op_kernel_sizes[d - 1]
             else:
                 first_stride = None
-            if d!=0:
-                self.mhca.append(MHCA(output_features))
 
-                
+            if d!=0:
+                self.mhca.append(MHCA(input_features, output_features))
+
+
             self.conv_kwargs['kernel_size'] = self.conv_kernel_sizes[d]
             self.conv_kwargs['padding'] = self.conv_pad_sizes[d]
             # add convolutions
@@ -476,17 +477,19 @@ class UTransformer_mhca(SegmentationNetwork):
 
 
 class MHCA(nn.Module):
-    def __init__(self, d):
+    def __init__(self, sd, yd):
         super(MHCA, self).__init__()
         self.s_pe = None
         self.y_pe = None
 
-        self.d = d
+        self.sd = sd
+        self.yd = yd
 
 
-        self.wq = nn.Linear(2*self.d, 2*self.d)
-        self.wk = nn.Linear(2*self.d, 2*self.d)
-        self.wv = nn.Linear(self.d, self.d)
+
+        self.wq = nn.Linear(self.sd, self.sd)
+        self.wk = nn.Linear(self.sd, self.sd)
+        self.wv = nn.Linear(self.yd, self.yd)
 
         self.up = nn.Sequential(nn.UpsamplingBilinear2d(scale_factor=2),
                             nn.Conv2d(2*self.d, 2*self.d, 3, 1, 1),)
@@ -527,7 +530,6 @@ class MHCA(nn.Module):
         s = s + repeat(self.s_pe, 'c h w -> b c h w', b=bs)
 
         # Convs and up
-        print(self.d)
         print(y.shape)
         print(s.shape)
         y_c1 = self.conv1(y)
@@ -588,7 +590,7 @@ class MHCA(nn.Module):
         return Z, Q, K, V
 
     def attention(self, Q, K, V):
-        M = torch.matmul(Q,K)/(self.d**0.5)
+        M = torch.matmul(Q,K)/(self.sd**0.5)
         A = nn.functional.softmax(M, dim = -1)
         return torch.matmul(A,V)
 
