@@ -520,7 +520,6 @@ class MHCA(nn.Module):
                                    nn.UpsamplingBilinear2d(scale_factor=2),)
 
     def forward(self, y, s):
-        print(self.yd, self.sd)
         print(y.shape,s.shape)
         bs, dy, hy, wy = y.shape
         self.ny = wy*hy
@@ -546,6 +545,7 @@ class MHCA(nn.Module):
         s_c2 = self.conv_s(s)
         y_c3 = self.up(y)
         y_c3 = self.conv_y2(y_c3)
+        del y
 
 
         # Get queries, keys, values
@@ -555,6 +555,7 @@ class MHCA(nn.Module):
         Q = self.wq(y_c1)
         K = self.wk(y_c1)
         V = self.wv(s_c2)
+        del y_c1, s_c2
 
         # Reshaping
         Q = rearrange(Q, 'b n (h d) -> b n h d', h=self.n_heads)
@@ -568,6 +569,7 @@ class MHCA(nn.Module):
 
         # Self attention
         Z = self.attention(Q,K,V)
+        del Q, K, V
 
         # Inverse permute reshape
         Z = rearrange(Z, 'b h n d -> b n h d')
@@ -580,7 +582,8 @@ class MHCA(nn.Module):
         Z = Z*s
 
         Z = torch.cat([Z, y_c3], 1)
-
+        del s, y_c3
+        
         return Z#, Q, K, V
 
     def attention(self, Q, K, V):
