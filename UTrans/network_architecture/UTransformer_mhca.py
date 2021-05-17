@@ -589,7 +589,7 @@ class MHCA(nn.Module):
 
         Z = torch.cat([Z, y_c3], 1)
 
-        return Z, Q, K, V
+        return Z#, Q, K, V
 
     def attention(self, Q, K, V):
         K = rearrange(K, "b h n d -> b h d n")
