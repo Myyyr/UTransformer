@@ -515,7 +515,6 @@ class MHCA(nn.Module):
                                    nn.UpsamplingBilinear2d(scale_factor=2),)
 
     def forward(self, y, s):
-        print(y.shape, s.shape)
         bs, dy, hy, wy = y.shape
         self.ny = wy*hy
         self.wy = wy
@@ -543,14 +542,12 @@ class MHCA(nn.Module):
 
 
         # Get queries, keys, values
-        print(y_c1.shape, s_c2.shape)
         y_c1 = rearrange(y_c1, 'b c h w -> b (h w) c')
         s_c2 = rearrange(s_c2, 'b c h w -> b (h w) c') # b n d
         # y_c1 = torch.reshape(y_c1, (bs, 2*self.d, self.ny))
         # y_c1 = y_c1.permute(0,2,1)
         # s_c2 = torch.reshape(s_c2, (bs, self.d, self.ns))
         # s_c2 = s_c2.permute(0,2,1)
-        print(y_c1.shape, s_c2.shape)
         Q = self.wq(y_c1)
         K = self.wk(y_c1)
         V = self.wv(s_c2)
@@ -574,13 +571,12 @@ class MHCA(nn.Module):
         # V = V.permute((0,2,1,3))
 
         # Self attention
-        print(Q.shape, K.shape, V.shape)
         Z = self.attention(Q,K,V)
 
         # Inverse permute reshape
         Z = rearrange(Z, 'b h n d -> b n h d')
         Z = rearrange(Z, 'b n h d -> b n (h d)')
-        Z = rearrange(Z, 'b (h w) d -> b d h w')
+        Z = rearrange(Z, 'b (h w) d -> b d h w', h=hs, w=ws)
 
         # Z = Z.permute(0,2,1,3)
         # Z = torch.reshape(Z, (bs, self.n, self.d))
