@@ -524,8 +524,8 @@ class MHCA(nn.Module):
         s = s + repeat(self.s_pe, 'c h w -> b c h w', b=bs)
 
         # Convs and up
-        # print(y.shape)
-        # print(s.shape)
+        print(y.shape)
+        print(s.shape)
         y_c1 = self.conv1(y)
         s_c2 = self.conv2(s)
         y_c3 = self.up(y)
