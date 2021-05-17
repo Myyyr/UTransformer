@@ -390,8 +390,10 @@ class UTransformer_mhca(SegmentationNetwork):
     def forward(self, x):
         skips = []
         seg_outputs = []
+        print('==> stage',0, ':', x.shape)
         for d in range(len(self.conv_blocks_context) - 1):
             x = self.conv_blocks_context[d](x)
+            print('--> stage',d, ':', x.shape)
             skips.append(x)
             if not self.convolutional_pooling:
                 x = self.td[d](x)
