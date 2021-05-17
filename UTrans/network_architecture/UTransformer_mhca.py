@@ -279,7 +279,10 @@ class UTransformer_mhca(SegmentationNetwork):
                 first_stride = pool_op_kernel_sizes[d - 1]
             else:
                 first_stride = None
+            if d!=0:
+                self.mhca.append(MHCA(output_features))
 
+                
             self.conv_kwargs['kernel_size'] = self.conv_kernel_sizes[d]
             self.conv_kwargs['padding'] = self.conv_pad_sizes[d]
             # add convolutions
@@ -296,8 +299,7 @@ class UTransformer_mhca(SegmentationNetwork):
 
             output_features = min(output_features, self.max_num_features)
 
-            if d!=0:
-                self.mhca.append(MHCA(output_features))
+            
 
         # now the bottleneck.
         # determine the first stride
