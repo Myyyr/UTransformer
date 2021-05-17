@@ -249,6 +249,7 @@ class nnUNetTrainerV2_utrans_mhsa(nnUNetTrainer):
             with autocast():
                 output = self.network(data)
                 del data
+                print(type(output), type(target))
                 l = self.loss(output, target)
 
             if do_backprop:
