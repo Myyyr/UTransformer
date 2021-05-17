@@ -250,6 +250,7 @@ class nnUNetTrainerV2_utrans_mhsa(nnUNetTrainer):
                 output = self.network(data)
                 del data
                 print(type(output), type(target))
+                print(output[0].shape, target.shape)
                 l = self.loss(output, target)
 
             if do_backprop:
