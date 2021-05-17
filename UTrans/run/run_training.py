@@ -2,6 +2,7 @@
 # Main
 # ------------------------------------------------------------------------
 # python run_training.py -network=2d -network_trainer=nnUNetTrainerV2_utrans -task=062 -fold='all' -gpu=0
+# python run_training.py -network=3d -network_trainer=nnUNetTrainerV2_utrans -task=062 -fold='all' -gpu=1
 
 import argparse
 from batchgenerators.utilities.file_and_folder_operations import *
