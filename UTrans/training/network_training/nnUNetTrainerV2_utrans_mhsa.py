@@ -34,7 +34,7 @@ from torch import nn
 from torch.cuda.amp import autocast
 from nnunet.training.learning_rate.poly_lr import poly_lr
 from batchgenerators.utilities.file_and_folder_operations import *
-from UTrans.network_architecture.UTransformer import UTransformer
+from UTrans.network_architecture.UTransformer_mhsa import UTransformer_mhsa
 
 
 class nnUNetTrainerV2_utrans(nnUNetTrainer):
@@ -152,7 +152,7 @@ class nnUNetTrainerV2_utrans(nnUNetTrainer):
         dropout_op_kwargs = {'p': 0, 'inplace': True}
         net_nonlin = nn.LeakyReLU
         net_nonlin_kwargs = {'negative_slope': 1e-2, 'inplace': True}
-        self.network = UTransformer(self.num_input_channels, self.base_num_features, self.num_classes,
+        self.network = UTransformer_mhsa(self.num_input_channels, self.base_num_features, self.num_classes,
                                     len(self.net_num_pool_op_kernel_sizes),
                                     self.conv_per_stage, 2, conv_op, norm_op, norm_op_kwargs, dropout_op,
                                     dropout_op_kwargs,
