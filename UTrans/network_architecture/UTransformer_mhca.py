@@ -542,6 +542,7 @@ class MHCA(nn.Module):
 
 
         # Get queries, keys, values
+        print(y_c1.shape, s_c2.shape)
         y_c1 = rearrange(y_c1, 'b c h w -> b (h w) c')
         s_c2 = rearrange(s_c2, 'b c h w -> b (h w) c') # b n d
         # y_c1 = torch.reshape(y_c1, (bs, 2*self.d, self.ny))
