@@ -497,10 +497,10 @@ class MHCA(nn.Module):
         self.conv_y1 = nn.Sequential(nn.Conv2d(self.yd, self.yd, 1, 1, 1),
                                    nn.BatchNorm2d(self.yd),
                                    nn.ReLU(inplace=True),)
-        self.conv_y2 = nn.Sequential(nn.Conv2d(self.yd, self.yd, 1, 1, 1),
-                                   nn.BatchNorm2d(self.yd),
-                                   nn.ReLU(inplace=True),)
-        self.conv_y3 = nn.Sequential(nn.Conv2d(self.yd, self.sd, 1, 1, 1),
+        # self.conv_y2 = nn.Sequential(nn.Conv2d(self.yd, self.yd, 1, 1, 1),
+        #                            nn.BatchNorm2d(self.yd),
+        #                            nn.ReLU(inplace=True),)
+        self.conv_y2 = nn.Sequential(nn.Conv2d(self.yd, self.sd, 1, 1, 1),
                                    nn.BatchNorm2d(self.sd),
                                    nn.ReLU(inplace=True),)
         self.conv_s = nn.Sequential(nn.Conv2d(self.sd, self.sd, 1, 1, 1),
@@ -535,10 +535,10 @@ class MHCA(nn.Module):
         # Convs and up
         print(y.shape)
         print(s.shape)
-        y_c1 = self.conv1(y)
-        s_c2 = self.conv2(s)
+        y_c1 = self.conv_y1(y)
+        s_c2 = self.conv_s(s)
         y_c3 = self.up(y)
-        y_c3 = self.conv3(y_c3)
+        y_c3 = self.conv_y2(y_c3)
 
 
         # Get queries, keys, values
