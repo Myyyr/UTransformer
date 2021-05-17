@@ -595,6 +595,7 @@ class MHCA(nn.Module):
         return Z, Q, K, V
 
     def attention(self, Q, K, V):
+        K = rearrange(K, "b h n d -> b h d n")
         M = torch.matmul(Q,K)/(self.yd**0.5)
         A = nn.functional.softmax(M, dim = -1)
         return torch.matmul(A,V)
