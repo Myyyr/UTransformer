@@ -535,8 +535,6 @@ class MHCA(nn.Module):
         s = s + repeat(self.s_pe, 'c h w -> b c h w', b=bs)
 
         # Convs and up
-        print(y.shape)
-        print(s.shape)
         y_c1 = self.conv_y1(y)
         s_c2 = self.conv_s(s)
         y_c3 = self.up(y)
@@ -574,6 +572,7 @@ class MHCA(nn.Module):
         # V = V.permute((0,2,1,3))
 
         # Self attention
+        print(Q.shape, K.shape, V.shape)
         Z = self.attention(Q,K,V)
 
         # Inverse permute reshape
