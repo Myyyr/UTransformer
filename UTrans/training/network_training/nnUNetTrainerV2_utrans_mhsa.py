@@ -18,7 +18,7 @@ from typing import Tuple
 
 import numpy as np
 import torch
-from nnunet.training.data_augmentation.default_data_augmentation import get_default_augmentation
+from nnunet.training.data_augmentation.default_data_augmentation import get_moreDA_augmentation
 from nnunet.training.loss_functions.deep_supervision import MultipleOutputLoss2
 from nnunet.utilities.to_torch import maybe_to_torch, to_cuda
 from nnunet.network_architecture.generic_UNet import Generic_UNet
@@ -57,7 +57,7 @@ class nnUNetTrainerV2_utrans_mhsa(nnUNetTrainer):
 
     def initialize(self, training=True, force_load_plans=False):
         """
-        - replaced get_default_augmentation with get_default_augmentation
+        - replaced get_moreDA_augmentation with get_default_augmentation
         - enforce to only run this code once
         - loss function wrapper for deep supervision
 
@@ -105,14 +105,14 @@ class nnUNetTrainerV2_utrans_mhsa(nnUNetTrainer):
                         "INFO: Not unpacking data! Training may be slow due to that. Pray you are not using 2d or you "
                         "will wait all winter for your model to finish!")
 
-                self.tr_gen, self.val_gen = get_default_augmentation(
+                self.tr_gen, self.val_gen = get_moreDA_augmentation(
                     self.dl_tr, self.dl_val,
                     self.data_aug_params[
                         'patch_size_for_spatialtransform'],
                     self.data_aug_params,
-                    # deep_supervision_scales=self.deep_supervision_scales,
+                    deep_supervision_scales=self.deep_supervision_scales,
                     pin_memory=self.pin_memory,
-                    # use_nondetMultiThreadedAugmenter=False
+                    use_nondetMultiThreadedAugmenter=False
                 )
                 self.print_to_log_file("TRAINING KEYS:\n %s" % (str(self.dataset_tr.keys())),
                                        also_print_to_console=False)
