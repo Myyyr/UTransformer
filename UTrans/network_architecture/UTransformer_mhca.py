@@ -334,6 +334,7 @@ class UTransformer_mhca(SegmentationNetwork):
             self.dropout_op_kwargs['p'] = 0.0
 
         # now lets build the localization pathway
+        strides = [1,1,1,1,2,4]
         for u in range(num_pool):
             
 
@@ -342,8 +343,8 @@ class UTransformer_mhca(SegmentationNetwork):
                 -(2 + u)].output_channels  # self.conv_blocks_context[-1] is bottleneck, so start with -2
             n_features_after_tu_and_concat = nfeatures_from_skip * 2
 
-            # if d!=num_pool-1:
-            self.mhca.append(MHCA(nfeatures_from_down, nfeatures_from_skip))
+            if d!=num_pool-1:
+                self.mhca.append(MHCA(nfeatures_from_down, nfeatures_from_skip, stride=strides[u]))
 
 
             # the first conv reduces the number of features to match those of skip
@@ -482,7 +483,7 @@ class UTransformer_mhca(SegmentationNetwork):
 
 
 class MHCA(nn.Module):
-    def __init__(self, yd, sd, n_heads=8):
+    def __init__(self, yd, sd, stride=1 n_heads=8):
         super(MHCA, self).__init__()
         self.s_pe = None
         self.y_pe = None
@@ -494,9 +495,13 @@ class MHCA(nn.Module):
 
 
 
-        self.wq = nn.Linear(self.yd, self.yd)
-        self.wk = nn.Linear(self.yd, self.yd)
-        self.wv = nn.Linear(self.sd, self.sd)
+        # self.wq = nn.Linear(self.yd, self.yd)
+        # self.wk = nn.Linear(self.yd, self.yd)
+        # self.wv = nn.Linear(self.sd, self.sd)
+
+        self.wq = nn.Conv2d(self.yd, self.yd, stride, stride)
+        self.wk = nn.Conv2d(self.yd, self.yd, stride, stride)
+        self.wv = nn.Conv2d(self.sd, self.sd, 2*stride, 2*stride)
 
         self.up = nn.Sequential(nn.UpsamplingBilinear2d(scale_factor=2),
                             nn.Conv2d(self.yd, self.yd, 3, 1, 1),)
@@ -510,14 +515,14 @@ class MHCA(nn.Module):
         self.conv_y2 = nn.Sequential(nn.Conv2d(self.yd, self.sd, 1, 1, 0),
                                    nn.BatchNorm2d(self.sd),
                                    nn.ReLU(inplace=True),)
-        self.conv_s = nn.Sequential(nn.Conv2d(self.sd, self.sd, 2, 2, 0),
+        self.conv_s = nn.Sequential(nn.Conv2d(self.sd, self.sd, 1, 1, 0),
                                    nn.BatchNorm2d(self.sd),
                                    nn.ReLU(inplace=True),)
 
         self.sigConv = nn.Sequential(nn.Conv2d(self.sd, self.sd, 1, 1, 0),
                                    nn.BatchNorm2d(self.sd),
                                    nn.Sigmoid(),
-                                   nn.UpsamplingBilinear2d(scale_factor=2),)
+                                   nn.UpsamplingBilinear2d(scale_factor=2*stride),)
 
     def forward(self, y, s):
         print(y.shape,s.shape)
