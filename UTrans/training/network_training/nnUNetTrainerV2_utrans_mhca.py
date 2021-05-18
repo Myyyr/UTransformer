@@ -37,7 +37,7 @@ from batchgenerators.utilities.file_and_folder_operations import *
 
 from UTrans.network_architecture.UTransformer_mhca import UTransformer_mhca
 
-# python run_training.py -network='2d' -network_trainer=nnUNetTrainerV2_utrans_mhca_utrans_mhca -task=062 -fold='all' -gpu=1 -outpath='MHCA'
+# python run_training.py -network='2d' -network_trainer=nnUNetTrainerV2_utrans_mhca -task=062 -fold=0 -gpu=2 -outpath='MHCA'
 
 class nnUNetTrainerV2_utrans_mhca(nnUNetTrainer):
     """

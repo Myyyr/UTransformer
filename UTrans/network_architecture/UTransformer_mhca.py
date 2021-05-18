@@ -483,7 +483,7 @@ class UTransformer_mhca(SegmentationNetwork):
 
 
 class MHCA(nn.Module):
-    def __init__(self, yd, sd, stride=1 n_heads=8):
+    def __init__(self, yd, sd, stride=1, n_heads=8):
         super(MHCA, self).__init__()
         self.s_pe = None
         self.y_pe = None
