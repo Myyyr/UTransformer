@@ -18,7 +18,7 @@ from typing import Tuple
 
 import numpy as np
 import torch
-from nnunet.training.data_augmentation.default_data_augmentation import get_default_augmentation
+from nnunet.training.data_augmentation.default_data_augmentation import get_moreDA_augmentation
 from nnunet.training.loss_functions.deep_supervision import MultipleOutputLoss2
 from nnunet.utilities.to_torch import maybe_to_torch, to_cuda
 from nnunet.network_architecture.generic_UNet import Generic_UNet
@@ -45,7 +45,7 @@ class nnUNetTrainerV2(nnUNetTrainer):
                  unpack_data=True, deterministic=True, fp16=False):
         super().__init__(plans_file, fold, output_folder, dataset_directory, batch_dice, stage, unpack_data,
                          deterministic, fp16)
-        self.max_num_epochs = 1000
+        self.max_num_epochs = 200
         self.initial_lr = 1e-2
         self.deep_supervision_scales = None
         self.ds_loss_weights = None
@@ -54,7 +54,7 @@ class nnUNetTrainerV2(nnUNetTrainer):
 
     def initialize(self, training=True, force_load_plans=False):
         """
-        - replaced get_default_augmentation with get_default_augmentation
+        - replaced get_moreDA_augmentation with get_moreDA_augmentation
         - enforce to only run this code once
         - loss function wrapper for deep supervision
 
@@ -102,12 +102,12 @@ class nnUNetTrainerV2(nnUNetTrainer):
                         "INFO: Not unpacking data! Training may be slow due to that. Pray you are not using 2d or you "
                         "will wait all winter for your model to finish!")
 
-                self.tr_gen, self.val_gen = get_default_augmentation(
+                self.tr_gen, self.val_gen = get_moreDA_augmentation(
                     self.dl_tr, self.dl_val,
                     self.data_aug_params[
                         'patch_size_for_spatialtransform'],
                     self.data_aug_params,
-                    # deep_supervision_scales=self.deep_supervision_scales,
+                    deep_supervision_scales=self.deep_supervision_scales,
                     pin_memory=self.pin_memory,
                     # use_nondetMultiThreadedAugmenter=False
                 )
