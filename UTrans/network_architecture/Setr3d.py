@@ -1,15 +1,15 @@
 # ------------------------------------------------------------------------
-# CoTr
+# UTrans
 # ------------------------------------------------------------------------
 
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import numpy as np
-from CoTr.network_architecture import CNNBackbone
-from CoTr.network_architecture.neural_network import SegmentationNetwork
-from CoTr.network_architecture.DeTrans.DeformableTrans import DeformableTransformer
-from CoTr.network_architecture.DeTrans.position_encoding import build_position_encoding
+from UTrans.network_architecture import CNNBackbone
+from UTrans.network_architecture.neural_network import SegmentationNetwork
+from UTrans.network_architecture.DeTrans.DeformableTrans import DeformableTransformer
+from UTrans.network_architecture.DeTrans.position_encoding import build_position_encoding
 import math
 
 from einops import rearrange
