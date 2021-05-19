@@ -567,6 +567,7 @@ class MHCA(nn.Module):
         K = self.wk(y_c1)
         V = self.wv(s_c2)
         del y_c1, s_c2
+        _,_, he, we = Q.shape
         print('->', Q.shape, (bs, dy, hy, wy), (bs, ds, hs, ws))
 
         Q = rearrange(Q, "b c h w -> b (h w) c")
@@ -590,7 +591,7 @@ class MHCA(nn.Module):
         # Inverse permute reshape
         Z = rearrange(Z, 'b h n d -> b n h d')
         Z = rearrange(Z, 'b n h d -> b n (h d)')
-        Z = rearrange(Z, 'b (h w) d -> b d h w', h=hy, w=wy)
+        Z = rearrange(Z, 'b (h w) d -> b d h w', h=he, w=we)
 
       
         # sigmoid module and up
