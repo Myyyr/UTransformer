@@ -23,6 +23,7 @@ from UTrans.training.network_training.nnUNetTrainer import nnUNetTrainer
 # from nnunet.training.network_training.nnUNetTrainerCascadeFullRes import nnUNetTrainerCascadeFullRes
 # from nnunet.training.network_training.nnUNetTrainerV2_CascadeFullRes import nnUNetTrainerV2CascadeFullRes
 from nnunet.utilities.task_name_id_conversion import convert_id_to_task_name
+import UTrans
 
 import os
 # python run_training.py 2d nnUNetTrainerV2_utrans 062 'all' -gpu=0
