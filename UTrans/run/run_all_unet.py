@@ -1,7 +1,7 @@
-import UTrans.run.run_training_script as run
+import UTrans.run.nnunet_run_training as run
 
 
-run.main(gpu='0', network='2d', network_trainer='nnUNetTrainerV2', task='062', fold=0, outpath='UNET_v2', val=False)
+# run.main(gpu='0', network='2d', network_trainer='nnUNetTrainerV2', task='062', fold=0, outpath='UNET_v2', val=False)
 run.main(gpu='0', network='2d', network_trainer='nnUNetTrainerV2', task='062', fold=0, outpath='UNET_v2', val=True)
 run.main(gpu='0', network='2d', network_trainer='nnUNetTrainerV2', task='062', fold=1, outpath='UNET_v2', val=False)
 run.main(gpu='0', network='2d', network_trainer='nnUNetTrainerV2', task='062', fold=1, outpath='UNET_v2', val=True)
