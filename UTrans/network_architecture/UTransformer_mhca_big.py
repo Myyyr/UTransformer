@@ -335,7 +335,7 @@ class UTransformer_mhca(SegmentationNetwork):
 
         # now lets build the localization pathway
         # strides = [1,1,1,1,2,4]
-        strides = [1,1,1,1,1,2]
+        strides = [1,1,1,1,1,1]
 
         for u in range(num_pool):
             
@@ -426,12 +426,15 @@ class UTransformer_mhca(SegmentationNetwork):
 
         for u in range(len(self.tu)):
             if u<len(self.mhca):
+                print(x.shape)
                 x = self.mhca[u](x, skips[-(u + 1)])
             else:
                 x = self.tu[u](x)
                 x = torch.cat((x, skips[-(u + 1)]), dim=1)
             x = self.conv_blocks_localization[u](x)
             seg_outputs.append(self.final_nonlin(self.seg_outputs[u](x)))
+
+        exit(0)
 
         if self._deep_supervision and self.do_ds:
             return tuple([seg_outputs[-1]] + [i(j) for i, j in
