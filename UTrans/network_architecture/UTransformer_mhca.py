@@ -345,7 +345,7 @@ class UTransformer_mhca(SegmentationNetwork):
                 -(2 + u)].output_channels  # self.conv_blocks_context[-1] is bottleneck, so start with -2
             n_features_after_tu_and_concat = nfeatures_from_skip * 2
 
-            if d!=num_pool-1:
+            if u!=num_pool-1:
                 self.mhca.append(MHCA(nfeatures_from_down, nfeatures_from_skip, stride=strides[u]))
 
 
@@ -556,13 +556,19 @@ class MHCA(nn.Module):
 
 
         # Get queries, keys, values
-        y_c1 = rearrange(y_c1, 'b c h w -> b (h w) c')
-        s_c2 = rearrange(s_c2, 'b c h w -> b (h w) c') # b n d
+        # y_c1 = rearrange(y_c1, 'b c h w -> b (h w) c')
+        # s_c2 = rearrange(s_c2, 'b c h w -> b (h w) c') # b n d
 
         Q = self.wq(y_c1)
         K = self.wk(y_c1)
         V = self.wv(s_c2)
         del y_c1, s_c2
+        _,_, he, we = Q.shape
+        # print('->', Q.shape, (bs, dy, hy, wy), (bs, ds, hs, ws))
+
+        Q = rearrange(Q, "b c h w -> b (h w) c")
+        K = rearrange(K, "b c h w -> b (h w) c")
+        V = rearrange(V, "b c h w -> b (h w) c")
 
         # Reshaping
         Q = rearrange(Q, 'b n (h d) -> b n h d', h=self.n_heads)
@@ -581,7 +587,7 @@ class MHCA(nn.Module):
         # Inverse permute reshape
         Z = rearrange(Z, 'b h n d -> b n h d')
         Z = rearrange(Z, 'b n h d -> b n (h d)')
-        Z = rearrange(Z, 'b (h w) d -> b d h w', h=hy, w=wy)
+        Z = rearrange(Z, 'b (h w) d -> b d h w', h=he, w=we)
 
       
         # sigmoid module and up
