@@ -345,7 +345,7 @@ class UTransformer_mhca(SegmentationNetwork):
                 -(2 + u)].output_channels  # self.conv_blocks_context[-1] is bottleneck, so start with -2
             n_features_after_tu_and_concat = nfeatures_from_skip * 2
 
-            if d!=num_pool-1:
+            if u!=num_pool-1:
                 self.mhca.append(MHCA(nfeatures_from_down, nfeatures_from_skip, stride=strides[u]))
 
 
