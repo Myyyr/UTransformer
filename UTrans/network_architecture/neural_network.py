@@ -23,7 +23,7 @@ from scipy.ndimage.filters import gaussian_filter
 from typing import Union, Tuple, List
 
 from torch.cuda.amp import autocast
-import CoTr
+import UTrans
 
 
 class NeuralNetwork(nn.Module):
