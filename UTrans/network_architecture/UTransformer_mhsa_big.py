@@ -165,7 +165,8 @@ class Upsample(nn.Module):
         return nn.functional.interpolate(x, size=self.size, scale_factor=self.scale_factor, mode=self.mode,
                                          align_corners=self.align_corners)
 
-class UTransformer_mhca(SegmentationNetwork):
+
+class UTransformer_mhsa(SegmentationNetwork):
     DEFAULT_BATCH_SIZE_3D = 2
     DEFAULT_PATCH_SIZE_3D = (64, 192, 160)
     SPACING_FACTOR_BETWEEN_STAGES = 2
@@ -201,7 +202,7 @@ class UTransformer_mhca(SegmentationNetwork):
 
         Questions? -> f.isensee@dkfz.de
         """
-        super(UTransformer_mhca, self).__init__()
+        super(UTransformer_mhsa, self).__init__()
         self.convolutional_upsampling = convolutional_upsampling
         self.convolutional_pooling = convolutional_pooling
         self.upscale_logits = upscale_logits
@@ -270,18 +271,14 @@ class UTransformer_mhca(SegmentationNetwork):
 
         output_features = base_num_features
         input_features = input_channels
-
-        self.mhca = []
-
+        self.mhsa = []
+        self.do_mhsa = [False, False, False, True, True, True, True] # None, None, None, 64**4, 32**4, 16**4, 8**4
         for d in range(num_pool):
             # determine the first stride
             if d != 0 and self.convolutional_pooling:
                 first_stride = pool_op_kernel_sizes[d - 1]
             else:
                 first_stride = None
-
-            
-
 
             self.conv_kwargs['kernel_size'] = self.conv_kernel_sizes[d]
             self.conv_kwargs['padding'] = self.conv_pad_sizes[d]
@@ -291,6 +288,9 @@ class UTransformer_mhca(SegmentationNetwork):
                                                               self.norm_op_kwargs, self.dropout_op,
                                                               self.dropout_op_kwargs, self.nonlin, self.nonlin_kwargs,
                                                               first_stride, basic_block=basic_block))
+            if self.do_mhsa[d]:
+                self.mhsa.append(MHSA(output_features))
+
 
             if not self.convolutional_pooling:
                 self.td.append(pool_op(pool_op_kernel_sizes[d]))
@@ -299,7 +299,10 @@ class UTransformer_mhca(SegmentationNetwork):
 
             output_features = min(output_features, self.max_num_features)
 
-            
+
+        self.center_mhsa = MHSA(output_features)
+
+        # self.mhsa = MHSA(output_features)
 
         # now the bottleneck.
         # determine the first stride
@@ -307,8 +310,6 @@ class UTransformer_mhca(SegmentationNetwork):
             first_stride = pool_op_kernel_sizes[-1]
         else:
             first_stride = None
-
-        
 
         # the output of the last conv must match the number of features from the skip connection if we are not using
         # convolutional upsampling. If we use convolutional upsampling then the reduction in feature maps will be
@@ -334,20 +335,11 @@ class UTransformer_mhca(SegmentationNetwork):
             self.dropout_op_kwargs['p'] = 0.0
 
         # now lets build the localization pathway
-        # strides = [1,1,1,1,2,4]
-        strides = [1,1,1,1,2,2]
-
         for u in range(num_pool):
-            
-
             nfeatures_from_down = final_num_features
             nfeatures_from_skip = self.conv_blocks_context[
                 -(2 + u)].output_channels  # self.conv_blocks_context[-1] is bottleneck, so start with -2
             n_features_after_tu_and_concat = nfeatures_from_skip * 2
-
-            if d!=num_pool-1:
-                self.mhca.append(MHCA(nfeatures_from_down, nfeatures_from_skip, stride=strides[u]))
-
 
             # the first conv reduces the number of features to match those of skip
             # the following convs work on that number of features
@@ -390,12 +382,13 @@ class UTransformer_mhca(SegmentationNetwork):
         if not dropout_in_localization:
             self.dropout_op_kwargs['p'] = old_dropout_p
 
-        
+        # d_model = 
+        # encodlayer = nn.TransformerEncoderLayer(d_model = d_model, nhead = 8)
+        # self.mhsa = nn.TransformerEncoder(encoder_layer=encodlayer, num_layers=1)
 
         # register all modules properly
         self.conv_blocks_localization = nn.ModuleList(self.conv_blocks_localization)
         self.conv_blocks_context = nn.ModuleList(self.conv_blocks_context)
-        self.mhca = nn.ModuleList(self.mhca)
         self.td = nn.ModuleList(self.td)
         self.tu = nn.ModuleList(self.tu)
         self.seg_outputs = nn.ModuleList(self.seg_outputs)
@@ -410,26 +403,34 @@ class UTransformer_mhca(SegmentationNetwork):
     def forward(self, x):
         skips = []
         seg_outputs = []
-        # print('==> stage',0, ':', x.shape)
         for d in range(len(self.conv_blocks_context) - 1):
             x = self.conv_blocks_context[d](x)
-            # print('--> stage',d, ':', x.shape)
+            if self.do_mhsa[d]:
+                x = self.mhsa[d](x)
             skips.append(x)
             if not self.convolutional_pooling:
                 x = self.td[d](x)
-
+        
         x = self.conv_blocks_context[-1](x)
+        x = self.center_mhsa(x)
+        
+        # bs,c,h,w = x.shape
+        # pe = positionalencoding2d(c,h,w)
+        # x = x + repeat(pe, 'c h w -> b c h w', b=bs)
+        # x = rearrange(x, 'b c h w -> b (h w) c')
+        # x = rearrange(x, 'b n d -> n b d')
+        # x = self.mhsa(x)
+        # x = rearrange(x, 'n b d -> b n d')
+        # x = rearrange(x, 'b (h w) d -> b d h w', h=h)
 
         # print("---> x shape :", x.shape)
         # exit(0)
-        # x = self.mhca()
+
+        
 
         for u in range(len(self.tu)):
-            if u<len(self.mhca):
-                x = self.mhca[u](x, skips[-(u + 1)])
-            else:
-                x = self.tu[u](x)
-                x = torch.cat((x, skips[-(u + 1)]), dim=1)
+            x = self.tu[u](x)
+            x = torch.cat((x, skips[-(u + 1)]), dim=1)
             x = self.conv_blocks_localization[u](x)
             seg_outputs.append(self.final_nonlin(self.seg_outputs[u](x)))
 
@@ -482,124 +483,94 @@ class UTransformer_mhca(SegmentationNetwork):
 
 
 
+class MHSA(nn.Module):
+    def __init__(self, d, n_heads = 8):
+        super(MHSA, self).__init__()
 
-
-class MHCA(nn.Module):
-    def __init__(self, yd, sd, stride=1, n_heads=8):
-        super(MHCA, self).__init__()
-        self.s_pe = None
-        self.y_pe = None
-
-        self.yd = yd
-        self.sd = sd
-
+        if d%n_heads != 0:
+            print("!!! d has to be a multiple of n_heads !!!")
+            exit(0)
+        
+        
+        self.d = d
         self.n_heads = n_heads
+        self.d_heads = int(self.d/self.n_heads)
+        
+        self.pe = None 
 
+        self.wq = nn.Linear(self.d, self.d)
+        self.wk = nn.Linear(self.d, self.d)
+        self.wv = nn.Linear(self.d, self.d)
 
+        #initialise the blocks
+        # for m in self.children():
+        #     init_weights(m, init_type='kaiming')
+        
+        
+    def forward(self, x):
+        bs, d, h, w = x.shape
+        self.n = w*h
+        self.w = w
+        self.h = h
 
-        # self.wq = nn.Linear(self.yd, self.yd)
-        # self.wk = nn.Linear(self.yd, self.yd)
-        # self.wv = nn.Linear(self.sd, self.sd)
-
-        self.wq = nn.Conv2d(self.yd, self.yd, stride, stride)
-        self.wk = nn.Conv2d(self.yd, self.yd, stride, stride)
-        self.wv = nn.Conv2d(self.sd, self.sd, 2*stride, 2*stride)
-
-        self.up = nn.Sequential(nn.UpsamplingBilinear2d(scale_factor=2),
-                            nn.Conv2d(self.yd, self.yd, 3, 1, 1),)
-
-        self.conv_y1 = nn.Sequential(nn.Conv2d(self.yd, self.yd, 1, 1, 0),
-                                   nn.BatchNorm2d(self.yd),
-                                   nn.ReLU(inplace=True),)
-        # self.conv_y2 = nn.Sequential(nn.Conv2d(self.yd, self.yd, 1, 1, 1),
-        #                            nn.BatchNorm2d(self.yd),
-        #                            nn.ReLU(inplace=True),)
-        self.conv_y2 = nn.Sequential(nn.Conv2d(self.yd, self.sd, 1, 1, 0),
-                                   nn.BatchNorm2d(self.sd),
-                                   nn.ReLU(inplace=True),)
-        self.conv_s = nn.Sequential(nn.Conv2d(self.sd, self.sd, 1, 1, 0),
-                                   nn.BatchNorm2d(self.sd),
-                                   nn.ReLU(inplace=True),)
-
-        self.sigConv = nn.Sequential(nn.Conv2d(self.sd, self.sd, 1, 1, 0),
-                                   nn.BatchNorm2d(self.sd),
-                                   nn.Sigmoid(),
-                                   nn.UpsamplingBilinear2d(scale_factor=2*stride),)
-
-    def forward(self, y, s):
-        # print(y.shape,s.shape)
-        bs, dy, hy, wy = y.shape
-        self.ny = wy*hy
-        self.wy = wy
-        self.hy = hy
-
-        _, ds, hs, ws = s.shape
-        self.ns = ws*hs
-        self.ws = ws
-        self.hs = hs
-
-        if self.s_pe == None:
-            self.y_pe = positionalencoding2d(dy, hy, wy).cuda()
-            self.s_pe = positionalencoding2d(ds, hs, ws).cuda()
+        if self.pe == None:
+            self.pe = positionalencoding2d(self.d, self.h, self.w).cuda()
 
 
         # Positionnal encodding
-        y = y + repeat(self.y_pe, 'c h w -> b c h w', b=bs)
-        s = s + repeat(self.s_pe, 'c h w -> b c h w', b=bs)
-
-        # Convs and up
-        y_c1 = self.conv_y1(y)
-        s_c2 = self.conv_s(s)
-        y_c3 = self.up(y)
-        y_c3 = self.conv_y2(y_c3)
-        del y
+        x = x + self.pe.repeat(bs,1,1,1)
 
 
         # Get queries, keys, values
-        y_c1 = rearrange(y_c1, 'b c h w -> b (h w) c')
-        s_c2 = rearrange(s_c2, 'b c h w -> b (h w) c') # b n d
-
-        Q = self.wq(y_c1)
-        K = self.wk(y_c1)
-        V = self.wv(s_c2)
-        del y_c1, s_c2
+        x = rearrange(x, "b d h w -> b d (h w)")
+        x = rearrange(x, "b d n -> b n d")
+        # x = torch.reshape(x, (bs, self.d, self.n))
+        # x = x.permute(0,2,1)
+        Q = self.wq(x)
+        K = self.wk(x)
+        V = self.wv(x)
 
         # Reshaping
-        Q = rearrange(Q, 'b n (h d) -> b n h d', h=self.n_heads)
-        K = rearrange(K, 'b n (h d) -> b n h d', h=self.n_heads)
-        V = rearrange(V, 'b n (h d) -> b n h d', h=self.n_heads)
+        Q = rearrange(Q, "b n (h d) -> b n h d", h=self.n_heads)
+        K = rearrange(K, "b n (h d) -> b n h d", h=self.n_heads)
+        V = rearrange(V, "b n (h d) -> b n h d", h=self.n_heads)
+
+        # Q = torch.reshape(Q, (bs,self.n,self.n_heads, self.d_heads))
+        # K = torch.reshape(K, (bs,self.n,self.n_heads, self.d_heads))
+        # V = torch.reshape(V, (bs,self.n,self.n_heads, self.d_heads))
 
         # Permuting
-        Q = rearrange(Q,'b n h d -> b h n d')
-        K = rearrange(K,'b n h d -> b h n d')
-        V = rearrange(V,'b n h d -> b h n d')
+        Q = rearrange(Q, "b n h d -> b h n d", h=self.n_heads)
+        K = rearrange(K, "b n h d -> b h n d", h=self.n_heads)
+        V = rearrange(V, "b n h d -> b h n d", h=self.n_heads)
+
+
+        # Q = Q.permute((0,2,1,3))
+        # K = K.permute((0,2,3,1))
+        # V = V.permute((0,2,1,3))
 
         # Self attention
-        Z = self.attention(Q,K,V)
-        del Q, K, V
+        Y = self.attention(Q,K,V)
 
         # Inverse permute reshape
-        Z = rearrange(Z, 'b h n d -> b n h d')
-        Z = rearrange(Z, 'b n h d -> b n (h d)')
-        Z = rearrange(Z, 'b (h w) d -> b d h w', h=hy, w=wy)
+        # Y = Y.permute(0,2,1,3)
+        # Y = torch.reshape(Y, (bs, self.n, self.d))
+        # Y = Y.permute(0,2,1)
+        # Y = torch.reshape(Y, (bs, self.d, self. h, self.w))
 
-      
-        # sigmoid module and up
-        Z = self.sigConv(Z)
-        Z = Z*s
-
-        Z = torch.cat([Z, y_c3], 1)
-        del s, y_c3
+        Y = rearrange(Y, "b h n d -> b n h d")
+        Y = rearrange(Y, "b n h d -> b n (h d)")
+        Y = rearrange(Y, "b n d -> b d n")
+        Y = rearrange(Y, "b c (h w) -> b c h w", h=self.h)
         
-        return Z#, Q, K, V
+        return Y #, Q, K, V
+
 
     def attention(self, Q, K, V):
         K = rearrange(K, "b h n d -> b h d n")
-        M = torch.matmul(Q,K)/(self.yd**0.5)
+        M = torch.matmul(Q,K)/(self.d**0.5)
         A = nn.functional.softmax(M, dim = -1)
         return torch.matmul(A,V)
-
-
 
 def positionalencoding2d(d_model, height, width):
     """
