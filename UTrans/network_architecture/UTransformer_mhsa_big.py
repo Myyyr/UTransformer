@@ -518,6 +518,8 @@ class MHSA(nn.Module):
 
 
         # Positionnal encodding
+        print(x.shape)
+        print(self.pe.shape)
         x = x + self.pe.repeat(bs,1,1,1)
 
 
