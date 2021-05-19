@@ -567,6 +567,7 @@ class MHCA(nn.Module):
         K = self.wk(y_c1)
         V = self.wv(s_c2)
         del y_c1, s_c2
+        print('->', Q.shape, (bs, dy, hy, wy), (bs, ds, hs, ws))
 
         Q = rearrange(Q, "b c h w -> b (h w) c")
         K = rearrange(K, "b c h w -> b (h w) c")
