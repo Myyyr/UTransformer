@@ -499,7 +499,7 @@ class MHSA(nn.Module):
         self.n_heads = n_heads        
 
         trans_layer = nn.TransformerEncoderLayer(d_model=self.d, nhead=self.n_heads)
-        self.self_trans = nn.TransformerEncoder(trans_layer, n_strans)
+        self.self_trans = nn.TransformerEncoder(trans_layer, 1)
 
 
         self.pe = None 
