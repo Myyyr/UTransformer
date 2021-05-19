@@ -559,13 +559,15 @@ class MHCA(nn.Module):
 
 
         # Get queries, keys, values
-        y_c1 = rearrange(y_c1, 'b c h w -> b (h w) c')
-        s_c2 = rearrange(s_c2, 'b c h w -> b (h w) c') # b n d
+        # y_c1 = rearrange(y_c1, 'b c h w -> b (h w) c')
+        # s_c2 = rearrange(s_c2, 'b c h w -> b (h w) c') # b n d
 
         Q = self.wq(y_c1)
         K = self.wk(y_c1)
         V = self.wv(s_c2)
         del y_c1, s_c2
+
+        # Q = re
 
         # Reshaping
         Q = rearrange(Q, 'b n (h d) -> b n h d', h=self.n_heads)
