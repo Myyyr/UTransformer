@@ -427,7 +427,7 @@ class UTransformer_mhca(SegmentationNetwork):
 
         for u in range(len(self.tu)):
             if u<len(self.mhca):
-                print(x.shape)
+                # print(x.shape)
                 x = self.mhca[u](x, skips[-(u + 1)])
             else:
                 x = self.tu[u](x)
@@ -435,7 +435,7 @@ class UTransformer_mhca(SegmentationNetwork):
             x = self.conv_blocks_localization[u](x)
             seg_outputs.append(self.final_nonlin(self.seg_outputs[u](x)))
 
-        exit(0)
+        # exit(0)
 
         if self._deep_supervision and self.do_ds:
             return tuple([seg_outputs[-1]] + [i(j) for i, j in
