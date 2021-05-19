@@ -42,6 +42,7 @@ def get_default_configuration(outname, network, task, network_trainer, plans_ide
     else:
         stage = possible_stages[-1]
 
+    print("====>",network_trainer)
     trainer_class = recursive_find_python_class([join(*search_in)], network_trainer, current_module=base_module)
 
     output_folder_name = join(network_training_output_dir, network+'_'+plans_identifier, task, outname)
