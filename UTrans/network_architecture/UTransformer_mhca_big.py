@@ -335,7 +335,8 @@ class UTransformer_mhca(SegmentationNetwork):
 
         # now lets build the localization pathway
         # strides = [1,1,1,1,2,4]
-        strides = [1,1,1,1,2,2]
+        strides = [1,1,1,1,1,4]
+        #          1 2 3 4 5 6
 
         for u in range(num_pool):
             
