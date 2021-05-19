@@ -28,7 +28,7 @@ import UTrans
 import os
 # python run_training.py 2d nnUNetTrainerV2_utrans 062 'all' -gpu=0
 
-def main(gpu, network, network_trainer, task, fold, outpath, val):
+def main(gpu, network, network_trainer, task, fold, outpath, val, npz):
     parser = argparse.ArgumentParser()
     parser.add_argument("-network", type=str, default='3d_fullres')
     parser.add_argument("-network_trainer", type=str, default='nnUNetTrainerV2_ResTrans')
@@ -107,6 +107,7 @@ def main(gpu, network, network_trainer, task, fold, outpath, val):
     args.fold = fold
     args.validation_only = val
     args.outpath = outpath
+    args.npz = npz
 
     os.environ["CUDA_VISIBLE_DEVICES"]=args.gpu
 
@@ -215,7 +216,7 @@ def main(gpu, network, network_trainer, task, fold, outpath, val):
 
         # predict validation
         trainer.validate(save_softmax=args.npz, validation_folder_name=val_folder)
-        
+
         # trainer.validate(save_softmax=args.npz, validation_folder_name=val_folder,
         #                  run_postprocessing_on_folds=not disable_postprocessing_on_folds,
         #                  overwrite=args.val_disable_overwrite)
