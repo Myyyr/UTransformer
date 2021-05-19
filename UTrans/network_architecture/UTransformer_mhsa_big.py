@@ -393,6 +393,7 @@ class UTransformer_mhsa(SegmentationNetwork):
         self.conv_blocks_context = nn.ModuleList(self.conv_blocks_context)
         self.td = nn.ModuleList(self.td)
         self.tu = nn.ModuleList(self.tu)
+        self.mhsa = nn.ModuleList(self.mhsa)
         self.seg_outputs = nn.ModuleList(self.seg_outputs)
         if self.upscale_logits:
             self.upscale_logits_ops = nn.ModuleList(
