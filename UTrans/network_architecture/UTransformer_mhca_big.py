@@ -427,7 +427,7 @@ class UTransformer_mhca(SegmentationNetwork):
 
         for u in range(len(self.tu)):
             if u<len(self.mhca):
-                # print(x.shape)
+                print(x.shape)
                 x = self.mhca[u](x, skips[-(u + 1)])
             else:
                 x = self.tu[u](x)
