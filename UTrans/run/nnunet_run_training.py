@@ -27,7 +27,7 @@ from nnunet.utilities.task_name_id_conversion import convert_id_to_task_name
 import os
 # python run_training.py 2d nnUNetTrainerV2_utrans 062 'all' -gpu=0
 
-def main():
+def main(gpu, network, network_trainer, task, fold, outpath, val):
     parser = argparse.ArgumentParser()
     parser.add_argument("network")
     parser.add_argument("network_trainer")
@@ -95,7 +95,17 @@ def main():
 
     args = parser.parse_args()
 
+    args.gpu = gpu
+    args.network = network
+    args.network_trainer = network_trainer
+    args.task = task
+    args.fold = fold
+    args.val = val
+    args.outpath = outpath
+
     os.environ["CUDA_VISIBLE_DEVICES"]=args.gpu
+
+
 
     task = args.task
     fold = args.fold
@@ -200,5 +210,3 @@ def main():
             predict_next_stage(trainer, join(dataset_directory, trainer.plans['data_identifier'] + "_stage%d" % 1))
 
 
-if __name__ == "__main__":
-    main()
