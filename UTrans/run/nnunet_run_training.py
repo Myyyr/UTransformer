@@ -214,9 +214,11 @@ def main(gpu, network, network_trainer, task, fold, outpath, val):
         trainer.network.eval()
 
         # predict validation
-        trainer.validate(save_softmax=args.npz, validation_folder_name=val_folder,
-                         run_postprocessing_on_folds=not disable_postprocessing_on_folds,
-                         overwrite=args.val_disable_overwrite)
+        trainer.validate(save_softmax=args.npz, validation_folder_name=val_folder)
+        
+        # trainer.validate(save_softmax=args.npz, validation_folder_name=val_folder,
+        #                  run_postprocessing_on_folds=not disable_postprocessing_on_folds,
+        #                  overwrite=args.val_disable_overwrite)
 
         if network == '3d_lowres' and not args.disable_next_stage_pred:
             print("predicting segmentations for the next stage of the cascade")
