@@ -29,10 +29,10 @@ import os
 
 def main(gpu, network, network_trainer, task, fold, outpath, val):
     parser = argparse.ArgumentParser()
-    parser.add_argument("network")
-    parser.add_argument("network_trainer")
-    parser.add_argument("task", help="can be task name or task id")
-    parser.add_argument("fold", help='0, 1, ..., 5 or \'all\'')
+    parser.add_argument("-network", type=str, default='3d_fullres')
+    parser.add_argument("-network_trainer", type=str, default='nnUNetTrainerV2_ResTrans')
+    parser.add_argument("-task", type=str, default='17', help="can be task name or task id")
+    parser.add_argument("-fold", type=str, default='all', help='0, 1, ..., 5 or \'all\'')
     parser.add_argument("-gpu", type=str, default='0')
     parser.add_argument("-val", "--validation_only", help="use this if you want to only run the validation",
                         action="store_true")
