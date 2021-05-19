@@ -335,7 +335,7 @@ class UTransformer_mhca(SegmentationNetwork):
 
         # now lets build the localization pathway
         # strides = [1,1,1,1,2,4]
-        strides = [1,1,1,1,1,4]
+        strides = [1,1,1,1,2,2]
         #          1 2 3 4 5 6
 
         for u in range(num_pool):
@@ -568,7 +568,7 @@ class MHCA(nn.Module):
         V = self.wv(s_c2)
         del y_c1, s_c2
         _,_, he, we = Q.shape
-        print('->', Q.shape, (bs, dy, hy, wy), (bs, ds, hs, ws))
+        # print('->', Q.shape, (bs, dy, hy, wy), (bs, ds, hs, ws))
 
         Q = rearrange(Q, "b c h w -> b (h w) c")
         K = rearrange(K, "b c h w -> b (h w) c")
