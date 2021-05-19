@@ -429,6 +429,7 @@ class UTransformer_mhca(SegmentationNetwork):
             if u<len(self.mhca):
                 print(x.shape)
                 x = self.mhca[u](x, skips[-(u + 1)])
+                print(torch.cuda.max_memory_allocated/1024**3)
             else:
                 x = self.tu[u](x)
                 x = torch.cat((x, skips[-(u + 1)]), dim=1)
