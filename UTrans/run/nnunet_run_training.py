@@ -34,6 +34,8 @@ def main(gpu, network, network_trainer, task, fold, outpath, val):
     parser.add_argument("-network_trainer", type=str, default='nnUNetTrainerV2_ResTrans')
     parser.add_argument("-task", type=str, default='17', help="can be task name or task id")
     parser.add_argument("-fold", type=str, default='all', help='0, 1, ..., 5 or \'all\'')
+    parser.add_argument("-outpath", type=str, default='Trainer_UTrans', help='output path')
+
     parser.add_argument("-gpu", type=str, default='0')
     parser.add_argument("-val", "--validation_only", help="use this if you want to only run the validation",
                         action="store_true")
@@ -45,6 +47,8 @@ def main(gpu, network, network_trainer, task, fold, outpath, val):
                         help="If you set use_compressed_data, the training cases will not be decompressed. Reading compressed data "
                              "is much more CPU and RAM intensive and should only be used if you know what you are "
                              "doing", required=False)
+    parser.add_argument("-norm_cfg", type=str, default='IN', help='BN, IN or GN')
+    parser.add_argument("-activation_cfg", type=str, default='LeakyReLU', help='LeakyReLU or ReLU')
     parser.add_argument("--deterministic",
                         help="Makes training deterministic, but reduces training speed substantially. I (Fabian) think "
                              "this is not necessary. Deterministic training will make you overfit to some random seed. "
@@ -101,10 +105,14 @@ def main(gpu, network, network_trainer, task, fold, outpath, val):
     args.network_trainer = network_trainer
     args.task = task
     args.fold = fold
-    args.val = val
+    args.validation_only = val
     args.outpath = outpath
 
     os.environ["CUDA_VISIBLE_DEVICES"]=args.gpu
+
+    norm_cfg = args.norm_cfg
+    activation_cfg = args.activation_cfg
+    outpath = args.outpath + '_' + norm_cfg + '_' + activation_cfg
 
 
 
