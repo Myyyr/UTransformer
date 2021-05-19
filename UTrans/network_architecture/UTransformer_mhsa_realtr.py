@@ -272,7 +272,7 @@ class UTransformer_mhsa(SegmentationNetwork):
         output_features = base_num_features
         input_features = input_channels
         self.mhsa = []
-        self.do_mhsa = [False, False, False, False, True, True, True] # None, None, None, 64**4, 32**4, 16**4, 8**4
+        self.do_mhsa = [False, False, False, True, True, True, True] # None, None, None, 64**4, 32**4, 16**4, 8**4
         for d in range(num_pool):
             # determine the first stride
             if d != 0 and self.convolutional_pooling:
@@ -489,12 +489,7 @@ class UTransformer_mhsa(SegmentationNetwork):
 class MHSA(nn.Module):
     def __init__(self, d, n_heads = 8):
         super(MHSA, self).__init__()
-
-        if d%n_heads != 0:
-            print("!!! d has to be a multiple of n_heads !!!")
-            exit(0)
-        
-        
+                
         self.d = d
         self.n_heads = n_heads        
 
