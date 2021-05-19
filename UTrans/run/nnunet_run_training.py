@@ -15,13 +15,13 @@
 
 import argparse
 from batchgenerators.utilities.file_and_folder_operations import *
-from nnunet.run.default_configuration import get_default_configuration
+from UTrans.run.default_configuration import get_default_configuration
 from nnunet.paths import default_plans_identifier
 # from nnunet.run.load_pretrained_weights import load_pretrained_weights
 from nnunet.training.cascade_stuff.predict_next_stage import predict_next_stage
-from nnunet.training.network_training.nnUNetTrainer import nnUNetTrainer
-from nnunet.training.network_training.nnUNetTrainerCascadeFullRes import nnUNetTrainerCascadeFullRes
-from nnunet.training.network_training.nnUNetTrainerV2_CascadeFullRes import nnUNetTrainerV2CascadeFullRes
+from UTrans.training.network_training.nnUNetTrainer import nnUNetTrainer
+# from nnunet.training.network_training.nnUNetTrainerCascadeFullRes import nnUNetTrainerCascadeFullRes
+# from nnunet.training.network_training.nnUNetTrainerV2_CascadeFullRes import nnUNetTrainerV2CascadeFullRes
 from nnunet.utilities.task_name_id_conversion import convert_id_to_task_name
 
 import os
@@ -148,8 +148,12 @@ def main(gpu, network, network_trainer, task, fold, outpath, val):
     # else:
     #     raise ValueError("force_separate_z must be None, True or False. Given: %s" % force_separate_z)
 
+    # plans_file, output_folder_name, dataset_directory, batch_dice, stage, \
+    # trainer_class = get_default_configuration(network, task, network_trainer, plans_identifier, "../training/network_trainer/")
     plans_file, output_folder_name, dataset_directory, batch_dice, stage, \
-    trainer_class = get_default_configuration(network, task, network_trainer, plans_identifier, "../training/network_trainer/")
+    trainer_class = get_default_configuration(outpath, network, task, network_trainer, plans_identifier, \
+                                              search_in=(UTrans.__path__[0], "training", "network_training"), \
+                                              base_module='UTrans.training.network_training')
 
     if trainer_class is None:
         raise RuntimeError("Could not find trainer class in nnunet.training.network_training")
