@@ -290,6 +290,8 @@ class UTransformer_mhsa(SegmentationNetwork):
                                                               first_stride, basic_block=basic_block))
             if self.do_mhsa[d]:
                 self.mhsa.append(MHSA(output_features))
+            else:
+                self.mhsa.append(None)
 
 
             if not self.convolutional_pooling:
