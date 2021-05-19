@@ -164,9 +164,9 @@ def main(gpu, network, network_trainer, task, fold, outpath, val):
             "If running 3d_cascade_fullres then your " \
             "trainer class must be derived from " \
             "nnUNetTrainerCascadeFullRes"
-    else:
-        assert issubclass(trainer_class,
-                          nnUNetTrainer), "network_trainer was found but is not derived from nnUNetTrainer"
+    # else:
+    #     assert issubclass(trainer_class,
+    #                       nnUNetTrainer), "network_trainer was found but is not derived from nnUNetTrainer"
 
     trainer = trainer_class(plans_file, fold, output_folder=output_folder_name, dataset_directory=dataset_directory,
                             batch_dice=batch_dice, stage=stage, unpack_data=decompress_data,
