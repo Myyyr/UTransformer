@@ -28,7 +28,7 @@ import UTrans
 import os
 # python run_training.py 2d nnUNetTrainerV2_utrans 062 'all' -gpu=0
 
-def main(gpu, network, network_trainer, task, fold, outpath, val, npz):
+def main(gpu, network, network_trainer, task, fold, outpath, val, npz, c=False, ep=200, lr=1e-2):
     parser = argparse.ArgumentParser()
     parser.add_argument("-network", type=str, default='3d_fullres')
     parser.add_argument("-network_trainer", type=str, default='nnUNetTrainerV2_ResTrans')
@@ -108,6 +108,8 @@ def main(gpu, network, network_trainer, task, fold, outpath, val, npz):
     args.validation_only = val
     args.outpath = outpath
     args.npz = npz
+    args.continue_training = c
+
 
     os.environ["CUDA_VISIBLE_DEVICES"]=args.gpu
 
@@ -181,6 +183,13 @@ def main(gpu, network, network_trainer, task, fold, outpath, val, npz):
                             batch_dice=batch_dice, stage=stage, unpack_data=decompress_data,
                             deterministic=deterministic,
                             fp16=run_mixed_precision)
+    
+
+    # Change num epoch
+    trainer.max_num_epochs = ep
+    trainer.initial_lr = lr
+
+
     if args.disable_saving:
         trainer.save_final_checkpoint = False # whether or not to save the final checkpoint
         trainer.save_best_checkpoint = False  # whether or not to save the best checkpoint according to
