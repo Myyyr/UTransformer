@@ -412,7 +412,7 @@ class UTransformer_mhsa(SegmentationNetwork):
 
     def forward(self, x):
         print(x.shape)
-        exit(0)
+
         skips = []
         seg_outputs = []
         for d in range(len(self.conv_blocks_context) - 1):
@@ -431,8 +431,10 @@ class UTransformer_mhsa(SegmentationNetwork):
             x = self.tu[u](x)
             x = torch.cat((x, skips[-(u + 1)]), dim=1)
             x = self.conv_blocks_localization[u](x)
+            print(u, x.shape)
             seg_outputs.append(self.final_nonlin(self.seg_outputs[u](x)))
 
+        exit(0)
         if self._deep_supervision and self.do_ds:
             return tuple([seg_outputs[-1]] + [i(j) for i, j in
                                               zip(list(self.upscale_logits_ops)[::-1], seg_outputs[:-1][::-1])])
