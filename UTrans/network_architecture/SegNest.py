@@ -307,7 +307,7 @@ class UTransformer_mhsa(SegmentationNetwork):
             output_features = min(output_features, self.max_num_features)
 
 
-        self.center_mhsa = MHSA(output_features)
+        # self.center_mhsa = MHSA(output_features)
 
         # self.segnest = SegNesT()
 
@@ -424,7 +424,7 @@ class UTransformer_mhsa(SegmentationNetwork):
                 x = self.td[d](x)
         
         x = self.conv_blocks_context[-1](x)
-        x = self.center_mhsa(x)
+        # x = self.center_mhsa(x)
         
 
         for u in range(len(self.tu)):
