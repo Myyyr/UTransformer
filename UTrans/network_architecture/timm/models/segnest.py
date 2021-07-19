@@ -291,6 +291,7 @@ class SegNest(nn.Module):
         dp_rates = [x.tolist() for x in torch.linspace(0, drop_path_rate, sum(depths)).split(depths)]
         prev_dim = None
         curr_stride = 4
+        sum_dim = 0
         for i in range(len(self.num_blocks)):
             dim = embed_dims[i]
             levels.append(NestLevel(
@@ -298,6 +299,7 @@ class SegNest(nn.Module):
                 mlp_ratio, qkv_bias, drop_rate, attn_drop_rate, dp_rates[i], norm_layer, act_layer, pad_type=pad_type))
             self.feature_info += [dict(num_chs=dim, reduction=curr_stride, module=f'levels.{i}')]
             prev_dim = dim
+            sum_dim += dim
             curr_stride *= 2
 
             # if i==0:
@@ -306,7 +308,10 @@ class SegNest(nn.Module):
             #     upsamples.append(nn.Sequential(nn.Conv2d(dim, num_classes, 1),
                                                # nn.Upsample(scale_factor=2**i)))
             upsamples.append(nn.Sequential(nn.Conv2d(dim, num_classes, 1),
-                                           nn.Upsample(scale_factor=4)))
+                                           nn.Upsample(scale_factor=2)))
+
+        self.last_conv = nn.Sequential(nn.Conv2d(sum_dim, num_classes, 1),
+                                nn.Upsample(scale_factor=2))
 
         # self.levels = nn.Sequential(*levels)
         self.levels = nn.Sequential(*levels)
@@ -363,7 +368,9 @@ class SegNest(nn.Module):
         for up in self.upsamples:
             out.append(up(x[i]))
             i+=1
-        return out
+
+        pred = self.last_conv(torch.cat(out, dim=1))
+        return [pred]+out
         # x = self.global_pool(x)
         # if self.drop_rate > 0.:
         #     x = F.dropout(x, p=self.drop_rate, training=self.training)
