@@ -343,7 +343,7 @@ class SegNest(nn.Module):
         """ x shape (B, C, H, W)
         """
         x = self.patch_embed(x)
-        print("--> emb", x.shape)
+        # print("--> emb", x.shape)
         # x = self.levels(x)
         out = []
         for level in self.levels:
