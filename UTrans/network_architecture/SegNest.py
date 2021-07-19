@@ -439,7 +439,7 @@ class UTransformer_mhsa(SegmentationNetwork):
             out = tuple([seg_outputs[-1]] + [i(j) for i, j in
                                               zip(list(self.upscale_logits_ops)[::-1], seg_outputs[:-1][::-1])])
             for i in range(len(out)):
-                print("out", i, out.shape)
+                print("out", i, out[i].shape)
             exit(0)
             return out
         else:
