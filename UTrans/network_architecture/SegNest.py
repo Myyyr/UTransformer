@@ -25,7 +25,7 @@ import torch.nn.functional
 from einops import rearrange, repeat
 import math
 
-import timm
+from .timm import models
 from functools import partial
 from torch import einsum
 from einops.layers.torch import Rearrange, Reduce
@@ -280,7 +280,7 @@ class UTransformer_mhsa(SegmentationNetwork):
 
         h = 3
         d = h*64
-        segnest = timm.models.segnest.SegNest(img_size=512, in_chans=1, 
+        segnest = models.segnest.SegNest(img_size=512, in_chans=1, 
                       patch_size=2, num_levels=4, 
                       embed_dims=(d, d, d, d), num_heads=(h, h, h, h), 
                       depths=(3, 3, 3, 3), num_classes=2, 
