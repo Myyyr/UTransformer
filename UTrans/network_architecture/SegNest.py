@@ -25,7 +25,7 @@ import torch.nn.functional
 from einops import rearrange, repeat
 import math
 
-import timm
+import timm.timm as timm
 from functools import partial
 from torch import einsum
 from einops.layers.torch import Rearrange, Reduce
