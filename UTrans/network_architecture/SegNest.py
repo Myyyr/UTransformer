@@ -25,7 +25,7 @@ import torch.nn.functional
 from einops import rearrange, repeat
 import math
 
-import timm.models as timm
+import timm
 from functools import partial
 from torch import einsum
 from einops.layers.torch import Rearrange, Reduce
@@ -276,6 +276,17 @@ class UTransformer_mhsa(SegmentationNetwork):
 
         output_features = base_num_features
         input_features = input_channels
+
+
+        h = 3
+        d = h*64
+        segnest = timm.models.segnest.SegNest(img_size=512, in_chans=1, 
+                      patch_size=2, num_levels=4, 
+                      embed_dims=(d, d, d, d), num_heads=(h, h, h, h), 
+                      depths=(3, 3, 3, 3), num_classes=2, 
+                      mlp_ratio=4.).float()
+
+
         self.mhsa = []
         self.do_mhsa = [False, False, False, False, True, True, True] # None, None, None, 64**4, 32**4, 16**4, 8**4
         for d in range(num_pool):
@@ -413,26 +424,9 @@ class UTransformer_mhsa(SegmentationNetwork):
     def forward(self, x):
         print(x.shape)
 
-        skips = []
-        seg_outputs = []
-        for d in range(len(self.conv_blocks_context) - 1):
-            x = self.conv_blocks_context[d](x)
-            # if self.do_mhsa[d]:
-            #     x = self.mhsa[d](x)
-            skips.append(x)
-            if not self.convolutional_pooling:
-                x = self.td[d](x)
         
-        x = self.conv_blocks_context[-1](x)
-        # x = self.center_mhsa(x)
+        seg_outputs = segnest(x)
         
-
-        for u in range(len(self.tu)):
-            x = self.tu[u](x)
-            x = torch.cat((x, skips[-(u + 1)]), dim=1)
-            x = self.conv_blocks_localization[u](x)
-            print(u, x.shape)
-            seg_outputs.append(self.final_nonlin(self.seg_outputs[u](x)))
 
         # exit(0)
         if self._deep_supervision and self.do_ds:
@@ -577,89 +571,3 @@ class Transformer(nn.Module):
             x = attn(x) + x
             x = ff(x) + x
         return x
-
-class SegNesT(nn.Module):
-    def __init__(
-        self,
-        *,
-        image_size,
-        patch_size,
-        num_classes,
-        dim,
-        heads,
-        num_hierarchies,
-        block_repeats,
-        mlp_mult = 4,
-        channels = 3,
-        dim_head = 64,
-        dropout = 0.
-    ):
-        super().__init__()
-        assert (image_size % patch_size) == 0, 'Image dimensions must be divisible by the patch size.'
-        num_patches = (image_size // patch_size) ** 2
-        patch_dim = channels * patch_size ** 2
-        fmap_size = image_size // patch_size
-        blocks = 2 ** (num_hierarchies - 1)
-
-        seq_len = (fmap_size // blocks) ** 2   # sequence length is held constant across heirarchy
-        hierarchies = list(reversed(range(num_hierarchies)))
-        # mults = [2 ** i for i in hierarchies]
-        mults = [1 for i in hierarchies]
-
-        layer_heads = list(map(lambda t: t * heads, mults))
-        layer_dims = list(map(lambda t: t * dim, mults))
-
-        layer_dims = [*layer_dims, layer_dims[-1]]
-
-        print("layer_dims ", layer_dims)
-        # exit(0)
-        dim_pairs = zip(layer_dims[:-1], layer_dims[1:])
-
-        self.to_patch_embedding = nn.Sequential(
-            Rearrange('b c (h p1) (w p2) -> b (p1 p2 c) h w', p1 = patch_size, p2 = patch_size),
-            nn.Conv2d(patch_dim, layer_dims[0], 1),
-        )
-
-        block_repeats = cast_tuple(block_repeats, num_hierarchies)
-
-        self.layers = nn.ModuleList([])
-
-        for level, heads, (dim_in, dim_out), block_repeat in zip(hierarchies, layer_heads, dim_pairs, block_repeats):
-            is_last = level == 0
-            depth = block_repeat
-
-            self.layers.append(nn.ModuleList([
-                Transformer(dim_in, seq_len, depth, heads, mlp_mult, dropout),
-                Aggregate(dim_in, dim_out) if not is_last else nn.Identity()
-            ]))
-
-        self.mlp_head = nn.Sequential(
-            LayerNorm(dim),
-            Reduce('b c h w -> b c', 'mean'),
-            nn.Linear(dim, num_classes)
-        )
-
-    def forward(self, img):
-        # print("-1 img", img.shape)
-        x = self.to_patch_embedding(img)
-        # print("-1 x", x.shape)
-
-        b, c, h, w = x.shape
-
-        num_hierarchies = len(self.layers)
-
-        for level, (transformer, aggregate) in zip(reversed(range(num_hierarchies)), self.layers):
-            block_size = 2 ** level
-            # print(level, 'x start', x.shape)
-            # print(level, 'block_size', block_size)
-            x = rearrange(x, 'b c (b1 h) (b2 w) -> (b b1 b2) c h w', b1 = block_size, b2 = block_size)
-            # print(level, 'x rearrange', x.shape)
-            x = transformer(x)
-            # print(level, 'x trans', x.shape)
-            x = rearrange(x, '(b b1 b2) c h w -> b c (b1 h) (b2 w)', b1 = block_size, b2 = block_size)
-            # print(level, 'x rearrange*', x.shape)
-            x = aggregate(x)
-            # print(level, 'x agg', x.shape)
-
-        # exit(0)
-        return self.mlp_head(x)
