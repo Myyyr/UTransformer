@@ -369,7 +369,7 @@ class SegNest(nn.Module):
             out.append(up(x[i]))
             i+=1
 
-        pred = self.last_conv(torch.cat(out, dim=1))
+        pred = self.last_conv(torch.cat(x, dim=1))
         return [pred]+out
         # x = self.global_pool(x)
         # if self.drop_rate > 0.:
