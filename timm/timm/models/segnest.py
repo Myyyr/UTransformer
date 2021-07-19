@@ -306,7 +306,7 @@ class SegNest(nn.Module):
             #     upsamples.append(nn.Sequential(nn.Conv2d(dim, num_classes, 1),
                                                # nn.Upsample(scale_factor=2**i)))
             upsamples.append(nn.Sequential(nn.Conv2d(dim, num_classes, 1),
-                                           nn.Upsample(scale_factor=2**(i+1))))
+                                           nn.Upsample(scale_factor=4)))
 
         # self.levels = nn.Sequential(*levels)
         self.levels = nn.Sequential(*levels)
