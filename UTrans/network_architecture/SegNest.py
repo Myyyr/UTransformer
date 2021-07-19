@@ -255,8 +255,8 @@ class UTransformer_mhsa(SegmentationNetwork):
     def forward(self, x):
         print(x.shape)
 
-        exit(0)
         seg_outputs = self.segnest(x)
+        exit(0)
         
 
         # exit(0)
