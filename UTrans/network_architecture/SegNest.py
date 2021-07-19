@@ -293,10 +293,10 @@ class UTransformer_mhsa(SegmentationNetwork):
                                                               self.norm_op_kwargs, self.dropout_op,
                                                               self.dropout_op_kwargs, self.nonlin, self.nonlin_kwargs,
                                                               first_stride, basic_block=basic_block))
-            if self.do_mhsa[d]:
-                self.mhsa.append(MHSA(output_features))
-            else:
-                self.mhsa.append(None)
+            # if self.do_mhsa[d]:
+            #     self.mhsa.append(MHSA(output_features))
+            # else:
+            #     self.mhsa.append(None)
 
 
             if not self.convolutional_pooling:
@@ -417,8 +417,8 @@ class UTransformer_mhsa(SegmentationNetwork):
         seg_outputs = []
         for d in range(len(self.conv_blocks_context) - 1):
             x = self.conv_blocks_context[d](x)
-            if self.do_mhsa[d]:
-                x = self.mhsa[d](x)
+            # if self.do_mhsa[d]:
+            #     x = self.mhsa[d](x)
             skips.append(x)
             if not self.convolutional_pooling:
                 x = self.td[d](x)
