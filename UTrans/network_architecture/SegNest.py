@@ -244,6 +244,15 @@ class UTransformer_mhsa(SegmentationNetwork):
                       depths=(3, 3, 3, 3), num_classes=2, 
                       mlp_ratio=4.).float()
 
+        self.upscale_logits_ops = []
+        cum_upsample = np.cumprod(np.vstack(pool_op_kernel_sizes), axis=0)[::-1]
+        for usl in range(num_pool - 1):
+            if self.upscale_logits:
+                self.upscale_logits_ops.append(Upsample(scale_factor=tuple([int(i) for i in cum_upsample[usl + 1]]),
+                                                        mode=upsample_mode))
+            else:
+                self.upscale_logits_ops.append(lambda x: x)
+
         if self.upscale_logits:
             self.upscale_logits_ops = nn.ModuleList(
                 self.upscale_logits_ops)  # lambda x:x is not a Module so we need to distinguish here
