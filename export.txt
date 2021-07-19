@@ -1,0 +1,1 @@
+export nnUNet_raw_data_base="/local/DEEPLEARNING/nnUNetData/nnUNet_raw";export nnUNet_preprocessed="/local/DEEPLEARNING/nnUNetData/nnUNet_preprocessed";export RESULTS_FOLDER="/local/DEEPLEARNING/nnUNetData/nnUNet_trained_models"
