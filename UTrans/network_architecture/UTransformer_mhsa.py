@@ -424,8 +424,12 @@ class UTransformer_mhsa(SegmentationNetwork):
             seg_outputs.append(self.final_nonlin(self.seg_outputs[u](x)))
 
         if self._deep_supervision and self.do_ds:
-            return tuple([seg_outputs[-1]] + [i(j) for i, j in
-                                              zip(list(self.upscale_logits_ops)[::-1], seg_outputs[:-1][::-1])])
+            out = tuple([seg_outputs[-1]] + [i(j) for i, j in
+                                                 zip(list(self.upscale_logits_ops)[::-1], seg_outputs[:-1][::-1])])
+            for i in range(len(out)):
+               print("out", i, out[i].shape)
+            exit(0)
+            return out
         else:
             return seg_outputs[-1]
 
