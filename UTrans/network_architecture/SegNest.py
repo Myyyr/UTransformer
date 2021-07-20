@@ -266,7 +266,7 @@ class UTransformer_mhsa(SegmentationNetwork):
 
         seg_outputs = self.segnest(x)
         # exit(0)
-        seg_outputs = seg_outputs.reverse()
+        # seg_outputs = seg_outputs.reverse()
 
         # exit(0)
         if self._deep_supervision and self.do_ds:
@@ -276,7 +276,7 @@ class UTransformer_mhsa(SegmentationNetwork):
             # for i in range(len(out)):
                 # print("out", i, out[i].shape)
             # exit(0)
-            return out
+            return out.reverse()
         else:
             return seg_outputs[-1]
 
