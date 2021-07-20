@@ -265,18 +265,14 @@ class UTransformer_mhsa(SegmentationNetwork):
         print(x.shape)
 
         seg_outputs = self.segnest(x)
-        for i in range(len(seg_outputs)):
-           print("seg_outputs", i, seg_outputs[i].shape)
-        exit(0)
 
         # exit(0)
         if self._deep_supervision and self.do_ds:
             out = tuple([seg_outputs[-1]] + [i(j) for i, j in
                                               zip(list(self.upscale_logits_ops)[::-1], seg_outputs[:-1][::-1])])
-            
-            # for i in range(len(out)):
-                # print("out", i, out[i].shape)
-            # exit(0)
+            for i in range(len(out)):
+               print("out", i, out[i].shape)
+            exit(0)
             return out
         else:
             return seg_outputs[-1]
