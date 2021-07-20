@@ -287,6 +287,8 @@ class SegNest(nn.Module):
         # Build up each hierarchical level
         levels = []
         upsamples = []
+        upsamples_plus = []
+
 
         dp_rates = [x.tolist() for x in torch.linspace(0, drop_path_rate, sum(depths)).split(depths)]
         prev_dim = None
@@ -309,6 +311,7 @@ class SegNest(nn.Module):
                                                # nn.Upsample(scale_factor=2**i)))
             upsamples.append(nn.Sequential(nn.Conv2d(dim, num_classes, 1),
                                            nn.Upsample(scale_factor=2)))
+            upsamples_plus.append(nn.Upsample(scale_factor=2**i))
 
         self.last_conv = nn.Sequential(nn.Conv2d(sum_dim, num_classes, 1),
                                 nn.Upsample(scale_factor=2))
@@ -316,7 +319,7 @@ class SegNest(nn.Module):
         # self.levels = nn.Sequential(*levels)
         self.levels = nn.Sequential(*levels)
         self.upsamples = nn.Sequential(*upsamples)
-
+        self.upsamples_plus = nn.ModuleList(upsamples_plus)
         # Final normalization layer
         self.norm = norm_layer(embed_dims[-1])
 
@@ -364,13 +367,15 @@ class SegNest(nn.Module):
         """
         x = self.forward_features(x)
         out = []
+        to_cat = []
         i = 0
         for up in self.upsamples:
             out.append(up(x[i]))
-            print('---',i, x[i].shape)
+            to_cat.append(self.upsamples_plus(out[i]))
+            print('---',i, out[i].shape, to_cat[i].shape)
             i+=1
 
-        pred = self.last_conv(torch.cat(x, dim=1))
+        pred = self.last_conv(torch.cat(to_cat, dim=1))
         return [pred]+out
         # x = self.global_pool(x)
         # if self.drop_rate > 0.:
