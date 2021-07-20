@@ -371,7 +371,7 @@ class SegNest(nn.Module):
         i = 0
         for up in self.upsamples:
             out.append(up(x[i]))
-            to_cat.append(self.upsamples_plus(out[i]))
+            to_cat.append(self.upsamples_plus[i](out[i]))
             print('---',i, out[i].shape, to_cat[i].shape)
             i+=1
 
