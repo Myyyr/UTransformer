@@ -372,7 +372,7 @@ class SegNest(nn.Module):
         for up in self.upsamples:
             out.append(up(x[i]))
             to_cat.append(self.upsamples_plus[i](out[i]))
-            print('---',i, out[i].shape, to_cat[i].shape)
+            # print('---',i, out[i].shape, to_cat[i].shape)
             i+=1
 
         pred = self.last_conv(torch.cat(to_cat, dim=1))
