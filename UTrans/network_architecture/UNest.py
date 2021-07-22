@@ -238,7 +238,12 @@ class UTransformer_mhsa(SegmentationNetwork):
 
         h = 3
         d = h*64
-        self.segnest = models.unest.UNest(img_size=512, in_chans=1, patch_size=4, num_levels=6, embed_dims=(d, d, d, d, d, d), num_heads=(h, h, h, h, h, h), depths=(3, 3, 3, 3, 3, 3), num_classes=2, mlp_ratio=4.).float()
+        l = 6
+        self.segnest = models.unest.UNest(img_size=512, in_chans=1, 
+                                        patch_size=4, num_levels=6, 
+                                        embed_dims=(d,)*l, num_heads=(h,)*l, 
+                                        depths=(2,)*l, num_classes=2, 
+                                        mlp_ratio=4.).float()
 
         self.upscale_logits_ops = []
         cum_upsample = np.cumprod(np.vstack(pool_op_kernel_sizes), axis=0)[::-1]
