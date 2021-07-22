@@ -242,7 +242,7 @@ class UTransformer_mhsa(SegmentationNetwork):
         self.segnest = models.unest.UNest(img_size=512, in_chans=1, 
                                         patch_size=4, num_levels=6, 
                                         embed_dims=(d,)*l, num_heads=(h,)*l, 
-                                        depths=(1,)*l, num_classes=2, 
+                                        depths=(3,)*l, num_classes=2, 
                                         mlp_ratio=4.).float()
 
         self.upscale_logits_ops = []
@@ -267,7 +267,7 @@ class UTransformer_mhsa(SegmentationNetwork):
 
         seg_outputs = self.segnest(x)
         seg_outputs.reverse()
-        print("MEMORY", torch.cuda.max_memory_allocated()/1024**3, "GB")
+        # print("MEMORY", torch.cuda.max_memory_allocated()/1024**3, "GB")
         # exit(0)
         if self._deep_supervision and self.do_ds:
             out = tuple([seg_outputs[-1]] + [i(j) for i, j in
