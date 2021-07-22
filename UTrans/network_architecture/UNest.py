@@ -262,7 +262,7 @@ class UTransformer_mhsa(SegmentationNetwork):
 
         seg_outputs = self.segnest(x)
         seg_outputs.reverse()
-
+        print("MEMORY", torch.cuda.max_memory_allocated()/1024**3, "GB")
         # exit(0)
         if self._deep_supervision and self.do_ds:
             out = tuple([seg_outputs[-1]] + [i(j) for i, j in
@@ -273,6 +273,8 @@ class UTransformer_mhsa(SegmentationNetwork):
             return out
         else:
             return seg_outputs[-1]
+
+
 
     @staticmethod
     def compute_approx_vram_consumption(patch_size, num_pool_per_axis, base_num_features, max_num_features,
