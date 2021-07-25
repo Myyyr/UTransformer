@@ -29,8 +29,7 @@ from .helpers import build_model_with_cfg, named_apply
 from .layers import PatchEmbed, Mlp, DropPath, create_classifier, trunc_normal_
 from .layers import create_conv2d, create_pool2d, to_ntuple
 from .registry import register_model
-from einops import Rearrange
-
+from einops.layers.torch import Rearrange
 _logger = logging.getLogger(__name__)
 
 
