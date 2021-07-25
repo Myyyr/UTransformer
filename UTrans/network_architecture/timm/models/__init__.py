@@ -23,6 +23,7 @@ from .nasnet import *
 from .nest import *
 from .segnest import *
 from .unest import *
+from .unest2 import *
 from .nfnet import *
 from .pit import *
 from .pnasnet import *
