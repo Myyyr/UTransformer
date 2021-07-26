@@ -220,7 +220,7 @@ class NestUpLevel(nn.Module):
         if prev_embed_dim is not None:
             # self.pool = nn.Sequential(nn.Conv2d(prev_embed_dim*2, embed_dim, 1),nn.Upsample(scale_factor=2))
             r = 2
-            self.pool = nn.Sequential(nn.Conv2d(prev_embed_dim*2, embed_dim*4, 1), Rearrange('b (c a e) h w -> b c (h a) (w e)'), a=r, b=r)
+            self.pool = nn.Sequential(nn.Conv2d(prev_embed_dim*2, embed_dim*4, 1), Rearrange('b (c a e) h w -> b c (h a) (w e)'), a=r, e=r)
         else:
             # self.pool = nn.Conv2d(embed_dim, embed_dim, 1)
             self.pool = nn.Identity()
