@@ -256,7 +256,7 @@ class NestUpLevel(nn.Module):
         # Channel-first for block aggregation, and generally to replicate convnet feature map at each stage
         return x.permute(0, 3, 1, 2)  # (B, C, H', W')
 
-class UNest2(nn.Module):
+class UNest3(nn.Module):
     """ Nested Transformer (NesT)
 
     A PyTorch impl of : `Aggregating Nested Transformers`
