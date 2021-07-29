@@ -364,8 +364,8 @@ class UNest3(nn.Module):
             skipupsamples.append(nn.Sequential(nn.Conv2d(dim, dim_conv, 1)))
             upsamples.append(nn.Sequential(nn.Conv2d(dim_conv+dim, num_classes, 1),
                                            nn.Upsample(scale_factor=2)))
-            upsamples_plus.append(nn.Conv2d(dim_conv, num_classes, 1),
-                                    nn.Upsample(scale_factor=2**(i+2)))
+            upsamples_plus.append(nn.Sequential(nn.Conv2d(dim_conv, num_classes, 1),
+                                                nn.Upsample(scale_factor=2**(i+2))))
 
 
         rlevels = []
