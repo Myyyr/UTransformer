@@ -464,6 +464,7 @@ class UNest3(nn.Module):
         x.reverse()
         for up in self.upsamples:
             # print('#',i)
+            print("skip",skip.shape)
             skipfeat.append(self.skipupsamples[i](skip))
             out.append(up(torch.cat([x[i], skipfeat[i]], dim=1)))
             to_cat.append(self.upsamples_plus[i](out[i]))
