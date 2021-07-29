@@ -364,7 +364,7 @@ class UNest3(nn.Module):
             skipupsamples.append(nn.Sequential(nn.Conv2d(dim, dim_conv, 1)))
             upsamples.append(nn.Sequential(nn.Conv2d(dim_conv+dim, num_classes, 1),
                                            nn.Upsample(scale_factor=2)))
-            upsamples_plus.append(nn.Sequential(nn.Conv2d(dim_conv, num_classes, 1),
+            upsamples_plus.append(nn.Sequential(nn.Conv2d(dim_conv+dim, num_classes, 1),
                                                 nn.Upsample(scale_factor=2**(i+2))))
 
 
@@ -470,8 +470,9 @@ class UNest3(nn.Module):
             print("x",x[i].shape)
             out.append(up(torch.cat([x[i], skipfeat[i]], dim=1)))
             print("out",out[i].shape)
+            to_cat.append(self.upsamples_plus[i](torch.cat([x[i], skipfeat[i]], dim=1)))
+            print("to_cat",to_cat[i].shape)
             exit(0)
-            to_cat.append(self.upsamples_plus[i](out[i]))
             # print('---',i, out[i].shape, to_cat[i].shape)
             i+=1
         # exit(0)
