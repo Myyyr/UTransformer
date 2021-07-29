@@ -339,6 +339,9 @@ class UNest3(nn.Module):
         skipupsamples = []
         upsamples_plus = []
         dim_conv = 64
+        dim_up = 16
+
+
 
         dp_rates = [x.tolist() for x in torch.linspace(0, drop_path_rate, sum(depths)).split(depths)]
         prev_dim = None
@@ -364,7 +367,7 @@ class UNest3(nn.Module):
             skipupsamples.append(nn.Sequential(nn.Conv2d(dim, dim_conv, 1)))
             upsamples.append(nn.Sequential(nn.Conv2d(dim_conv+dim, num_classes, 1),
                                            nn.Upsample(scale_factor=2)))
-            upsamples_plus.append(nn.Sequential(nn.Conv2d(dim_conv+dim, num_classes, 1),
+            upsamples_plus.append(nn.Sequential(nn.Conv2d(dim_conv+dim, dim_up, 1),
                                                 nn.Upsample(scale_factor=2**(i+2))))
 
 
@@ -382,7 +385,7 @@ class UNest3(nn.Module):
 
 
 
-        self.last_conv = nn.Conv2d(num_classes*num_levels, num_classes, 1)
+        self.last_conv = nn.Conv2d(dim_up*num_levels, num_classes, 1)
 
         # self.levels = nn.Sequential(*levels)
         self.levels = nn.Sequential(*levels)
