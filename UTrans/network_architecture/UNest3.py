@@ -236,7 +236,7 @@ class UTransformer_mhsa(SegmentationNetwork):
         
 
 
-        h = 5
+        h = 3
         d = h*64
         l = 6
         self.segnest = models.unest3.UNest3(img_size=512, in_chans=1, 
