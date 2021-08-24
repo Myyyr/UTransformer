@@ -286,7 +286,7 @@ class UTransformer_imhsa(SegmentationNetwork):
 
         Questions? -> f.isensee@dkfz.de
         """
-        super(UTransformer_mhsa, self).__init__()
+        super(UTransformer_imhsa, self).__init__()
         self.convolutional_upsampling = convolutional_upsampling
         self.convolutional_pooling = convolutional_pooling
         self.upscale_logits = upscale_logits
