@@ -38,6 +38,7 @@ from datetime import datetime
 from tqdm import trange
 from nnunet.utilities.to_torch import maybe_to_torch, to_cuda
 
+from torch.utils.tensorboard import SummaryWriter
 
 class NetworkTrainer(object):
     def __init__(self, deterministic=True, fp16=False):
@@ -56,6 +57,7 @@ class NetworkTrainer(object):
         - validate
         - predict_test_case
         """
+        self.writer = SummaryWriter()
         self.fp16 = fp16
         self.amp_grad_scaler = None
 
@@ -425,7 +427,9 @@ class NetworkTrainer(object):
             self.initialize(True)
 
         while self.epoch < self.max_num_epochs:
+
             self.print_to_log_file("\nepoch: ", self.epoch)
+            self.print_to_log_file("\nmemory: ", convert_bytes(torch.cuda.max_memory_allocated()))
             epoch_start_time = time()
             train_losses_epoch = []
 
@@ -448,6 +452,7 @@ class NetworkTrainer(object):
 
             self.all_tr_losses.append(np.mean(train_losses_epoch))
             self.print_to_log_file("train loss : %.4f" % self.all_tr_losses[-1])
+            self.writer.add_scalar("train loss", self.all_tr_losses[-1], self.epoch)
 
             with torch.no_grad():
                 # validation with train=False
@@ -468,7 +473,8 @@ class NetworkTrainer(object):
                         val_losses.append(l)
                     self.all_val_losses_tr_mode.append(np.mean(val_losses))
                     self.print_to_log_file("validation loss (train=True): %.4f" % self.all_val_losses_tr_mode[-1])
-
+                    self.writer.add_scalar("validation loss", self.all_val_losses_tr_mode[-1], self.epoch)
+                    
             self.update_train_loss_MA()  # needed for lr scheduler and stopping of training
 
             continue_training = self.on_epoch_end()
@@ -725,3 +731,11 @@ class NetworkTrainer(object):
         plt.savefig(join(self.output_folder, "lr_finder.png"))
         plt.close()
         return log_lrs, losses
+
+
+def convert_bytes(size):
+    for x in ['bytes', 'KB', 'MB', 'GB', 'TB']:
+        if size < 1024.0:
+            return "%3.2f %s" % (size, x)
+        size /= 1024.0
+    return size

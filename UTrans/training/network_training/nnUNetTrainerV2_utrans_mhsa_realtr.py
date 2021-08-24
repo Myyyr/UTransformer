@@ -38,6 +38,15 @@ from batchgenerators.utilities.file_and_folder_operations import *
 from UTrans.network_architecture.UTransformer_mhsa_realtr import UTransformer_mhsa
 
 # python run_training.py -network='2d' -network_trainer=nnUNetTrainerV2_utrans_mhsa_realtr -task=062 -fold='all' -gpu=1 -outpath='MHSA'
+def get_n_params(model):
+    pp=0
+    for p in list(model.parameters()):
+        nn=1
+        for s in list(p.size()):
+            nn = nn*s
+        pp += nn
+    return pp
+
 
 class nnUNetTrainerV2_utrans_mhsa_realtr(nnUNetTrainer):
     """
@@ -160,6 +169,8 @@ class nnUNetTrainerV2_utrans_mhsa_realtr(nnUNetTrainer):
                                     dropout_op_kwargs,
                                     net_nonlin, net_nonlin_kwargs, True, False, lambda x: x, InitWeights_He(1e-2),
                                     self.net_num_pool_op_kernel_sizes, self.net_conv_kernel_sizes, False, True, True)
+
+        print("####\n#### MODEL PARAMS :{}\n####".format(get_n_params(self.network)))
         if torch.cuda.is_available():
             self.network.cuda()
         self.network.inference_apply_nonlin = softmax_helper
@@ -445,3 +456,13 @@ class nnUNetTrainerV2_utrans_mhsa_realtr(nnUNetTrainer):
         ret = super().run_training()
         self.network.do_ds = ds
         return ret
+
+
+
+
+def convert_bytes(size):
+    for x in ['bytes', 'KB', 'MB', 'GB', 'TB']:
+        if size < 1024.0:
+            return "%3.2f %s" % (size, x)
+        size /= 1024.0
+    return size
