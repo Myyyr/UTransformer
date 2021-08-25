@@ -514,6 +514,8 @@ class nnUNetTrainer(NetworkTrainer):
                                                       "was done without mirroring"
 
         valid = list((SegmentationNetwork, nn.DataParallel))
+        print("-------->",type(self.network))
+        # exit(0)
         assert isinstance(self.network, tuple(valid))
 
         current_mode = self.network.training
