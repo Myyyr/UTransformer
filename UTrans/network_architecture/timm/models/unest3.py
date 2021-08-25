@@ -339,7 +339,7 @@ class UNest3(nn.Module):
         skipupsamples = []
         upsamples_plus = []
         dim_conv = 192
-        dim_up = 64
+        dim_up = 32
 
 
 

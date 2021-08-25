@@ -57,7 +57,6 @@ class NetworkTrainer(object):
         - validate
         - predict_test_case
         """
-        self.writer = SummaryWriter()
         self.fp16 = fp16
         self.amp_grad_scaler = None
 
@@ -407,6 +406,7 @@ class NetworkTrainer(object):
         pass
 
     def run_training(self):
+        self.writer = SummaryWriter(comment=str(self.output_folder)+"_f"+str(self.fold))
         _ = self.tr_gen.next()
         _ = self.val_gen.next()
 

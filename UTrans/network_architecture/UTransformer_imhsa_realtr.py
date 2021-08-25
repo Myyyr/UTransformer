@@ -373,7 +373,7 @@ class UTransformer_imhsa(SegmentationNetwork):
                                                               self.dropout_op_kwargs, self.nonlin, self.nonlin_kwargs,
                                                               first_stride, basic_block=basic_block))
             if self.do_mhsa[d]:
-                self.mhsa.append(MHSA(output_features))
+                self.mhsa.append(iMHSA(output_features))
             else:
                 self.mhsa.append(None)
 
@@ -386,7 +386,7 @@ class UTransformer_imhsa(SegmentationNetwork):
             output_features = min(output_features, self.max_num_features)
 
 
-        self.center_mhsa = MHSA(output_features)
+        self.center_mhsa = iMHSA(output_features)
 
         # self.mhsa = MHSA(output_features)
 
@@ -570,9 +570,9 @@ class UTransformer_imhsa(SegmentationNetwork):
 
 
 
-class MHSA(nn.Module):
+class iMHSA(nn.Module):
     def __init__(self, d, n_heads = 8):
-        super(MHSA, self).__init__()
+        super(iMHSA, self).__init__()
                 
         self.d = d
         self.n_heads = n_heads        
