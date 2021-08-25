@@ -38,7 +38,14 @@ from batchgenerators.utilities.file_and_folder_operations import *
 from UTrans.network_architecture.UNest3 import UTransformer_mhsa
 
 # python run_training.py -network='2d' -network_trainer=nnUNetTrainerV2_utrans_mhsa -task=062 -fold='all' -gpu=1 -outpath='MHSA'
-
+def get_n_params(model):
+    pp=0
+    for p in list(model.parameters()):
+        nn=1
+        for s in list(p.size()):
+            nn = nn*s
+        pp += nn
+    return pp
 class nnUNetTrainerV2_utrans_unest3(nnUNetTrainer):
     """
     Info for Fabian: same as internal nnUNetTrainerV2_utrans_mhsa_2
@@ -160,6 +167,8 @@ class nnUNetTrainerV2_utrans_unest3(nnUNetTrainer):
                                     dropout_op_kwargs,
                                     net_nonlin, net_nonlin_kwargs, True, False, lambda x: x, InitWeights_He(1e-2),
                                     self.net_num_pool_op_kernel_sizes, self.net_conv_kernel_sizes, False, True, True)
+        print("####\n#### MODEL PARAMS :{}\n####".format(get_n_params(self.network)))
+        
         if torch.cuda.is_available():
             self.network.cuda()
         self.network.inference_apply_nonlin = softmax_helper
