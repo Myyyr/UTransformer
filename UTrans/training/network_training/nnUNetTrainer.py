@@ -40,8 +40,8 @@ from nnunet.training.dataloading.dataset_loading import load_dataset, DataLoader
 
 
 from nnunet.training.loss_functions.dice_loss import DC_and_CE_loss
-# from UTrans.training.network_training.network_trainer import NetworkTrainer
-from nnunet.training.network_training.network_trainer import NetworkTrainer
+from UTrans.training.network_training.network_trainer import NetworkTrainer
+# from nnunet.training.network_training.network_trainer import NetworkTrainer
 from nnunet.utilities.nd_softmax import softmax_helper
 from nnunet.utilities.tensor_utilities import sum_tensor
 from torch import nn
