@@ -33,6 +33,8 @@ from einops.layers.torch import Rearrange
 _logger = logging.getLogger(__name__)
 
 import revtorch as rv
+from einops import rearrange, repeat
+from torch import einsum
 
 
 # class Attention(nn.Module):
