@@ -285,7 +285,16 @@ class NestLevel(nn.Module):
         x = blockify(x, self.block_size)  # (B, T, N, C')
         x = x + self.pos_embed
         print("\n"*5, "-----|iunest|---->", x.shape, "\n"*5)
-        x = self.transformer_encoder(x)  # (B, T, N, C')
+
+        b, t, n, c = x.shape
+        x = rearrange(x, "b t n c -> n (b t) c")
+        # Transformer
+        x = self.transformer_encoder(x)
+        exit(0)
+        # Reshape again
+        x = rearrange(x, "n (b t) c -> b t n c", b=b, t=t)
+
+        # x = self.transformer_encoder(x)  # (B, T, N, C')
         x = deblockify(x, self.block_size)  # (B, H', W', C')
         # Channel-first for block aggregation, and generally to replicate convnet feature map at each stage
         return x.permute(0, 3, 1, 2)  # (B, C, H', W')
