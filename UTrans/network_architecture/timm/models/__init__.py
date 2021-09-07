@@ -25,6 +25,7 @@ from .segnest import *
 from .unest import *
 from .unest2 import *
 from .unest3 import *
+from .iunest3 import *
 from .nfnet import *
 from .pit import *
 from .pnasnet import *
