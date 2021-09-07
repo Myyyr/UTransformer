@@ -347,7 +347,14 @@ class NestUpLevel(nn.Module):
         # print("NUL : block -->",x.shape)
         x = x + self.pos_embed
         # print("NUL : embed -->",x.shape)
-        x = self.transformer_encoder(x)  # (B, T, N, C')
+        b, t, n, c = x.shape
+        x = rearrange(x, "b t n c -> (b t) n c")
+        # Transformer
+        x = self.transformer_encoder(x)
+        # exit(0)
+        # Reshape again
+        x = rearrange(x, "(b t) n c -> b t n c", b=b, t=t)
+        # x = self.transformer_encoder(x)  # (B, T, N, C')
         # print("NUL : encod -->",x.shape)
         x = deblockify(x, self.block_size)  # (B, H', W', C')
         # print("NUL : deblo -->",x.shape)
