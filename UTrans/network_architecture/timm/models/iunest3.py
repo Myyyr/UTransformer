@@ -144,7 +144,6 @@ class Attention(nn.Module):
         ) if project_out else nn.Identity()
 
     def forward(self, x):
-        print("\n"*5, "-----| ATT |---->", x.shape, "\n"*5)
         b, n, _, h = *x.shape, self.heads
         qkv = self.to_qkv(x).chunk(3, dim = -1)
         q, k, v = map(lambda t: rearrange(t, 'b n (h d) -> b h n d', h = h), qkv)
@@ -161,7 +160,6 @@ class Transformer(nn.Module):
     def __init__(self, dim, depth, heads, dim_head, mlp_dim, dropout = 0.):
         super().__init__()
         self.layers = nn.ModuleList([])
-        print("\n"*5,'---------------->', dim, depth, heads, dim_head, mlp_dim,"\n"*5)
         for _ in range(depth):
             attn = rv.ReversibleBlock(PreNorm(dim//2, Attention(dim//2, heads = heads, dim_head = dim_head, dropout = dropout)), 
                                     PreNorm(dim//2, Attention(dim//2, heads = heads, dim_head = dim_head, dropout = dropout)), split_along_dim=2)
@@ -286,6 +284,7 @@ class NestLevel(nn.Module):
         x = x.permute(0, 2, 3, 1)  # (B, H', W', C), switch to channels last for transformer
         x = blockify(x, self.block_size)  # (B, T, N, C')
         x = x + self.pos_embed
+        print("\n"*5, "-----|iunest|---->", x.shape, "\n"*5)
         x = self.transformer_encoder(x)  # (B, T, N, C')
         x = deblockify(x, self.block_size)  # (B, H', W', C')
         # Channel-first for block aggregation, and generally to replicate convnet feature map at each stage
