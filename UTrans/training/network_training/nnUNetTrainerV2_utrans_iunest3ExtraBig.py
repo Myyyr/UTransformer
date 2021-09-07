@@ -46,7 +46,7 @@ def get_n_params(model):
             nn = nn*s
         pp += nn
     return pp
-class nnUNetTrainerV2_utrans_iunest3(nnUNetTrainer):
+class nnUNetTrainerV2_utrans_iunest3ExtraBig(nnUNetTrainer):
     """
     Info for Fabian: same as internal nnUNetTrainerV2_utrans_mhsa_2
     """
