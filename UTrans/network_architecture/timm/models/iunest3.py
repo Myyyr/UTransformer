@@ -144,6 +144,7 @@ class Attention(nn.Module):
         ) if project_out else nn.Identity()
 
     def forward(self, x):
+        print("\n"*5, "-----| ATT |---->", x.shape, "\n"*5)
         b, n, _, h = *x.shape, self.heads
         qkv = self.to_qkv(x).chunk(3, dim = -1)
         q, k, v = map(lambda t: rearrange(t, 'b n (h d) -> b h n d', h = h), qkv)
