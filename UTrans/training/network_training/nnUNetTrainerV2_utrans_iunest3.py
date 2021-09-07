@@ -35,7 +35,7 @@ from torch.cuda.amp import autocast
 from nnunet.training.learning_rate.poly_lr import poly_lr
 from batchgenerators.utilities.file_and_folder_operations import *
 
-from UTrans.network_architecture.UNest3 import UTransformer_mhsa
+from UTrans.network_architecture.iUNest3 import UTransformer_mhsa
 
 # python run_training.py -network='2d' -network_trainer=nnUNetTrainerV2_utrans_mhsa -task=062 -fold='all' -gpu=1 -outpath='MHSA'
 def get_n_params(model):
