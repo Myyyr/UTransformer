@@ -272,7 +272,7 @@ class NestLevel(nn.Module):
         #         norm_layer=norm_layer, act_layer=act_layer)
         #     for i in range(depth)])
 
-        self.transformer_encoder = Transformer(dim=embed_dim, depth=depth, heads=num_heads, dim_head=embed_dim//num_heads, mlp_dim=mlp_ratio*embed_dim, dropout = 0.1)
+        self.transformer_encoder = Transformer(dim=embed_dim, depth=depth, heads=num_heads, dim_head=embed_dim//num_heads, mlp_dim=int(mlp_ratio*embed_dim), dropout = 0.1)
             
 
     def forward(self, x):
@@ -315,13 +315,14 @@ class NestUpLevel(nn.Module):
         # Transformer encoder
         if len(drop_path_rates):
             assert len(drop_path_rates) == depth, 'Must provide as many drop path rates as there are transformer layers'
-        self.transformer_encoder = nn.Sequential(*[
-            TransformerLayer(
-                dim=embed_dim, num_heads=num_heads, mlp_ratio=mlp_ratio, qkv_bias=qkv_bias,
-                drop=drop_rate, attn_drop=attn_drop_rate, drop_path=drop_path_rates[i],
-                norm_layer=norm_layer, act_layer=act_layer)
-            for i in range(depth)])
+        # self.transformer_encoder = nn.Sequential(*[
+        #     TransformerLayer(
+        #         dim=embed_dim, num_heads=num_heads, mlp_ratio=mlp_ratio, qkv_bias=qkv_bias,
+        #         drop=drop_rate, attn_drop=attn_drop_rate, drop_path=drop_path_rates[i],
+        #         norm_layer=norm_layer, act_layer=act_layer)
+        #     for i in range(depth)])
 
+        self.transformer_encoder = Transformer(dim=embed_dim, depth=depth, heads=num_heads, dim_head=embed_dim//num_heads, mlp_dim=int(mlp_ratio*embed_dim), dropout = 0.1)
     def forward(self, x):
         """
         expects x as (B, C, H, W)
