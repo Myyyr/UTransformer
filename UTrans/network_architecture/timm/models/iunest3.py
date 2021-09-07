@@ -160,6 +160,7 @@ class Transformer(nn.Module):
     def __init__(self, dim, depth, heads, dim_head, mlp_dim, dropout = 0.):
         super().__init__()
         self.layers = nn.ModuleList([])
+        print("\n"*5,'---------------->', dim, depth, heads, dim_head, mlp_dim,"\n"*5)
         for _ in range(depth):
             attn = rv.ReversibleBlock(PreNorm(dim//2, Attention(dim//2, heads = heads, dim_head = dim_head, dropout = dropout)), 
                                     PreNorm(dim//2, Attention(dim//2, heads = heads, dim_head = dim_head, dropout = dropout)), split_along_dim=2)
