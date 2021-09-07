@@ -32,6 +32,8 @@ from .registry import register_model
 from einops.layers.torch import Rearrange
 _logger = logging.getLogger(__name__)
 
+import revtorch as rv
+
 
 # class Attention(nn.Module):
 #     """
