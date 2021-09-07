@@ -110,7 +110,7 @@ class PreNorm(nn.Module):
         self.norm = nn.LayerNorm(dim)
         self.fn = fn
     def forward(self, x, **kwargs):
-        print("\n"*5, "--------->", x.shape, "\n"*5)
+        # print("\n"*5, "--------->", x.shape, "\n"*5)
         return self.fn(self.norm(x), **kwargs)
 
 class FeedForward(nn.Module):
@@ -284,13 +284,13 @@ class NestLevel(nn.Module):
         x = x.permute(0, 2, 3, 1)  # (B, H', W', C), switch to channels last for transformer
         x = blockify(x, self.block_size)  # (B, T, N, C')
         x = x + self.pos_embed
-        print("\n"*5, "-----|iunest|---->", x.shape, "\n"*5)
+        # print("\n"*5, "-----|iunest|---->", x.shape, "\n"*5)
 
         b, t, n, c = x.shape
         x = rearrange(x, "b t n c -> (b t) n c")
         # Transformer
         x = self.transformer_encoder(x)
-        exit(0)
+        # exit(0)
         # Reshape again
         x = rearrange(x, "(b t) n c -> b t n c", b=b, t=t)
 
