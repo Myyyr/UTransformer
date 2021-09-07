@@ -239,7 +239,7 @@ class UTransformer_mhsa(SegmentationNetwork):
         h = 4
         d = h*64
         l = 4
-        nl = 6
+        nl = 12
         self.segnest = models.iunest3.iUNest3(img_size=512, in_chans=1, 
                                         patch_size=4, num_levels=l, 
                                         embed_dims=(d,)*l, num_heads=(h,)*l, 
