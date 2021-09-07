@@ -110,6 +110,7 @@ class PreNorm(nn.Module):
         self.norm = nn.LayerNorm(dim)
         self.fn = fn
     def forward(self, x, **kwargs):
+        print("\n"*5, "--------->", x.shape, "\n"*5)
         return self.fn(self.norm(x), **kwargs)
 
 class FeedForward(nn.Module):
