@@ -122,8 +122,8 @@ def blockify(x, block_size: int):
         block_size (int): edge length of a single square block in units of H, W
     """
     B, H, W, D, C  = x.shape
-    print('block_size',block_size)
-    exit(0)
+    # print('block_size',block_size)
+    # exit(0)
     assert H % block_size[0] == 0, '`block_size` must divide input height evenly'
     assert W % block_size[1] == 0, '`block_size` must divide input width evenly'
     assert D % block_size[2] == 0, '`block_size` must divide input deep evenly'
