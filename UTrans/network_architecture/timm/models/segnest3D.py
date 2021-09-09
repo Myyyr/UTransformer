@@ -26,9 +26,11 @@ from torch import nn
 
 # from timm.data import IMAGENET_DEFAULT_MEAN, IMAGENET_DEFAULT_STD
 from .helpers import build_model_with_cfg, named_apply
-from .layers import PatchEmbed, Mlp, DropPath, create_classifier, trunc_normal_
+from .layers import PatchEmbed3D, Mlp, DropPath, create_classifier, trunc_normal_
 from .layers import create_conv2d, create_pool2d, to_ntuple
 from .registry import register_model
+
+from einops import rearrange
 
 _logger = logging.getLogger(__name__)
 
@@ -98,19 +100,19 @@ class ConvPool(nn.Module):
         # self.conv = create_conv2d(in_channels, out_channels, kernel_size=3, padding=pad_type, bias=True)
         self.conv = nn.Conv3d(in_channels, out_channels, 3,  padding=1)
         self.norm = norm_layer(out_channels)
-        self.pool = create_pool2d('max', kernel_size=3, stride=2, padding=pad_type)
-
+        # self.pool = create_pool2d('max', kernel_size=3, stride=2, padding=pad_type)
+        self.pool = nn.MaxPool3d(3, 2, 1)
     def forward(self, x):
         """
-        x is expected to have shape (B, C, H, W)
+        x is expected to have shape (B, C, H, W, D)
         """
-        assert x.shape[-2] % 2 == 0, 'BlockAggregation requires even input spatial dims'
-        assert x.shape[-1] % 2 == 0, 'BlockAggregation requires even input spatial dims'
+        # assert x.shape[-2] % 2 == 0, 'BlockAggregation requires even input spatial dims'
+        # assert x.shape[-1] % 2 == 0, 'BlockAggregation requires even input spatial dims'
         x = self.conv(x)
         # Layer norm done over channel dim only
-        x = self.norm(x.permute(0, 2, 3, 1)).permute(0, 3, 1, 2)
+        x = self.norm(x.permute(0, 2, 3, 4, 1)).permute(0, 4, 1, 2, 3)
         x = self.pool(x)
-        return x  # (B, C, H//2, W//2)
+        return x  # (B, C, H//2, W//2, D//2)
 
 
 def blockify(x, block_size: int):
@@ -119,28 +121,36 @@ def blockify(x, block_size: int):
         x (Tensor): with shape (B, H, W, C)
         block_size (int): edge length of a single square block in units of H, W
     """
-    B, H, W, C  = x.shape
-    assert H % block_size == 0, '`block_size` must divide input height evenly'
-    assert W % block_size == 0, '`block_size` must divide input width evenly'
-    grid_height = H // block_size
-    grid_width = W // block_size
-    x = x.reshape(B, grid_height, block_size, grid_width, block_size, C)
-    x = x.transpose(2, 3).reshape(B, grid_height * grid_width, -1, C)
+    B, H, W, D, C  = x.shape
+    assert H % block_size[0] == 0, '`block_size` must divide input height evenly'
+    assert W % block_size[1] == 0, '`block_size` must divide input width evenly'
+    assert D % block_size[2] == 0, '`block_size` must divide input deep evenly'
+
+    grid_height = H // block_size[0]
+    grid_width = W // block_size[1]
+    grid_deep = D // block_size[2]
+
+    x = x.reshape(B, grid_height, block_size[0], grid_width, block_size[1], grid_deep, block_size[2], C)
+    # x = x.transpose(2, 3).reshape(B, grid_height * grid_width, -1, C)
+    x = rearrange(x, 'b h x w y d z c -> b (h w z) (x y z) c')
     return x  # (B, T, N, C)
 
 
-def deblockify(x, block_size: int):
+def deblockify(x, block_size, H: int, W: int, D: int):
     """blocks to image
     Args:
         x (Tensor): with shape (B, T, N, C) where T is number of blocks and N is sequence size per block
         block_size (int): edge length of a single square block in units of desired H, W
     """
     B, T, _, C = x.shape
-    grid_size = int(math.sqrt(T))
-    height = width = grid_size * block_size
-    x = x.reshape(B, grid_size, grid_size, block_size, block_size, C)
-    x = x.transpose(2, 3).reshape(B, height, width, C)
-    return x  # (B, H, W, C)
+    # grid_size = int(math.sqrt(T))
+    # height = width = grid_size * block_size
+    height, width, deep = (H//block_size[0], W//block_size[1], D//block_size[2])
+    # x = x.reshape(B, grid_size, grid_size, block_size, block_size, C)
+    x = x.reshape(B, H, W, D, block_size[0], block_size[1], block_size[2], C)
+    # x = x.transpose(2, 3).reshape(B, height, width, C)
+    x = rearrange(x, 'b h w d x y z c -> b (h x) (w y) (d z) c')
+    return x  # (B, H, W, D, C)
 
 
 class NestLevel(nn.Module):
@@ -171,14 +181,15 @@ class NestLevel(nn.Module):
 
     def forward(self, x):
         """
-        expects x as (B, C, H, W)
+        expects x as (B, C, H, W, D)
         """
         x = self.pool(x)
+        _, _, H, W, D = x.shape
         x = x.permute(0, 2, 3, 1)  # (B, H', W', C), switch to channels last for transformer
         x = blockify(x, self.block_size)  # (B, T, N, C')
         x = x + self.pos_embed
         x = self.transformer_encoder(x)  # (B, T, N, C')
-        x = deblockify(x, self.block_size)  # (B, H', W', C')
+        x = deblockify(x, self.block_size, H, W, D)  # (B, H', W', C')
         # Channel-first for block aggregation, and generally to replicate convnet feature map at each stage
         return x.permute(0, 3, 1, 2)  # (B, C, H', W')
 
@@ -190,7 +201,7 @@ class SegNest(nn.Module):
         - https://arxiv.org/abs/2105.12723
     """
 
-    def __init__(self, img_size=224, in_chans=3, patch_size=4, num_levels=3, embed_dims=(128, 256, 512),
+    def __init__(self, img_size=(512, 512, 256), in_chans=3, patch_size=(4,4,4), num_levels=3, embed_dims=(128, 256, 512),
                  num_heads=(4, 8, 16), depths=(2, 2, 20), num_classes=1000, mlp_ratio=4., qkv_bias=True,
                  drop_rate=0., attn_drop_rate=0., drop_path_rate=0.5, norm_layer=None, act_layer=None,
                  pad_type='', weight_init='', global_pool='avg'):
@@ -238,24 +249,26 @@ class SegNest(nn.Module):
         act_layer = act_layer or nn.GELU
         self.drop_rate = drop_rate
         self.num_levels = num_levels
-        if isinstance(img_size, collections.abc.Sequence):
-            assert img_size[0] == img_size[1], 'Model only handles square inputs'
-            img_size = img_size[0]
-        assert img_size % patch_size == 0, '`patch_size` must divide `img_size` evenly'
+        # if isinstance(img_size, collections.abc.Sequence):
+        #     assert img_size[0] == img_size[1], 'Model only handles square inputs'
+        #     img_size = img_size[0]
+        # assert img_size % patch_size == 0, '`patch_size` must divide `img_size` evenly'
         self.patch_size = patch_size
 
         # Number of blocks at each level
         self.num_blocks = (4 ** torch.arange(num_levels)).flip(0).tolist()
-        assert (img_size // patch_size) % math.sqrt(self.num_blocks[0]) == 0, \
-            'First level blocks don\'t fit evenly. Check `img_size`, `patch_size`, and `num_levels`'
+        # assert (img_size // patch_size) % math.sqrt(self.num_blocks[0]) == 0, \
+        #     'First level blocks don\'t fit evenly. Check `img_size`, `patch_size`, and `num_levels`'
 
         # Block edge size in units of patches
         # Hint: (img_size // patch_size) gives number of patches along edge of image. sqrt(self.num_blocks[0]) is the
         #  number of blocks along edge of image
-        self.block_size = int((img_size // patch_size) // math.sqrt(self.num_blocks[0]))
+        self.block_size = (int((img_size[0] // patch_size[0]) // math.sqrt(self.num_blocks[0])), 
+                            int((img_size[1] // patch_size[1]) // math.sqrt(self.num_blocks[0])), 
+                            int((img_size[2] // patch_size[2]) // math.sqrt(self.num_blocks[0])))
         
         # Patch embedding
-        self.patch_embed = PatchEmbed(
+        self.patch_embed = PatchEmbed3D(
             img_size=img_size, patch_size=patch_size, in_chans=in_chans, embed_dim=embed_dims[0], flatten=False)
         self.num_patches = self.patch_embed.num_patches
         self.seq_length = self.num_patches // self.num_blocks[0]
@@ -285,11 +298,11 @@ class SegNest(nn.Module):
             # else:
             #     upsamples.append(nn.Sequential(nn.Conv2d(dim, num_classes, 1),
                                                # nn.Upsample(scale_factor=2**i)))
-            upsamples.append(nn.Sequential(nn.Conv2d(dim, num_classes, 1),
+            upsamples.append(nn.Sequential(nn.Conv3d(dim, num_classes, 1),
                                            nn.Upsample(scale_factor=2)))
             upsamples_plus.append(nn.Upsample(scale_factor=2**(i+1)))
 
-        self.last_conv = nn.Conv2d(num_classes*num_levels, num_classes, 1)
+        self.last_conv = nn.Conv3d(num_classes*num_levels, num_classes, 1)
 
         # self.levels = nn.Sequential(*levels)
         self.levels = nn.Sequential(*levels)
@@ -299,7 +312,7 @@ class SegNest(nn.Module):
         self.norm = norm_layer(embed_dims[-1])
 
         # Classifier
-        self.global_pool, self.head = create_classifier(self.num_features, self.num_classes, pool_type=global_pool)
+        # self.global_pool, self.head = create_classifier(self.num_features, self.num_classes, pool_type=global_pool)
 
         self.init_weights(weight_init)
 
@@ -319,11 +332,11 @@ class SegNest(nn.Module):
 
     def reset_classifier(self, num_classes, global_pool='avg'):
         self.num_classes = num_classes
-        self.global_pool, self.head = create_classifier(
-            self.num_features, self.num_classes, pool_type=global_pool)
+        # self.global_pool, self.head = create_classifier(
+        #     self.num_features, self.num_classes, pool_type=global_pool)
 
     def forward_features(self, x):
-        """ x shape (B, C, H, W)
+        """ x shape (B, C, H, W, D)
         """
         x = self.patch_embed(x)
         # print("--> emb", x.shape)
@@ -340,6 +353,8 @@ class SegNest(nn.Module):
     def forward(self, x):
         """ x shape (B, C, H, W)
         """
+        print("x shape" x.shape)
+        exit(0)
         x = self.forward_features(x)
         out = []
         to_cat = []
@@ -371,11 +386,11 @@ def _init_nest_weights(module: nn.Module, name: str = '', head_bias: float = 0.)
             trunc_normal_(module.weight, std=.02, a=-2, b=2)
             if module.bias is not None:
                 nn.init.zeros_(module.bias)
-    elif isinstance(module, nn.Conv2d):
+    elif isinstance(module, nn.Conv3d):
         trunc_normal_(module.weight, std=.02, a=-2, b=2)
         if module.bias is not None:
             nn.init.zeros_(module.bias)
-    elif isinstance(module, (nn.LayerNorm, nn.GroupNorm, nn.BatchNorm2d)):
+    elif isinstance(module, (nn.LayerNorm, nn.GroupNorm, nn.BatchNorm3d)):
         nn.init.zeros_(module.bias)
         nn.init.ones_(module.weight)
 
