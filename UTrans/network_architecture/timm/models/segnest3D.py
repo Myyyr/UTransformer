@@ -266,9 +266,9 @@ class SegNest3d(nn.Module):
         # Block edge size in units of patches
         # Hint: (img_size // patch_size) gives number of patches along edge of image. sqrt(self.num_blocks[0]) is the
         #  number of blocks along edge of image
-        self.block_size = (int((img_size[0] // patch_size[0]) // math.sqrt(self.num_blocks[0])), 
-                            int((img_size[1] // patch_size[1]) // math.sqrt(self.num_blocks[0])), 
-                            int((img_size[2] // patch_size[2]) // math.sqrt(self.num_blocks[0])))
+        self.block_size = (int((img_size[0] // patch_size[0]) // (self.num_blocks[0])**(1/3)), 
+                            int((img_size[1] // patch_size[1]) // (self.num_blocks[0])**(1/3)), 
+                            int((img_size[2] // patch_size[2]) // (self.num_blocks[0])**(1/3)))
         print("self.block_size", self.block_size)
         print('img_size', img_size)
         print('patch_size', patch_size)
