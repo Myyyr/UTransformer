@@ -22,7 +22,7 @@ from .mobilenetv3 import *
 from .nasnet import *
 from .nest import *
 from .segnest import *
-from .segnest3d import *
+from .segnest3D import *
 from .unest import *
 from .unest2 import *
 from .unest3 import *
