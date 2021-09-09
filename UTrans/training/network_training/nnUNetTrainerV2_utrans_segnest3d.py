@@ -39,7 +39,7 @@ from UTrans.network_architecture.SegNest3d import UTransformer_mhsa
 
 # python run_training.py -network='2d' -network_trainer=nnUNetTrainerV2_utrans_mhsa -task=062 -fold='all' -gpu=1 -outpath='MHSA'
 
-class nnUNetTrainerV2_utrans_segnest2(nnUNetTrainer):
+class nnUNetTrainerV2_utrans_segnest3d(nnUNetTrainer):
     """
     Info for Fabian: same as internal nnUNetTrainerV2_utrans_mhsa_2
     """
