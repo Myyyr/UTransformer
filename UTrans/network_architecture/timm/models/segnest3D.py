@@ -95,7 +95,8 @@ class TransformerLayer(nn.Module):
 class ConvPool(nn.Module):
     def __init__(self, in_channels, out_channels, norm_layer, pad_type=''):
         super().__init__()
-        self.conv = create_conv2d(in_channels, out_channels, kernel_size=3, padding=pad_type, bias=True)
+        # self.conv = create_conv2d(in_channels, out_channels, kernel_size=3, padding=pad_type, bias=True)
+        self.conv = nn.Conv3d(in_channels, out_channels, 3,  padding=1)
         self.norm = norm_layer(out_channels)
         self.pool = create_pool2d('max', kernel_size=3, stride=2, padding=pad_type)
 
