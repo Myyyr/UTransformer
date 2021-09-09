@@ -134,7 +134,7 @@ def blockify(x, block_size: int):
 
     x = x.reshape(B, grid_height, block_size[0], grid_width, block_size[1], grid_deep, block_size[2], C)
     # x = x.transpose(2, 3).reshape(B, grid_height * grid_width, -1, C)
-    x = rearrange(x, 'b h x w y d z c -> b (h w z) (x y z) c')
+    x = rearrange(x, 'b h x w y d z c -> b (h w d) (x y z) c')
     return x  # (B, T, N, C)
 
 
