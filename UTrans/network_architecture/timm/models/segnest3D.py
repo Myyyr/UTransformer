@@ -353,7 +353,7 @@ class SegNest3d(nn.Module):
     def forward(self, x):
         """ x shape (B, C, H, W)
         """
-        print("x shape" x.shape)
+        print("x shape", x.shape)
         exit(0)
         x = self.forward_features(x)
         out = []
