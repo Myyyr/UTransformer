@@ -268,7 +268,11 @@ class SegNest3d(nn.Module):
         self.block_size = (int((img_size[0] // patch_size[0]) // math.sqrt(self.num_blocks[0])), 
                             int((img_size[1] // patch_size[1]) // math.sqrt(self.num_blocks[0])), 
                             int((img_size[2] // patch_size[2]) // math.sqrt(self.num_blocks[0])))
-        
+        print("self.block_size", self.block_size)
+        print('img_size', img_size)
+        print('patch_size', patch_size)
+        print('self.num_blocks[0]', self.num_blocks[0])
+        exit(0)
         # Patch embedding
         self.patch_embed = PatchEmbed3D(
             img_size=img_size, patch_size=patch_size, in_chans=in_chans, embed_dim=embed_dims[0], flatten=False)
