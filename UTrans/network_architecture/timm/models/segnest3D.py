@@ -258,7 +258,8 @@ class SegNest3d(nn.Module):
         self.patch_size = patch_size
 
         # Number of blocks at each level
-        self.num_blocks = (4 ** torch.arange(num_levels)).flip(0).tolist()
+        # self.num_blocks = (4 ** torch.arange(num_levels)).flip(0).tolist()
+        self.num_blocks = (8 ** torch.arange(num_levels)).flip(0).tolist()
         # assert (img_size // patch_size) % math.sqrt(self.num_blocks[0]) == 0, \
         #     'First level blocks don\'t fit evenly. Check `img_size`, `patch_size`, and `num_levels`'
 
