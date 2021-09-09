@@ -194,7 +194,7 @@ class NestLevel(nn.Module):
         return x.permute(0, 3, 1, 2)  # (B, C, H', W')
 
 
-class SegNest(nn.Module):
+class SegNest3d(nn.Module):
     """ Nested Transformer (NesT)
 
     A PyTorch impl of : `Aggregating Nested Transformers`
