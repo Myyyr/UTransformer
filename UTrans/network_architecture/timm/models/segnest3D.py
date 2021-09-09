@@ -185,13 +185,13 @@ class NestLevel(nn.Module):
         """
         x = self.pool(x)
         _, _, H, W, D = x.shape
-        x = x.permute(0, 2, 3, 1)  # (B, H', W', C), switch to channels last for transformer
+        x = x.permute(0, 2, 3, 4, 1)  # (B, H', W', D', C), switch to channels last for transformer
         x = blockify(x, self.block_size)  # (B, T, N, C')
         x = x + self.pos_embed
         x = self.transformer_encoder(x)  # (B, T, N, C')
-        x = deblockify(x, self.block_size, H, W, D)  # (B, H', W', C')
+        x = deblockify(x, self.block_size, H, W, D)  # (B, H', W', D', C')
         # Channel-first for block aggregation, and generally to replicate convnet feature map at each stage
-        return x.permute(0, 3, 1, 2)  # (B, C, H', W')
+        return x.permute(0, 4, 1, 2, 3)  # (B, C, H', W', D')
 
 
 class SegNest3d(nn.Module):
