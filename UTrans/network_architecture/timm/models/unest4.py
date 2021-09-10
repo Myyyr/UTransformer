@@ -26,12 +26,10 @@ from torch import nn
 
 # from timm.data import IMAGENET_DEFAULT_MEAN, IMAGENET_DEFAULT_STD
 from .helpers import build_model_with_cfg, named_apply
-from .layers import PatchEmbed3D, Mlp, DropPath, create_classifier, trunc_normal_
+from .layers import PatchEmbed, Mlp, DropPath, create_classifier, trunc_normal_
 from .layers import create_conv2d, create_pool2d, to_ntuple
 from .registry import register_model
-
-from einops import rearrange
-
+from einops.layers.torch import Rearrange
 _logger = logging.getLogger(__name__)
 
 
@@ -97,22 +95,42 @@ class TransformerLayer(nn.Module):
 class ConvPool(nn.Module):
     def __init__(self, in_channels, out_channels, norm_layer, pad_type=''):
         super().__init__()
-        # self.conv = create_conv2d(in_channels, out_channels, kernel_size=3, padding=pad_type, bias=True)
-        self.conv = nn.Conv3d(in_channels, out_channels, 3,  padding=1)
+        self.conv = create_conv2d(in_channels, out_channels, kernel_size=3, padding=pad_type, bias=True)
         self.norm = norm_layer(out_channels)
-        # self.pool = create_pool2d('max', kernel_size=3, stride=2, padding=pad_type)
-        self.pool = nn.MaxPool3d(3, 2, 1)
+        self.pool = create_pool2d('max', kernel_size=3, stride=2, padding=pad_type)
+
     def forward(self, x):
         """
-        x is expected to have shape (B, C, H, W, D)
+        x is expected to have shape (B, C, H, W)
         """
-        # assert x.shape[-2] % 2 == 0, 'BlockAggregation requires even input spatial dims'
-        # assert x.shape[-1] % 2 == 0, 'BlockAggregation requires even input spatial dims'
+        assert x.shape[-2] % 2 == 0, 'BlockAggregation requires even input spatial dims'
+        assert x.shape[-1] % 2 == 0, 'BlockAggregation requires even input spatial dims'
         x = self.conv(x)
         # Layer norm done over channel dim only
-        x = self.norm(x.permute(0, 2, 3, 4, 1)).permute(0, 4, 1, 2, 3)
+        x = self.norm(x.permute(0, 2, 3, 1)).permute(0, 3, 1, 2)
         x = self.pool(x)
-        return x  # (B, C, H//2, W//2, D//2)
+        return x  # (B, C, H//2, W//2)
+
+
+class ConvUnPool(nn.Module):
+    def __init__(self, in_channels, out_channels, norm_layer, pad_type=''):
+        super().__init__()
+        self.conv = create_conv2d(in_channels, out_channels, kernel_size=3, padding=pad_type, bias=True)
+        self.norm = norm_layer(out_channels)
+        # self.pool = create_pool2d('max', kernel_size=3, stride=2, padding=pad_type)
+        self.pool = nn.Upsample(scale_factor=2)
+
+    def forward(self, x):
+        """
+        x is expected to have shape (B, C, H, W)
+        """
+        assert x.shape[-2] % 2 == 0, 'BlockAggregation requires even input spatial dims'
+        assert x.shape[-1] % 2 == 0, 'BlockAggregation requires even input spatial dims'
+        x = self.conv(x)
+        # Layer norm done over channel dim only
+        x = self.norm(x.permute(0, 2, 3, 1)).permute(0, 3, 1, 2)
+        x = self.pool(x)
+        return x  # (B, C, H//2, W//2)
 
 
 def blockify(x, block_size: int):
@@ -121,38 +139,28 @@ def blockify(x, block_size: int):
         x (Tensor): with shape (B, H, W, C)
         block_size (int): edge length of a single square block in units of H, W
     """
-    B, H, W, D, C  = x.shape
-    # print('block_size',block_size)
-    # exit(0)
-    assert H % block_size[0] == 0, '`block_size` must divide input height evenly'
-    assert W % block_size[1] == 0, '`block_size` must divide input width evenly'
-    assert D % block_size[2] == 0, '`block_size` must divide input deep evenly'
-
-    grid_height = H // block_size[0]
-    grid_width = W // block_size[1]
-    grid_deep = D // block_size[2]
-
-    x = x.reshape(B, grid_height, block_size[0], grid_width, block_size[1], grid_deep, block_size[2], C)
-    # x = x.transpose(2, 3).reshape(B, grid_height * grid_width, -1, C)
-    x = rearrange(x, 'b h x w y d z c -> b (h w d) (x y z) c')
+    B, H, W, C  = x.shape
+    assert H % block_size == 0, '`block_size` must divide input height evenly'
+    assert W % block_size == 0, '`block_size` must divide input width evenly'
+    grid_height = H // block_size
+    grid_width = W // block_size
+    x = x.reshape(B, grid_height, block_size, grid_width, block_size, C)
+    x = x.transpose(2, 3).reshape(B, grid_height * grid_width, -1, C)
     return x  # (B, T, N, C)
 
 
-def deblockify(x, block_size, H: int, W: int, D: int):
+def deblockify(x, block_size: int):
     """blocks to image
     Args:
         x (Tensor): with shape (B, T, N, C) where T is number of blocks and N is sequence size per block
         block_size (int): edge length of a single square block in units of desired H, W
     """
     B, T, _, C = x.shape
-    # grid_size = int(math.sqrt(T))
-    # height = width = grid_size * block_size
-    height, width, deep = (H//block_size[0], W//block_size[1], D//block_size[2])
-    # x = x.reshape(B, grid_size, grid_size, block_size, block_size, C)
-    x = x.reshape(B, H, W, D, block_size[0], block_size[1], block_size[2], C)
-    # x = x.transpose(2, 3).reshape(B, height, width, C)
-    x = rearrange(x, 'b h w d x y z c -> b (h x) (w y) (d z) c')
-    return x  # (B, H, W, D, C)
+    grid_size = int(math.sqrt(T))
+    height = width = grid_size * block_size
+    x = x.reshape(B, grid_size, grid_size, block_size, block_size, C)
+    x = x.transpose(2, 3).reshape(B, height, width, C)
+    return x  # (B, H, W, C)
 
 
 class NestLevel(nn.Module):
@@ -183,29 +191,79 @@ class NestLevel(nn.Module):
 
     def forward(self, x):
         """
-        expects x as (B, C, H, W, D)
+        expects x as (B, C, H, W)
         """
         x = self.pool(x)
-        _, _, H, W, D = x.shape
-        x = x.permute(0, 2, 3, 4, 1)  # (B, H', W', D', C), switch to channels last for transformer
+        x = x.permute(0, 2, 3, 1)  # (B, H', W', C), switch to channels last for transformer
         x = blockify(x, self.block_size)  # (B, T, N, C')
-        print("x.shape", x.shape)
-        print("self.pos_embed.shape", self.pos_embed.shape)
         x = x + self.pos_embed
         x = self.transformer_encoder(x)  # (B, T, N, C')
-        x = deblockify(x, self.block_size, H, W, D)  # (B, H', W', D', C')
+        x = deblockify(x, self.block_size)  # (B, H', W', C')
         # Channel-first for block aggregation, and generally to replicate convnet feature map at each stage
-        return x.permute(0, 4, 1, 2, 3)  # (B, C, H', W', D')
+        return x.permute(0, 3, 1, 2)  # (B, C, H', W')
+
+class NestUpLevel(nn.Module):
+    """ Single hierarchical level of a Nested Transformer
+    """
+    def __init__(
+            self, num_blocks, block_size, seq_length, num_heads, depth, embed_dim, prev_embed_dim=None,
+            mlp_ratio=4., qkv_bias=True, drop_rate=0., attn_drop_rate=0., drop_path_rates=[],
+            norm_layer=None, act_layer=None, pad_type=''):
+        super().__init__()
+        self.block_size = block_size
+        self.pos_embed = nn.Parameter(torch.zeros(1, num_blocks, seq_length, embed_dim))
 
 
-class SegNest3d(nn.Module):
+        # H x W x Cr² -> Hr x Wr x C
+        # H x W x 4C  -> 2H x 2W x C
+        # r = 2
+        if prev_embed_dim is not None:
+            # self.pool = nn.Sequential(nn.Conv2d(prev_embed_dim*2, embed_dim, 1),nn.Upsample(scale_factor=2))
+            r = 2
+            self.pool = nn.Sequential(nn.Conv2d(prev_embed_dim*2, embed_dim*r*r, 1), Rearrange('b (c a e) h w -> b c (h e) (w a)', a=r, e=r))
+        else:
+            # self.pool = nn.Conv2d(embed_dim, embed_dim, 1)
+            self.pool = nn.Identity()
+
+
+        # Transformer encoder
+        if len(drop_path_rates):
+            assert len(drop_path_rates) == depth, 'Must provide as many drop path rates as there are transformer layers'
+        self.transformer_encoder = nn.Sequential(*[
+            TransformerLayer(
+                dim=embed_dim, num_heads=num_heads, mlp_ratio=mlp_ratio, qkv_bias=qkv_bias,
+                drop=drop_rate, attn_drop=attn_drop_rate, drop_path=drop_path_rates[i],
+                norm_layer=norm_layer, act_layer=act_layer)
+            for i in range(depth)])
+
+    def forward(self, x):
+        """
+        expects x as (B, C, H, W)
+        """
+        # print("NUL : start -->",x.shape)
+        x = self.pool(x)
+        # print("NUL : pool  -->",x.shape)
+        x = x.permute(0, 2, 3, 1)  # (B, H', W', C), switch to channels last for transformer
+        # print("NUL : permu -->",x.shape)
+        x = blockify(x, self.block_size)  # (B, T, N, C')
+        # print("NUL : block -->",x.shape)
+        x = x + self.pos_embed
+        # print("NUL : embed -->",x.shape)
+        x = self.transformer_encoder(x)  # (B, T, N, C')
+        # print("NUL : encod -->",x.shape)
+        x = deblockify(x, self.block_size)  # (B, H', W', C')
+        # print("NUL : deblo -->",x.shape)
+        # Channel-first for block aggregation, and generally to replicate convnet feature map at each stage
+        return x.permute(0, 3, 1, 2)  # (B, C, H', W')
+
+class UNest3(nn.Module):
     """ Nested Transformer (NesT)
 
     A PyTorch impl of : `Aggregating Nested Transformers`
         - https://arxiv.org/abs/2105.12723
     """
 
-    def __init__(self, img_size=(512, 512, 256), in_chans=3, patch_size=(4,4,4), num_levels=3, embed_dims=(128, 256, 512),
+    def __init__(self, img_size=224, in_chans=3, patch_size=4, num_levels=3, embed_dims=(128, 256, 512),
                  num_heads=(4, 8, 16), depths=(2, 2, 20), num_classes=1000, mlp_ratio=4., qkv_bias=True,
                  drop_rate=0., attn_drop_rate=0., drop_path_rate=0.5, norm_layer=None, act_layer=None,
                  pad_type='', weight_init='', global_pool='avg'):
@@ -253,31 +311,24 @@ class SegNest3d(nn.Module):
         act_layer = act_layer or nn.GELU
         self.drop_rate = drop_rate
         self.num_levels = num_levels
-        # if isinstance(img_size, collections.abc.Sequence):
-        #     assert img_size[0] == img_size[1], 'Model only handles square inputs'
-        #     img_size = img_size[0]
-        # assert img_size % patch_size == 0, '`patch_size` must divide `img_size` evenly'
+        if isinstance(img_size, collections.abc.Sequence):
+            assert img_size[0] == img_size[1], 'Model only handles square inputs'
+            img_size = img_size[0]
+        assert img_size % patch_size == 0, '`patch_size` must divide `img_size` evenly'
         self.patch_size = patch_size
 
         # Number of blocks at each level
-        # self.num_blocks = (4 ** torch.arange(num_levels)).flip(0).tolist()
-        self.num_blocks = (8 ** torch.arange(num_levels)).flip(0).tolist()
-        # assert (img_size // patch_size) % math.sqrt(self.num_blocks[0]) == 0, \
-        #     'First level blocks don\'t fit evenly. Check `img_size`, `patch_size`, and `num_levels`'
+        self.num_blocks = (4 ** torch.arange(num_levels)).flip(0).tolist()
+        assert (img_size // patch_size) % math.sqrt(self.num_blocks[0]) == 0, \
+            'First level blocks don\'t fit evenly. Check `img_size`, `patch_size`, and `num_levels`'
 
         # Block edge size in units of patches
         # Hint: (img_size // patch_size) gives number of patches along edge of image. sqrt(self.num_blocks[0]) is the
         #  number of blocks along edge of image
-        self.block_size = (int((img_size[0] // patch_size[0]) // (self.num_blocks[0])**(1/3)), 
-                            int((img_size[1] // patch_size[1]) // (self.num_blocks[0])**(1/3)), 
-                            int((img_size[2] // patch_size[2]) // (self.num_blocks[0])**(1/3)))
-        # print("self.block_size", self.block_size)
-        # print('img_size', img_size)
-        # print('patch_size', patch_size)
-        # print('self.num_blocks[0]', self.num_blocks[0])
-        # exit(0)
+        self.block_size = int((img_size // patch_size) // math.sqrt(self.num_blocks[0]))
+        
         # Patch embedding
-        self.patch_embed = PatchEmbed3D(
+        self.patch_embed = PatchEmbed(
             img_size=img_size, patch_size=patch_size, in_chans=in_chans, embed_dim=embed_dims[0], flatten=False)
         self.num_patches = self.patch_embed.num_patches
         self.seq_length = self.num_patches // self.num_blocks[0]
@@ -285,7 +336,11 @@ class SegNest3d(nn.Module):
         # Build up each hierarchical level
         levels = []
         upsamples = []
+        skipupsamples = []
         upsamples_plus = []
+        dim_conv = 192
+        dim_up = 32
+
 
 
         dp_rates = [x.tolist() for x in torch.linspace(0, drop_path_rate, sum(depths)).split(depths)]
@@ -302,26 +357,47 @@ class SegNest3d(nn.Module):
             sum_dim += dim
             curr_stride *= 2
 
+
             # if i==0:
             #     upsamples.append(nn.Sequential(nn.Conv2d(dim, num_classes, 1)))
             # else:
             #     upsamples.append(nn.Sequential(nn.Conv2d(dim, num_classes, 1),
                                                # nn.Upsample(scale_factor=2**i)))
-            upsamples.append(nn.Sequential(nn.Conv3d(dim, num_classes, 1),
+            
+            skipupsamples.append(nn.Sequential(nn.Conv2d(dim, dim_conv, 1)))
+            upsamples.append(nn.Sequential(nn.Conv2d(dim_conv+dim, num_classes, 1),
                                            nn.Upsample(scale_factor=2)))
-            upsamples_plus.append(nn.Upsample(scale_factor=2**(i+1)))
+            upsamples_plus.append(nn.Sequential(nn.Conv2d(dim_conv+dim, dim_up, 1),
+                                                nn.Upsample(scale_factor=2**(i+2))))
 
-        self.last_conv = nn.Conv3d(num_classes*num_levels, num_classes, 1)
+
+        rlevels = []
+        prev_dim = None
+        for y in range(len(self.num_blocks)):
+            i = len(self.num_blocks)- (y+1)
+            dim = embed_dims[i]
+            rlevels.append(NestUpLevel(
+                self.num_blocks[i], self.block_size, self.seq_length, num_heads[i], depths[i], dim, prev_dim,
+                mlp_ratio, qkv_bias, drop_rate, attn_drop_rate, dp_rates[i], norm_layer, act_layer, pad_type=pad_type))
+            self.feature_info += [dict(num_chs=dim, reduction=curr_stride, module=f'levels.{i}')]
+            prev_dim = dim
+            curr_stride *= 2
+
+
+
+        self.last_conv = nn.Conv2d(dim_up*num_levels, num_classes, 1)
 
         # self.levels = nn.Sequential(*levels)
         self.levels = nn.Sequential(*levels)
+        self.rlevels = nn.Sequential(*rlevels)
         self.upsamples = nn.Sequential(*upsamples)
+        self.skipupsamples = nn.Sequential(*skipupsamples)
         self.upsamples_plus = nn.ModuleList(upsamples_plus)
         # Final normalization layer
         self.norm = norm_layer(embed_dims[-1])
 
         # Classifier
-        # self.global_pool, self.head = create_classifier(self.num_features, self.num_classes, pool_type=global_pool)
+        self.global_pool, self.head = create_classifier(self.num_features, self.num_classes, pool_type=global_pool)
 
         self.init_weights(weight_init)
 
@@ -341,39 +417,68 @@ class SegNest3d(nn.Module):
 
     def reset_classifier(self, num_classes, global_pool='avg'):
         self.num_classes = num_classes
-        # self.global_pool, self.head = create_classifier(
-        #     self.num_features, self.num_classes, pool_type=global_pool)
+        self.global_pool, self.head = create_classifier(
+            self.num_features, self.num_classes, pool_type=global_pool)
 
     def forward_features(self, x):
-        """ x shape (B, C, H, W, D)
+        """ x shape (B, C, H, W)
         """
         x = self.patch_embed(x)
         # print("--> emb", x.shape)
         # x = self.levels(x)
-        out = []
+        skip = []
+        # print("emb", x.shape)
+        i = 0
         for level in self.levels:
             x = level(x)
+            # print("lev", i, x.shape)
+            skip.append(x)
+            i+=1
+        out = []
+        i = 0   
+        for rlevel in self.rlevels:
+            if i == 0:
+                x = rlevel(x)
+            else:
+                # print(x.shape, skip[-(i)].shape)
+                x = rlevel(torch.cat([x, skip[-(i)]], dim=1))
+            # print("rle", i, x.shape)
             out.append(x)
+            i+=1
         # Layer norm done over channel dim only (to NHWC and back)
         # x = self.norm(x.permute(0, 2, 3, 1)).permute(0, 3, 1, 2)
         # return x
-        return out
+        return out, skip
 
     def forward(self, x):
         """ x shape (B, C, H, W)
         """
-        print("x shape", x.shape)
+        # print("start", x.shape)
         # exit(0)
-        x = self.forward_features(x)
+        x, skip = self.forward_features(x)
+        # for i in x:
+        #     print("ff", i.shape)
+        # exit(0)
+
+        skipfeat = []
         out = []
         to_cat = []
         i = 0
+        x.reverse()
         for up in self.upsamples:
-            out.append(up(x[i]))
-            to_cat.append(self.upsamples_plus[i](out[i]))
+            # print('#',i)
+            # print("skip",skip[i].shape)
+            skipfeat.append(self.skipupsamples[i](skip[i]))
+            # print("skipfeat",skipfeat[i].shape)
+            # print("x",x[i].shape)
+            out.append(up(torch.cat([x[i], skipfeat[i]], dim=1)))
+            # print("out",out[i].shape)
+            to_cat.append(self.upsamples_plus[i](torch.cat([x[i], skipfeat[i]], dim=1)))
+            # print("to_cat",to_cat[i].shape)
+            # exit(0)
             # print('---',i, out[i].shape, to_cat[i].shape)
             i+=1
-
+        # exit(0)
         pred = self.last_conv(torch.cat(to_cat, dim=1))
         return [pred]+out
         # x = self.global_pool(x)
@@ -395,11 +500,11 @@ def _init_nest_weights(module: nn.Module, name: str = '', head_bias: float = 0.)
             trunc_normal_(module.weight, std=.02, a=-2, b=2)
             if module.bias is not None:
                 nn.init.zeros_(module.bias)
-    elif isinstance(module, nn.Conv3d):
+    elif isinstance(module, nn.Conv2d):
         trunc_normal_(module.weight, std=.02, a=-2, b=2)
         if module.bias is not None:
             nn.init.zeros_(module.bias)
-    elif isinstance(module, (nn.LayerNorm, nn.GroupNorm, nn.BatchNorm3d)):
+    elif isinstance(module, (nn.LayerNorm, nn.GroupNorm, nn.BatchNorm2d)):
         nn.init.zeros_(module.bias)
         nn.init.ones_(module.weight)
 
