@@ -281,6 +281,10 @@ class SegNest3d(nn.Module):
             img_size=img_size, patch_size=patch_size, in_chans=in_chans, embed_dim=embed_dims[0], flatten=False)
         self.num_patches = self.patch_embed.num_patches
         self.seq_length = self.num_patches // self.num_blocks[0]
+        print('self.num_patches', self.num_patches)
+        print('self.seq_length', self.seq_length)
+        print('self.num_blocks', self.num_blocks)
+        exit(0)
 
         # Build up each hierarchical level
         levels = []
