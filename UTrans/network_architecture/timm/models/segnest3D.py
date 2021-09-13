@@ -397,7 +397,7 @@ class SegNest3d(nn.Module):
         pred = self.last_conv(torch.cat(to_cat, dim=1))
         print("pred", pred.shape)
         for i in out:
-            print("out", out.shape)
+            print("out", i.shape)
         return [pred]+out
         # x = self.global_pool(x)
         # if self.drop_rate > 0.:
