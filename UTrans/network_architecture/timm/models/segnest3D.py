@@ -356,11 +356,15 @@ class SegNest3d(nn.Module):
         # print("--> emb", x.shape)
         # x = self.levels(x)
         out = []
+        i = 0
         for level in self.levels:
+            print("--> x", x.shape)
+            print("| i", i)
             x = level(x)
-            # print("--> x", x.shape)
+            print('| ok')
             # exit(0)
             out.append(x)
+            i+=1
         # Layer norm done over channel dim only (to NHWC and back)
         # x = self.norm(x.permute(0, 2, 3, 1)).permute(0, 3, 1, 2)
         # return x
