@@ -151,7 +151,7 @@ def deblockify(x, block_size, H: int, W: int, D: int):
     # x = x.reshape(B, grid_size, grid_size, block_size, block_size, C)
     print("...... x",x.shape)
     print(height, width, deep)
-    print(B, H, W, D, block_size[0], block_size[1], block_size[2], C)
+    print(B, height, width, deep, block_size[0], block_size[1], block_size[2], C)
     x = x.reshape(B, H, W, D, block_size[0], block_size[1], block_size[2], C)
     # x = x.transpose(2, 3).reshape(B, height, width, C)
     x = rearrange(x, 'b h w d x y z c -> b (h x) (w y) (d z) c')
