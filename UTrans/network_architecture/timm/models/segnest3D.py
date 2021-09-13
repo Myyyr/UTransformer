@@ -371,11 +371,11 @@ class SegNest3d(nn.Module):
         print("x shape", x.shape)
         # exit(0)
         x = self.forward_features(x)
-        print("x end shape", x.shape)
         out = []
         to_cat = []
         i = 0
         for up in self.upsamples:
+            print("x end shape",i, x[i].shape)
             out.append(up(x[i]))
             to_cat.append(self.upsamples_plus[i](out[i]))
             # print('---',i, out[i].shape, to_cat[i].shape)
