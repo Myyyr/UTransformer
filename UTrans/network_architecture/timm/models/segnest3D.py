@@ -368,23 +368,23 @@ class SegNest3d(nn.Module):
     def forward(self, x):
         """ x shape (B, C, H, W)
         """
-        print("x shape", x.shape)
+        # print("x shape", x.shape)
         # exit(0)
         x = self.forward_features(x)
         out = []
         to_cat = []
         i = 0
         for up in self.upsamples:
-            print("x end shape",i, x[i].shape)
+            # print("x end shape",i, x[i].shape)
             out.append(up(x[i]))
             to_cat.append(self.upsamples_plus[i](out[i]))
             # print('---',i, out[i].shape, to_cat[i].shape)
             i+=1
 
         pred = self.last_conv(torch.cat(to_cat, dim=1))
-        print("pred", pred.shape)
+        # print("pred", pred.shape)
         for i in out:
-            print("out", i.shape)
+            # print("out", i.shape)
         return [pred]+out
         # x = self.global_pool(x)
         # if self.drop_rate > 0.:
