@@ -189,9 +189,9 @@ class NestLevel(nn.Module):
         _, _, H, W, D = x.shape
         x = x.permute(0, 2, 3, 4, 1)  # (B, H', W', D', C), switch to channels last for transformer
         x = blockify(x, self.block_size)  # (B, T, N, C')
-        print("x.shape", x.shape)
-        print("self.pos_embed.shape", self.pos_embed.shape)
-        exit(0)
+        # print("x.shape", x.shape)
+        # print("self.pos_embed.shape", self.pos_embed.shape)
+        # exit(0)
         x = x + self.pos_embed
         x = self.transformer_encoder(x)  # (B, T, N, C')
         x = deblockify(x, self.block_size, H, W, D)  # (B, H', W', D', C')
@@ -282,9 +282,9 @@ class SegNest3d(nn.Module):
             img_size=img_size, patch_size=patch_size, in_chans=in_chans, embed_dim=embed_dims[0], flatten=False)
         self.num_patches = self.patch_embed.num_patches
         self.seq_length = self.num_patches // self.num_blocks[0]
-        print('self.num_patches', self.num_patches)
-        print('self.seq_length', self.seq_length)
-        print('self.num_blocks', self.num_blocks)
+        # print('self.num_patches', self.num_patches)
+        # print('self.seq_length', self.seq_length)
+        # print('self.num_blocks', self.num_blocks)
         # exit(0)
 
         # Build up each hierarchical level
@@ -353,13 +353,13 @@ class SegNest3d(nn.Module):
         """ x shape (B, C, H, W, D)
         """
         x = self.patch_embed(x)
-        print("--> emb", x.shape)
+        # print("--> emb", x.shape)
         # x = self.levels(x)
         out = []
         for level in self.levels:
             x = level(x)
-            print("--> x", x.shape)
-            exit(0)
+            # print("--> x", x.shape)
+            # exit(0)
             out.append(x)
         # Layer norm done over channel dim only (to NHWC and back)
         # x = self.norm(x.permute(0, 2, 3, 1)).permute(0, 3, 1, 2)
