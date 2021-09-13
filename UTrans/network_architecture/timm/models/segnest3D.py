@@ -185,16 +185,22 @@ class NestLevel(nn.Module):
         """
         expects x as (B, C, H, W, D)
         """
+        print("---1--- x.shape", x.shape)
         x = self.pool(x)
+        print("---2--- x.shape", x.shape)
         _, _, H, W, D = x.shape
         x = x.permute(0, 2, 3, 4, 1)  # (B, H', W', D', C), switch to channels last for transformer
+        print("---3--- x.shape", x.shape)
         x = blockify(x, self.block_size)  # (B, T, N, C')
-        # print("x.shape", x.shape)
+        print("---4--- x.shape", x.shape)
         # print("self.pos_embed.shape", self.pos_embed.shape)
         # exit(0)
         x = x + self.pos_embed
+        print("---5--- x.shape", x.shape)
         x = self.transformer_encoder(x)  # (B, T, N, C')
+        print("---6--- x.shape", x.shape)
         x = deblockify(x, self.block_size, H, W, D)  # (B, H', W', D', C')
+        print("---7--- x.shape", x.shape)
         # Channel-first for block aggregation, and generally to replicate convnet feature map at each stage
         return x.permute(0, 4, 1, 2, 3)  # (B, C, H', W', D')
 
