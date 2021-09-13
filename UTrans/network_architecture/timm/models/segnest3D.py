@@ -191,6 +191,7 @@ class NestLevel(nn.Module):
         x = blockify(x, self.block_size)  # (B, T, N, C')
         print("x.shape", x.shape)
         print("self.pos_embed.shape", self.pos_embed.shape)
+        exit(0)
         x = x + self.pos_embed
         x = self.transformer_encoder(x)  # (B, T, N, C')
         x = deblockify(x, self.block_size, H, W, D)  # (B, H', W', D', C')
