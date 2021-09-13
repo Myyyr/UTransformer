@@ -371,6 +371,7 @@ class SegNest3d(nn.Module):
         print("x shape", x.shape)
         # exit(0)
         x = self.forward_features(x)
+        print("x end shape", x.shape)
         out = []
         to_cat = []
         i = 0
