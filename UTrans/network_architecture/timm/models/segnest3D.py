@@ -268,7 +268,7 @@ class SegNest3d(nn.Module):
         # Block edge size in units of patches
         # Hint: (img_size // patch_size) gives number of patches along edge of image. sqrt(self.num_blocks[0]) is the
         #  number of blocks along edge of image
-        self.block_size = (int((img_size[0] // patch_size[0]) // (self.num_blocks[0])**(1/3)), 
+        self.block_size =   (int((img_size[0] // patch_size[0]) // (self.num_blocks[0])**(1/3)), 
                             int((img_size[1] // patch_size[1]) // (self.num_blocks[0])**(1/3)), 
                             int((img_size[2] // patch_size[2]) // (self.num_blocks[0])**(1/3)))
         # print("self.block_size", self.block_size)
@@ -284,7 +284,7 @@ class SegNest3d(nn.Module):
         print('self.num_patches', self.num_patches)
         print('self.seq_length', self.seq_length)
         print('self.num_blocks', self.num_blocks)
-        exit(0)
+        # exit(0)
 
         # Build up each hierarchical level
         levels = []
@@ -352,7 +352,8 @@ class SegNest3d(nn.Module):
         """ x shape (B, C, H, W, D)
         """
         x = self.patch_embed(x)
-        # print("--> emb", x.shape)
+        print("--> emb", x.shape)
+        exit(0)
         # x = self.levels(x)
         out = []
         for level in self.levels:
