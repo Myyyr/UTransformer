@@ -109,8 +109,11 @@ def main(gpu, network, network_trainer, task, fold, outpath, val, npz, c=False, 
 
     print('==>', network)
     plans_file, output_folder_name, dataset_directory, batch_dice, stage, \
+    # trainer_class = get_default_configuration(outpath, network, task, network_trainer, plans_identifier, \
+    #                                           search_in=(UTrans.__path__[0], "training", "network_training"), \
+    #                                           base_module='UTrans.training.network_training')
     trainer_class = get_default_configuration(outpath, network, task, network_trainer, plans_identifier, \
-                                              search_in=(UTrans.__path__[0], "training", "network_training"), \
+                                              search_in="UTrans.training.network_training", \
                                               base_module='UTrans.training.network_training')
 
     # print("---->",output_folder_name)
