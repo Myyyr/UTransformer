@@ -122,6 +122,9 @@ def main(gpu, network, network_trainer, task, fold, outpath, val, npz, c=False, 
                             batch_dice=batch_dice, stage=stage, unpack_data=decompress_data,
                             deterministic=deterministic,
                             fp16=run_mixed_precision)
+
+    print("Here its ok")
+    exit(0)
     # print(trainer_class)
     # trainer = trainer_class(plans_file, fold, output_folder=output_folder_name, dataset_directory=dataset_directory, batch_dice=batch_dice, stage=stage,
     #              unpack_data=decompress_data, deterministic=deterministic, fp16=run_mixed_precision)
