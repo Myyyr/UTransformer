@@ -108,7 +108,7 @@ def main(gpu, network, network_trainer, task, fold, outpath, val, npz, c=False, 
         fold = int(fold)
 
     print('==>', network)
-    print("Here its ok 1")
+    # print("Here its ok 1")
     # exit(0)
     plans_file, output_folder_name, dataset_directory, batch_dice, stage, \
     trainer_class = get_default_configuration(outpath, network, task, network_trainer, plans_identifier, \
@@ -118,15 +118,15 @@ def main(gpu, network, network_trainer, task, fold, outpath, val, npz, c=False, 
     
 
     # print("---->",output_folder_name)
-    print("Here its ok 2")
+    # print("Here its ok 2")
     # exit(0)
     trainer = trainer_class(plans_file, fold, norm_cfg, activation_cfg, output_folder=output_folder_name, dataset_directory=dataset_directory,
                             batch_dice=batch_dice, stage=stage, unpack_data=decompress_data,
                             deterministic=deterministic,
                             fp16=run_mixed_precision)
 
-    print("Here its ok 3")
-    exit(0)
+    # print("Here its ok 3")
+    # exit(0)
     # print(trainer_class)
     # trainer = trainer_class(plans_file, fold, output_folder=output_folder_name, dataset_directory=dataset_directory, batch_dice=batch_dice, stage=stage,
     #              unpack_data=decompress_data, deterministic=deterministic, fp16=run_mixed_precision)
