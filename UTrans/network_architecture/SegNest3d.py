@@ -263,7 +263,8 @@ class UTransformer_mhsa(SegmentationNetwork):
             # self.apply(print_module_training_status)
 
     def forward(self, x):
-        # print(x.shape)
+        print(x.shape)
+        exit(0)
 
         seg_outputs = self.segnest(x)
         seg_outputs.reverse()
