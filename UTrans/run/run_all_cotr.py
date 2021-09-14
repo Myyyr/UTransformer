@@ -1,4 +1,4 @@
-import UTrans.run.nnunet_run_training as run
+import UTrans.run.run_training as run
 
 g = '1'
 run.main(gpu=g, network='3d_fullres', network_trainer='nnUNetTrainerV2_ResTrans', task='062', fold=1, outpath='COTR', val=False, npz=True)

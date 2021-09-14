@@ -14,7 +14,7 @@ from nnunet.utilities.task_name_id_conversion import convert_id_to_task_name
 import os
 import UTrans
 # os.environ['nnUNet_raw_data_base'] = '/local/DEEPLEARNING/MULTI_ATLAS/MULTI_ATLAS/Task017_BCV/'
-def main():
+def main(gpu, network, network_trainer, task, fold, outpath, val, npz, c=False, ep=200, lr=1e-2, pretrained_weights=None):
     parser = argparse.ArgumentParser()
     parser.add_argument("-gpu", type=str, default='0')
 
@@ -56,6 +56,18 @@ def main():
     parser.add_argument("--disable_saving", required=False, action='store_true')
 
     args = parser.parse_args()
+
+    args.gpu = gpu
+    args.network = network
+    args.network_trainer = network_trainer
+    args.task = task
+    args.fold = fold
+    args.validation_only = val
+    args.outpath = outpath
+    args.npz = npz
+    args.continue_training = c
+    args.pretrained_weights = pretrained_weights
+
 
     os.environ["CUDA_VISIBLE_DEVICES"]=args.gpu
     print("---- GPU ----", os.environ["CUDA_VISIBLE_DEVICES"])

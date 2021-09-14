@@ -23,7 +23,15 @@ from batchgenerators.utilities.file_and_folder_operations import *
 
 from UTrans.network_architecture.ResTranUnet import ResTranUnet
 # from nnunet.network_architecture.generic_modular_UNet import get_default_network_config
-
+# python run_training.py -network='2d' -network_trainer=nnUNetTrainerV2_utrans_mhsa -task=062 -fold='all' -gpu=1 -outpath='MHSA'
+def get_n_params(model):
+    pp=0
+    for p in list(model.parameters()):
+        nn=1
+        for s in list(p.size()):
+            nn = nn*s
+        pp += nn
+    return pp
 class nnUNetTrainerV2_ResTrans(nnUNetTrainer):
 
     def __init__(self, plans_file, fold, norm_cfg, activation_cfg, output_folder=None, dataset_directory=None, batch_dice=True, stage=None,
