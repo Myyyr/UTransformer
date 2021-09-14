@@ -114,13 +114,13 @@ def main(gpu, network, network_trainer, task, fold, outpath, val, npz, c=False, 
                                               base_module='UTrans.training.network_training')
 
     # print("---->",output_folder_name)
-    # trainer = trainer_class(plans_file, fold, norm_cfg, activation_cfg, output_folder=output_folder_name, dataset_directory=dataset_directory,
-    #                         batch_dice=batch_dice, stage=stage, unpack_data=decompress_data,
-    #                         deterministic=deterministic,
-    #                         fp16=run_mixed_precision)
-    print(trainer_class)
-    trainer = trainer_class(plans_file, fold, output_folder=output_folder_name, dataset_directory=dataset_directory, batch_dice=batch_dice, stage=stage,
-                 unpack_data=decompress_data, deterministic=deterministic, fp16=run_mixed_precision)
+    trainer = trainer_class(plans_file, fold, norm_cfg, activation_cfg, output_folder=output_folder_name, dataset_directory=dataset_directory,
+                            batch_dice=batch_dice, stage=stage, unpack_data=decompress_data,
+                            deterministic=deterministic,
+                            fp16=run_mixed_precision)
+    # print(trainer_class)
+    # trainer = trainer_class(plans_file, fold, output_folder=output_folder_name, dataset_directory=dataset_directory, batch_dice=batch_dice, stage=stage,
+    #              unpack_data=decompress_data, deterministic=deterministic, fp16=run_mixed_precision)
     if args.disable_saving:
         trainer.save_latest_only = False  # if false it will not store/overwrite _latest but separate files each
         trainer.save_intermediate_checkpoints = False  # whether or not to save checkpoint_latest
