@@ -114,7 +114,7 @@ def main(gpu, network, network_trainer, task, fold, outpath, val, npz, c=False, 
     #                                           base_module='UTrans.training.network_training')
     
     print("Here its ok 1")
-    exit(0)
+    # exit(0)
     plans_file, output_folder_name, dataset_directory, batch_dice, stage, \
     trainer_class = get_default_configuration(outpath, network, task, network_trainer, plans_identifier, \
                                               search_in="UTrans.training.network_training", \
