@@ -147,6 +147,9 @@ class nnUNetTrainerV2_ResTrans(nnUNetTrainer):
         total = sum([param.nelement() for param in self.network.parameters()])
         print('  + Number of Network Params: %.2f(e6)' % (total / 1e6))
 
+        print("####\n#### MODEL PARAMS :{}\n####".format(get_n_params(self.network)))
+
+
         if torch.cuda.is_available():
             self.network.cuda()
         self.network.inference_apply_nonlin = softmax_helper
