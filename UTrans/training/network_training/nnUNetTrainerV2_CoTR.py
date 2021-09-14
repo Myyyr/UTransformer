@@ -240,6 +240,8 @@ class nnUNetTrainerV2_CoTR(nnUNetTrainer):
 
         if self.fp16:
             with autocast():
+                print(type(self.network))
+                exit(0)
                 output = self.network(data)
                 del data
                 l = self.loss(output, target)
