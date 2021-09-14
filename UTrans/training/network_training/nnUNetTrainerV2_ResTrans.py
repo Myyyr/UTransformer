@@ -148,7 +148,7 @@ class nnUNetTrainerV2_ResTrans(nnUNetTrainer):
         print('  + Number of Network Params: %.2f(e6)' % (total / 1e6))
 
         print("####\n#### MODEL PARAMS :{}\n####".format(get_n_params(self.network)))
-        exit(0)
+        # exit(0)
 
         if torch.cuda.is_available():
             self.network.cuda()
