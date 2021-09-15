@@ -142,6 +142,8 @@ class U_ResTran3D(nn.Module):
 
     def forward(self, inputs):
         # # %%%%%%%%%%%%% UTrans
+        print("inputs", inputs.shape)
+        exit(0)
         x_convs = self.backbone(inputs)
         x_fea, masks, x_posemb = self.posi_mask(x_convs)
         x_trans = self.encoder_Detrans(x_fea, masks, x_posemb)
