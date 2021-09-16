@@ -117,7 +117,7 @@ class Setr3d_Module(nn.Module):
         self.MODEL_NUM_CLASSES = num_classes
 
         self.in_dim_ = 4096
-        self.d_model = 320 
+        self.d_model = 384 
         # self.filters = [128, 256, 512, 1024]
         self.filters = [64, 128, 256, 512]
         d_model = self.d_model
@@ -125,7 +125,7 @@ class Setr3d_Module(nn.Module):
         self.linear_projection = nn.Linear(self.in_dim_, d_model, bias=False)
         self.pos_encoder = PositionalEncoding(d_model=d_model, dropout=0., max_len=5000)
 
-        encodlayer = nn.TransformerEncoderLayer(d_model = d_model, nhead = 8, dim_feedforward=1536, dropout=0.1, activation='relu')
+        encodlayer = nn.TransformerEncoderLayer(d_model = d_model, nhead = 6, dim_feedforward=1536, dropout=0.1, activation='relu')
         self.transformers_0 = nn.TransformerEncoder(encoder_layer=encodlayer, num_layers=8)
         self.transformers_1 = nn.TransformerEncoder(encoder_layer=encodlayer, num_layers=8)
         self.transformers_2 = nn.TransformerEncoder(encoder_layer=encodlayer, num_layers=8)
