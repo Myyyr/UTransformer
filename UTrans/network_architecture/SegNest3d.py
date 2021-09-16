@@ -236,7 +236,7 @@ class UTransformer_mhsa(SegmentationNetwork):
         
 
 
-        h = 6
+        h = 5
         d = h*64
         # lvl = 4
         # ps = (2,4,4)
