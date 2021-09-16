@@ -146,6 +146,13 @@ class nnUNetTrainerV2_segnest3d(nnUNetTrainer):
         Known issue: forgot to set neg_slope=0 in InitWeights_He; should not make a difference though
         :return:
         """
+        conv_op = nn.Conv3d
+        dropout_op = nn.Dropout3d
+        norm_op = nn.InstanceNorm3d
+        norm_op_kwargs = {'eps': 1e-5, 'affine': True}
+        dropout_op_kwargs = {'p': 0, 'inplace': True}
+        net_nonlin = nn.LeakyReLU
+        net_nonlin_kwargs = {'negative_slope': 1e-2, 'inplace': True}
         self.network = UTransformer_mhsa(self.num_input_channels, self.base_num_features, self.num_classes,
                                     len(self.net_num_pool_op_kernel_sizes),
                                     self.conv_per_stage, 2, conv_op, norm_op, norm_op_kwargs, dropout_op,
