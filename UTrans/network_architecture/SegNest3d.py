@@ -242,8 +242,8 @@ class UTransformer_mhsa(SegmentationNetwork):
         # ps = (2,4,4)
         lvl = 4
         ps = (2,4,4)
-        self.segnest = models.segnest3D.SegNest3d(img_size=(48, 192, 192), in_chans=1, 
-        # self.segnest = models.segnest3D.SegNest3d(img_size=(80, 192, 160), in_chans=1, 
+        # self.segnest = models.segnest3D.SegNest3d(img_size=(48, 192, 192), in_chans=1, 
+        self.segnest = models.segnest3D.SegNest3d(img_size=(80, 192, 160), in_chans=1, 
                       patch_size=ps, num_levels=lvl, 
                       embed_dims=(d,)*lvl, num_heads=(h,)*lvl, 
                       depths=(3,)*lvl, num_classes=2, 
