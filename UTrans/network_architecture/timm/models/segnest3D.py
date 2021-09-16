@@ -312,7 +312,7 @@ class SegNest3d(nn.Module):
                                                # nn.Upsample(scale_factor=2**i)))
             upsamples.append(nn.Sequential(nn.Conv3d(dim, num_classes, 1),
                                            nn.Upsample(scale_factor=(2, 4, 4))))
-            upsamples_plus.append(nn.Upsample(  scale_factor=2**(i+1) ))
+            upsamples_plus.append(nn.Upsample(  scale_factor=(2**(i), 2**(i+1), 2**(i+1)) ))
 
         self.last_conv = nn.Conv3d(num_classes*num_levels, num_classes, 1)
 
