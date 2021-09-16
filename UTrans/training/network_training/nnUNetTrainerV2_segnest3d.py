@@ -253,8 +253,6 @@ class nnUNetTrainerV2_segnest3d(nnUNetTrainer):
 
         if self.fp16:
             with autocast():
-                # print(type(self.network))
-                # exit(0)
                 output = self.network(data)
                 del data
                 l = self.loss(output, target)
@@ -266,8 +264,6 @@ class nnUNetTrainerV2_segnest3d(nnUNetTrainer):
                 self.amp_grad_scaler.step(self.optimizer)
                 self.amp_grad_scaler.update()
         else:
-            # print(type(self.network))
-            # exit(0)
             output = self.network(data)
             del data
             l = self.loss(output, target)

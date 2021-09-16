@@ -60,6 +60,7 @@ class nnUNetTrainerV2_utrans_segnest3d(nnUNetTrainer):
 
             if force_load_plans or (self.plans is None):
                 self.load_plans_file()
+                self.plans['plans_per_stage'][1]['patch_size'] = [48,192,192]
 
             self.process_plans(self.plans)
 
