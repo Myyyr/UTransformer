@@ -241,6 +241,7 @@ class Setr3d_Module(nn.Module):
         print("ds1", ds1.shape)
         print("ds2", ds2.shape)
         print("ds3", ds3.shape)
+        exit(0)
         return [result, ds0, ds1, ds2, ds3]
 
 
