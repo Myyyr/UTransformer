@@ -138,10 +138,10 @@ class Setr3d_Module(nn.Module):
         encodlayer = nn.TransformerEncoderLayer(d_model = d_model, nhead = nheads, dim_feedforward=1536, dropout=0.1, activation='relu')
         self.transformers_3 = nn.TransformerEncoder(encoder_layer=encodlayer, num_layers=4)
 
-        self.ds3_cls_conv = nn.Sequential(nn.Conv3d(d_model, self.MODEL_NUM_CLASSES, kernel_size=1), nn.Upsample(scale_factor=( 4,2,2)))
-        self.ds2_cls_conv = nn.Sequential(nn.Conv3d(d_model, self.MODEL_NUM_CLASSES, kernel_size=1), nn.Upsample(scale_factor=( 8,4,4)))
-        self.ds1_cls_conv = nn.Sequential(nn.Conv3d(d_model, self.MODEL_NUM_CLASSES, kernel_size=1), nn.Upsample(scale_factor=(16,8,8)))
-        self.ds0_cls_conv = nn.Sequential(nn.Conv3d(d_model, self.MODEL_NUM_CLASSES, kernel_size=1), nn.Upsample(scale_factor=(32,16,16)))
+        self.ds3_cls_conv = nn.Sequential(nn.Conv3d(d_model, self.MODEL_NUM_CLASSES, kernel_size=1), nn.Upsample(scale_factor=( 2,2,2)))
+        self.ds2_cls_conv = nn.Sequential(nn.Conv3d(d_model, self.MODEL_NUM_CLASSES, kernel_size=1), nn.Upsample(scale_factor=( 4,4,4)))
+        self.ds1_cls_conv = nn.Sequential(nn.Conv3d(d_model, self.MODEL_NUM_CLASSES, kernel_size=1), nn.Upsample(scale_factor=(8,8,8)))
+        self.ds0_cls_conv = nn.Sequential(nn.Conv3d(d_model, self.MODEL_NUM_CLASSES, kernel_size=1), nn.Upsample(scale_factor=(16,16,16)))
 
 
         # self.transposeconv_stage3 = nn.Sequential(nn.ConvTranspose3d(d_model, self.filters[3], kernel_size=(2,2,2), stride=(2,2,2), bias=False),nn.ReLU(),
