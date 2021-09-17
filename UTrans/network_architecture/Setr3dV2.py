@@ -227,8 +227,8 @@ class Setr3d_Module(nn.Module):
         del skip_2
         ds3 = self.ds3_cls_conv(torch.reshape(rearrange(skip_3, 's n d -> n s d'), (bs, c*self.d_model, int(d/16), int(w/16), int(h/16))))
         # Deconv
-        result = self.transposeconv_stage3(torch.reshape(rearrange(skip_2, 's n d -> n s d'), (bs, c*self.d_model, int(d/16), int(w/16), int(h/16))))
-        del skip_2
+        result = self.transposeconv_stage3(torch.reshape(rearrange(skip_3, 's n d -> n s d'), (bs, c*self.d_model, int(d/16), int(w/16), int(h/16))))
+        del skip_3
         result = self.transposeconv_stage2(result)
         result = self.transposeconv_stage1(result)
         result = self.transposeconv_stage0(result)
