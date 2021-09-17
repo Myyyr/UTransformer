@@ -236,11 +236,11 @@ class Setr3d_Module(nn.Module):
         # Prediction
         result = self.cls_conv(result)
 
-        # print("result", result.shape)
-        # print("ds0", ds0.shape)
-        # print("ds1", ds1.shape)
-        # print("ds2", ds2.shape)
-        # print("ds3", ds3.shape)
+        print("result", result.shape)
+        print("ds0", ds0.shape)
+        print("ds1", ds1.shape)
+        print("ds2", ds2.shape)
+        print("ds3", ds3.shape)
         # exit(0)
         return [result, ds0, ds1, ds2, ds3]
 
