@@ -219,13 +219,13 @@ class Setr3d_Module(nn.Module):
         skip_3 = self.transformers_3(skip_2)
 
         # Deep Supervision
-        ds0 = self.ds0_cls_conv(torch.reshape(rearrange(skip_0, 's n d -> n s d'), (bs, c*self.d_model, int(d/16), int(w/16), int(h/16))))
+        ds3 = self.ds3_cls_conv(torch.reshape(rearrange(skip_0, 's n d -> n s d'), (bs, c*self.d_model, int(d/16), int(w/16), int(h/16))))
         del skip_0
-        ds1 = self.ds1_cls_conv(torch.reshape(rearrange(skip_1, 's n d -> n s d'), (bs, c*self.d_model, int(d/16), int(w/16), int(h/16))))
+        ds2 = self.ds2_cls_conv(torch.reshape(rearrange(skip_1, 's n d -> n s d'), (bs, c*self.d_model, int(d/16), int(w/16), int(h/16))))
         del skip_1
-        ds2 = self.ds2_cls_conv(torch.reshape(rearrange(skip_2, 's n d -> n s d'), (bs, c*self.d_model, int(d/16), int(w/16), int(h/16))))
+        ds1 = self.ds1_cls_conv(torch.reshape(rearrange(skip_2, 's n d -> n s d'), (bs, c*self.d_model, int(d/16), int(w/16), int(h/16))))
         del skip_2
-        ds3 = self.ds3_cls_conv(torch.reshape(rearrange(skip_3, 's n d -> n s d'), (bs, c*self.d_model, int(d/16), int(w/16), int(h/16))))
+        ds0 = self.ds0_cls_conv(torch.reshape(rearrange(skip_3, 's n d -> n s d'), (bs, c*self.d_model, int(d/16), int(w/16), int(h/16))))
         # Deconv
         result = self.transposeconv_stage3(torch.reshape(rearrange(skip_3, 's n d -> n s d'), (bs, c*self.d_model, int(d/16), int(w/16), int(h/16))))
         del skip_3
