@@ -119,7 +119,7 @@ class Setr3d_Module(nn.Module):
         self.in_dim_ = 4096
         self.d_model = 1024 
         # self.filters = [128, 256, 512, 1024]
-        self.filters = [self.MODEL_NUM_CLASSES, 256, 256, 1024]
+        self.filters = [self.MODEL_NUM_CLASSES, 256, 256, 256]
         d_model = self.d_model
 
         self.linear_projection = nn.Linear(self.in_dim_, d_model)
