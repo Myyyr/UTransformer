@@ -215,8 +215,8 @@ class Setr3d_Module(nn.Module):
         inputs = self.pos_encoder(inputs)
         inputs = rearrange(inputs, 'n s d -> s n d')
 
-        print("inputs",inputs.shape)
-        exit(0)
+        # print("inputs",inputs.shape)
+        # exit(0)
 
         skip_0 = self.transformers_0(inputs)
         del inputs
@@ -228,27 +228,27 @@ class Setr3d_Module(nn.Module):
         # ds3 = self.ds3_cls_conv(torch.reshape(rearrange(skip_0, 's n d -> n s d'), (bs, c*self.d_model, int(d/16), int(w/16), int(h/16))))
         ds3 = rearrange(skip_0, 's n d -> n s d')
         print(ds3.shape)
-        ds3 = rearrange(ds3, "b c (x y z) -> b c x y z", x=int(d/16), y=int(w/16), z=int(h/16))
+        ds3 = rearrange(ds3, "b (x y z) c -> b c x y z", x=int(d/16), y=int(w/16), z=int(h/16))
         ds3 = self.ds3_cls_conv(ds3)
         del skip_0
         # ds2 = self.ds2_cls_conv(torch.reshape(rearrange(skip_1, 's n d -> n s d'), (bs, c*self.d_model, int(d/16), int(w/16), int(h/16))))
         ds2 = rearrange(skip_1, 's n d -> n s d')
-        ds2 = rearrange(ds2, "b c (x y z) -> b c x y z", x=int(d/16), y=int(w/16), z=int(h/16))
+        ds2 = rearrange(ds2, "b (x y z) c -> b c x y z", x=int(d/16), y=int(w/16), z=int(h/16))
         ds2 = self.ds2_cls_conv(ds2)
         del skip_1
         # ds1 = self.ds1_cls_conv(torch.reshape(rearrange(skip_2, 's n d -> n s d'), (bs, c*self.d_model, int(d/16), int(w/16), int(h/16))))
         ds1 = rearrange(skip_2, 's n d -> n s d')
-        ds1 = rearrange(ds1, "b c (x y z) -> b c x y z", x=int(d/16), y=int(w/16), z=int(h/16))
+        ds1 = rearrange(ds1, "b (x y z) c -> b c x y z", x=int(d/16), y=int(w/16), z=int(h/16))
         ds1 = self.ds1_cls_conv(ds1)
         del skip_2
         # ds0 = self.ds0_cls_conv(torch.reshape(rearrange(skip_3, 's n d -> n s d'), (bs, c*self.d_model, int(d/16), int(w/16), int(h/16))))
         ds0 = rearrange(skip_3, 's n d -> n s d')
-        ds0 = rearrange(ds0, "b c (x y z) -> b c x y z", x=int(d/16), y=int(w/16), z=int(h/16))
+        ds0 = rearrange(ds0, "b (x y z) c -> b c x y z", x=int(d/16), y=int(w/16), z=int(h/16))
         ds0 = self.ds0_cls_conv(ds0)
         # Deconv
         # result = self.transposeconv_stage3(torch.reshape(rearrange(skip_3, 's n d -> n s d'), (bs, c*self.d_model, int(d/16), int(w/16), int(h/16))))
         result = rearrange(skip_3, 's n d -> n s d')
-        result = rearrange(result, "b c (x y z) -> b c x y z", x=int(d/16), y=int(w/16), z=int(h/16))
+        result = rearrange(result, "b (x y z) c -> b c x y z", x=int(d/16), y=int(w/16), z=int(h/16))
         result = self.transposeconv_stage3(result)
         del skip_3
         result = self.transposeconv_stage2(result)
