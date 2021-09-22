@@ -205,7 +205,7 @@ class Setr3d_Module(nn.Module):
 
         # Reshape, project and position
         # inputs = torch.reshape(inputs, (bs, seq, self.in_dim_))
-        inputs = rearrange(inputs, "b c d w h -> b c x y z o p q", x=d//16, y=w//16, z=h//16, o=16,p=16,q=16)
+        inputs = rearrange(inputs, "b c d w h -> b c x o y p z q", x=d//16, y=w//16, z=h//16, o=16,p=16,q=16)
         inputs = rearrange(inputs, "b c x y z o p q -> b (c x y z) (o p q)")
         inputs = self.linear_projection(inputs)
 
