@@ -119,7 +119,7 @@ class Setr3d_Module(nn.Module):
         self.in_dim_ = 4096
         self.d_model = 1024 
         # self.filters = [128, 256, 512, 1024]
-        self.filters = [256, 256, 256, 1024]
+        self.filters = [self.MODEL_NUM_CLASSES, 256, 256, 1024]
         d_model = self.d_model
 
         self.linear_projection = nn.Linear(self.in_dim_, d_model)
@@ -173,7 +173,7 @@ class Setr3d_Module(nn.Module):
                                                 nn.Upsample(scale_factor=2))
 
 
-        self.cls_conv = nn.Conv3d(self.filters[0], self.MODEL_NUM_CLASSES, kernel_size=1)
+        # self.cls_conv = nn.Conv3d(self.filters[0], self.MODEL_NUM_CLASSES, kernel_size=1)
 
         for m in self.modules():
             if isinstance(m, (nn.Conv3d, Conv3d_wd, nn.ConvTranspose3d, nn.Linear)):
@@ -227,7 +227,7 @@ class Setr3d_Module(nn.Module):
         # Deep Supervision
         # ds3 = self.ds3_cls_conv(torch.reshape(rearrange(skip_0, 's n d -> n s d'), (bs, c*self.d_model, int(d/16), int(w/16), int(h/16))))
         ds3 = rearrange(skip_0, 's n d -> n s d')
-        print(ds3.shape)
+        # print(ds3.shape)
         ds3 = rearrange(ds3, "b (x y z) c -> b c x y z", x=int(d/16), y=int(w/16), z=int(h/16))
         ds3 = self.ds3_cls_conv(ds3)
         del skip_0
@@ -256,7 +256,7 @@ class Setr3d_Module(nn.Module):
         result = self.transposeconv_stage0(result)
 
         # Prediction
-        result = self.cls_conv(result)
+        # result = self.cls_conv(result)
 
         # print("result", result.shape)
         # print("ds0", ds0.shape)
