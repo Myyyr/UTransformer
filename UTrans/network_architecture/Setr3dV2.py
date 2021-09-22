@@ -119,23 +119,23 @@ class Setr3d_Module(nn.Module):
         self.in_dim_ = 4096
         self.d_model = 256 
         # self.filters = [128, 256, 512, 1024]
-        self.filters = [16, 32, 64, 128]
+        self.filters = [256, 256, 256, 1024]
         d_model = self.d_model
 
         self.linear_projection = nn.Linear(self.in_dim_, d_model)
         self.pos_encoder = PositionalEncoding(d_model=d_model, dropout=0., max_len=5000)
 
-        nheads = 4
-        encodlayer = nn.TransformerEncoderLayer(d_model = d_model, nhead = nheads, dim_feedforward=1536, dropout=0.1, activation='relu')
+        nheads = 16
+        encodlayer = nn.TransformerEncoderLayer(d_model = d_model, nhead = nheads, dim_feedforward=4*self.d_model, dropout=0.1, activation='relu')
         self.transformers_0 = nn.TransformerEncoder(encoder_layer=encodlayer, num_layers=10)
         
-        encodlayer = nn.TransformerEncoderLayer(d_model = d_model, nhead = nheads, dim_feedforward=1536, dropout=0.1, activation='relu')
+        encodlayer = nn.TransformerEncoderLayer(d_model = d_model, nhead = nheads, dim_feedforward=4*self.d_model, dropout=0.1, activation='relu')
         self.transformers_1 = nn.TransformerEncoder(encoder_layer=encodlayer, num_layers=5)
         
-        encodlayer = nn.TransformerEncoderLayer(d_model = d_model, nhead = nheads, dim_feedforward=1536, dropout=0.1, activation='relu')
+        encodlayer = nn.TransformerEncoderLayer(d_model = d_model, nhead = nheads, dim_feedforward=4*self.d_model, dropout=0.1, activation='relu')
         self.transformers_2 = nn.TransformerEncoder(encoder_layer=encodlayer, num_layers=5)
         
-        encodlayer = nn.TransformerEncoderLayer(d_model = d_model, nhead = nheads, dim_feedforward=1536, dropout=0.1, activation='relu')
+        encodlayer = nn.TransformerEncoderLayer(d_model = d_model, nhead = nheads, dim_feedforward=4*self.d_model, dropout=0.1, activation='relu')
         self.transformers_3 = nn.TransformerEncoder(encoder_layer=encodlayer, num_layers=4)
 
         self.ds3_cls_conv = nn.Sequential(nn.Conv3d(d_model, self.MODEL_NUM_CLASSES, kernel_size=1), nn.Upsample(scale_factor=( 2,1,1)))
