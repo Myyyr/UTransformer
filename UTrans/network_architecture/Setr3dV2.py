@@ -215,6 +215,9 @@ class Setr3d_Module(nn.Module):
         inputs = self.pos_encoder(inputs)
         inputs = rearrange(inputs, 'n s d -> s n d')
 
+        print("inputs",inputs.shape)
+        exit(0)
+
         skip_0 = self.transformers_0(inputs)
         del inputs
         skip_1 = self.transformers_1(skip_0)
