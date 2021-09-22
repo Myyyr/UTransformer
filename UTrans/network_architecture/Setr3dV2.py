@@ -204,13 +204,15 @@ class Setr3d_Module(nn.Module):
         seq = int(d*h*w*c/(16**3))
 
         # Reshape, project and position
-        inputs = torch.reshape(inputs, (bs, seq, self.in_dim_))
+        # inputs = torch.reshape(inputs, (bs, seq, self.in_dim_))
+        inputs = rearrange(inputs, "b c d w h -> b c x y z o p q", x=d//16, y=w//16, z=h//16, o=16,p=16,q=16)
+        inputs = rearrange(inputs, "b c x y z o p q -> b (c x y z) (o p q)")
         inputs = self.linear_projection(inputs)
 
         # Transformer : permute for pytorch trans (seq, bs, d_model) and position encode
         # inputs = inputs.permute((1,0,2))
-        inputs = rearrange(inputs, 'n s d -> s n d')
         inputs = self.pos_encoder(inputs)
+        inputs = rearrange(inputs, 'n s d -> s n d')
 
         skip_0 = self.transformers_0(inputs)
         del inputs
