@@ -34,7 +34,14 @@ from torch import nn
 from torch.cuda.amp import autocast
 from nnunet.training.learning_rate.poly_lr import poly_lr
 from batchgenerators.utilities.file_and_folder_operations import *
-
+def get_n_params(model):
+    pp=0
+    for p in list(model.parameters()):
+        nn=1
+        for s in list(p.size()):
+            nn = nn*s
+        pp += nn
+    return pp
 
 class nnUNetTrainerV2(nnUNetTrainer):
     """
@@ -45,7 +52,7 @@ class nnUNetTrainerV2(nnUNetTrainer):
                  unpack_data=True, deterministic=True, fp16=False):
         super().__init__(plans_file, fold, output_folder, dataset_directory, batch_dice, stage, unpack_data,
                          deterministic, fp16)
-        self.max_num_epochs = 200
+        self.max_num_epochs = 1000
         self.initial_lr = 1e-2
         self.deep_supervision_scales = None
         self.ds_loss_weights = None
@@ -67,6 +74,8 @@ class nnUNetTrainerV2(nnUNetTrainer):
 
             if force_load_plans or (self.plans is None):
                 self.load_plans_file()
+                self.plans['plans_per_stage'][1]['patch_size'] = [48,192,192]
+                print("Patch size is %s" % self.plans['plans_per_stage'][1]['patch_size'])
 
             self.process_plans(self.plans)
 
@@ -157,6 +166,7 @@ class nnUNetTrainerV2(nnUNetTrainer):
                                     dropout_op_kwargs,
                                     net_nonlin, net_nonlin_kwargs, True, False, lambda x: x, InitWeights_He(1e-2),
                                     self.net_num_pool_op_kernel_sizes, self.net_conv_kernel_sizes, False, True, True)
+        print("####\n#### MODEL PARAMS :{}\n####".format(get_n_params(self.network)))
         if torch.cuda.is_available():
             self.network.cuda()
         self.network.inference_apply_nonlin = softmax_helper
