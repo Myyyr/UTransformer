@@ -270,7 +270,11 @@ class nnUNetTrainerV2(nnUNetTrainer):
                 self.amp_grad_scaler.step(self.optimizer)
                 self.amp_grad_scaler.update()
         else:
+            print("\n\n\n\n Here")
             output = self.network(data)
+            print("\n\n\n\n isoké")
+            exit(0)
+
             del data
             l = self.loss(output, target)
 
