@@ -27,7 +27,7 @@ from nnunet.network_architecture.neural_network import SegmentationNetwork
 from nnunet.training.data_augmentation.default_data_augmentation import default_2D_augmentation_params, \
     get_patch_size, default_3D_augmentation_params
 from nnunet.training.dataloading.dataset_loading import unpack_dataset
-from nnunet.training.network_training.nnUNetTrainer import nnUNetTrainer
+from UTrans.training.network_training.nnUNetTrainer import nnUNetTrainer
 from nnunet.utilities.nd_softmax import softmax_helper
 from sklearn.model_selection import KFold
 from torch import nn
@@ -244,7 +244,7 @@ class nnUNetTrainerV2(nnUNetTrainer):
         :param run_online_evaluation:
         :return:
         """
-        print("\n\n\n\n Let's iter")
+        # print("\n\n\n\n Let's iter")
         data_dict = next(data_generator)
         data = data_dict['data']
         target = data_dict['target']
@@ -260,10 +260,10 @@ class nnUNetTrainerV2(nnUNetTrainer):
 
         if self.fp16:
             with autocast():
-                print("\n\n\n\n Here")
+                # print("\n\n\n\n Here")
                 output = self.network(data)
-                print("\n\n\n\n isoké")
-                exit(0)
+                # print("\n\n\n\n isoké")
+                # exit(0)
                 del data
                 l = self.loss(output, target)
 
@@ -274,10 +274,10 @@ class nnUNetTrainerV2(nnUNetTrainer):
                 self.amp_grad_scaler.step(self.optimizer)
                 self.amp_grad_scaler.update()
         else:
-            print("\n\n\n\n Here")
+            # print("\n\n\n\n Here")
             output = self.network(data)
-            print("\n\n\n\n isoké")
-            exit(0)
+            # print("\n\n\n\n isoké")
+            # exit(0)
 
             del data
             l = self.loss(output, target)
