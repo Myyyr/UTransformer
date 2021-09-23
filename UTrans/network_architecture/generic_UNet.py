@@ -385,6 +385,8 @@ class Generic_UNet(SegmentationNetwork):
             # self.apply(print_module_training_status)
 
     def forward(self, x):
+        print(x.shape)
+        exit(0)
         skips = []
         seg_outputs = []
         for d in range(len(self.conv_blocks_context) - 1):
