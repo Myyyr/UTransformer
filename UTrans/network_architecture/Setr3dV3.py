@@ -138,47 +138,36 @@ class Setr3d_Module(nn.Module):
         encodlayer = nn.TransformerEncoderLayer(d_model = d_model, nhead = nheads, dim_feedforward=4*self.d_model, dropout=0.1, activation='relu')
         self.transformers_3 = nn.TransformerEncoder(encoder_layer=encodlayer, num_layers=4)
 
-        self.ds3_cls_conv = nn.Sequential(nn.Conv3d(d_model, self.MODEL_NUM_CLASSES, kernel_size=1), nn.Upsample(scale_factor=( 2,1,1)))
-        self.ds2_cls_conv = nn.Sequential(nn.Conv3d(d_model, self.MODEL_NUM_CLASSES, kernel_size=1), nn.Upsample(scale_factor=( 4,2,2)))
-        self.ds1_cls_conv = nn.Sequential(nn.Conv3d(d_model, self.MODEL_NUM_CLASSES, kernel_size=1), nn.Upsample(scale_factor=(8,4,4)))
         self.ds0_cls_conv = nn.Sequential(nn.Conv3d(d_model, self.MODEL_NUM_CLASSES, kernel_size=1), nn.Upsample(scale_factor=(16,8,8)))
+        self.ds1_cls_conv = nn.Sequential(nn.Conv3d(d_model, self.MODEL_NUM_CLASSES, kernel_size=1), nn.Upsample(scale_factor=(8,4,4)))
+        self.ds2_cls_conv = nn.Sequential(nn.Conv3d(d_model, self.MODEL_NUM_CLASSES, kernel_size=1), nn.Upsample(scale_factor=( 4,2,2)))
+        self.ds3_cls_conv = nn.Sequential(nn.Conv3d(d_model, self.MODEL_NUM_CLASSES, kernel_size=1), nn.Upsample(scale_factor=( 2,1,1)))
 
 
-        # self.transposeconv_stage3 = nn.Sequential(nn.ConvTranspose3d(d_model, self.filters[3], kernel_size=(2,2,2), stride=(2,2,2), bias=False),nn.ReLU(),
-        #                                             nn.Conv3d(self.filters[3], self.filters[3], kernel_size=3, padding=1), nn.ReLU())
-        # self.transposeconv_stage2 = nn.Sequential(nn.ConvTranspose3d(self.filters[3], self.filters[2], kernel_size=(2,2,2), stride=(2,2,2), bias=False),nn.ReLU(),
-        #                                             nn.Conv3d(self.filters[2], self.filters[2], kernel_size=3, padding=1), nn.ReLU())
-        # self.transposeconv_stage1 = nn.Sequential(nn.ConvTranspose3d(self.filters[2], self.filters[1], kernel_size=(2,2,2), stride=(2,2,2), bias=False),nn.ReLU(),
-        #                                             nn.Conv3d(self.filters[1], self.filters[1], kernel_size=3, padding=1), nn.ReLU())
-        # self.transposeconv_stage0 = nn.Sequential(nn.ConvTranspose3d(self.filters[1], self.filters[0], kernel_size=(2,2,2), stride=(2,2,2), bias=False),nn.ReLU(),
-        #                                             nn.Conv3d(self.filters[0], self.filters[0], kernel_size=3, padding=1), nn.ReLU())
+    
 
+        self.first_layer_stage0 = nn.Conv3d(d_model, d_model//2, kernel_size=1, stride=1, padding=0)
+        self.transposeconv_stage0 = nn.Sequential(nn.Conv3d(d_model//2, d_model//2, kernel_size=3, stride=1, padding=1), 
+                                                nn.Conv3d(d_model//2, d_model//4, kernel_size=3, stride=1, padding=1),
+                                                nn.Upsample(scale_factor=4))
 
-        # self.transposeconv_stage3 = nn.Sequential(nn.ConvTranspose3d(d_model, self.filters[3], kernel_size=(2,2,2), stride=(2,2,2), bias=False), 
-        #                                             ResBlock(self.filters[3], self.filters[3], norm_cfg, activation_cfg, weight_std=weight_std))
-        # self.transposeconv_stage2 = nn.Sequential(nn.ConvTranspose3d(self.filters[3], self.filters[2], kernel_size=(2,2,2), stride=(2,2,2), bias=False), 
-        #                                             ResBlock(self.filters[2], self.filters[2], norm_cfg, activation_cfg, weight_std=weight_std))
-        # self.transposeconv_stage1 = nn.Sequential(nn.ConvTranspose3d(self.filters[2], self.filters[1], kernel_size=(2,2,2), stride=(2,2,2), bias=False), 
-        #                                             ResBlock(self.filters[1], self.filters[1], norm_cfg, activation_cfg, weight_std=weight_std))
-        # self.transposeconv_stage0 = nn.Sequential(nn.ConvTranspose3d(self.filters[1], self.filters[0], kernel_size=(2,2,2), stride=(2,2,2), bias=False), 
-        #                                             ResBlock(self.filters[0], self.filters[0], norm_cfg, activation_cfg, weight_std=weight_std))
+        self.first_layer_stage1 = nn.Conv3d(d_model, d_model//2, kernel_size=1, stride=1, padding=0)
+        self.transposeconv_stage1 = nn.Sequential(nn.Conv3d(d_model//2, d_model//2, kernel_size=3, stride=1, padding=1), 
+                                                nn.Conv3d(d_model//2, d_model//4, kernel_size=3, stride=1, padding=1),
+                                                nn.Upsample(scale_factor=4))
 
-        self.transposeconv_stage3 = nn.Sequential(nn.Conv3d(d_model, self.filters[3], kernel_size=3, stride=1, padding=1), 
-                                                Norm_layer(norm_cfg, self.filters[3]),
-                                                nn.ReLU(),
-                                                nn.Upsample(scale_factor=2))
-        self.transposeconv_stage2 = nn.Sequential(nn.Conv3d(self.filters[3], self.filters[2],  kernel_size=3, stride=1, padding=1),
-                                                Norm_layer(norm_cfg, self.filters[2]),
-                                                nn.ReLU(),
-                                                nn.Upsample(scale_factor=2))
-        self.transposeconv_stage1 = nn.Sequential(nn.Conv3d(self.filters[2], self.filters[1],  kernel_size=3, stride=1, padding=1),
-                                                Norm_layer(norm_cfg, self.filters[1]),
-                                                nn.ReLU(),
-                                                nn.Upsample(scale_factor=2))
-        self.transposeconv_stage0 = nn.Sequential(nn.Conv3d(self.filters[1], self.filters[0],  kernel_size=3, stride=1, padding=1),
-                                                Norm_layer(norm_cfg, self.filters[0]),
-                                                nn.ReLU(),
-                                                nn.Upsample(scale_factor=2))
+        self.first_layer_stage2 = nn.Conv3d(d_model, d_model//2, kernel_size=1, stride=1, padding=0)
+        self.transposeconv_stage2 = nn.Sequential(nn.Conv3d(d_model//2, d_model//2, kernel_size=3, stride=1, padding=1), 
+                                                nn.Conv3d(d_model//2, d_model//4, kernel_size=3, stride=1, padding=1),
+                                                nn.Upsample(scale_factor=4))
+
+        self.first_layer_stage3 = nn.Conv3d(d_model, d_model//2, kernel_size=1, stride=1, padding=0)
+        self.transposeconv_stage3 = nn.Sequential(nn.Conv3d(d_model//2, d_model//2, kernel_size=3, stride=1, padding=1), 
+                                                nn.Conv3d(d_model//2, d_model//4, kernel_size=3, stride=1, padding=1),
+                                                nn.Upsample(scale_factor=4))
+
+        self.last_layer = nn.Sequential(nn.Conv3d(d_model, self.MODEL_NUM_CLASSES, kernel_size=3, stride=1, padding=1),
+                        nn.Upsample(scale_factor=4))
 
 
         # self.cls_conv = nn.Conv3d(self.filters[0], self.MODEL_NUM_CLASSES, kernel_size=1)
