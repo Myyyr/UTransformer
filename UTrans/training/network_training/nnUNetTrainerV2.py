@@ -260,7 +260,10 @@ class nnUNetTrainerV2(nnUNetTrainer):
 
         if self.fp16:
             with autocast():
+                print("\n\n\n\n Here")
                 output = self.network(data)
+                print("\n\n\n\n isoké")
+                exit(0)
                 del data
                 l = self.loss(output, target)
 
