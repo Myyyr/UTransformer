@@ -396,11 +396,10 @@ class Generic_UNet(SegmentationNetwork):
             skips.append(x)
             if not self.convolutional_pooling:
                 x = self.td[d](x)
-        print(x.shape)
-        print(len(self.conv_blocks_context))
-        exit(0)
 
         x = self.conv_blocks_context[-1](x)
+        print(x.shape)
+        exit(0)
 
         for u in range(len(self.tu)):
             x = self.tu[u](x)
