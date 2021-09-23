@@ -28,7 +28,7 @@ import UTrans
 import os
 # python run_training.py 2d nnUNetTrainerV2_utrans 062 'all' -gpu=0
 
-def main(gpu, network, network_trainer, task, fold, outpath, val, npz, c=False, ep=200, lr=1e-2, pretrained_weights=None):
+def main(gpu, network, network_trainer, task, fold, outpath, val, npz, c=False, ep=1000, lr=1e-2, pretrained_weights=None):
     parser = argparse.ArgumentParser()
     parser.add_argument("-network", type=str, default='3d_fullres')
     parser.add_argument("-network_trainer", type=str, default='nnUNetTrainerV2_ResTrans')
