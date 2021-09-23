@@ -202,8 +202,8 @@ class Generic_UNet(SegmentationNetwork):
         """
         super(Generic_UNet, self).__init__()
 
-        print("\n\n\n\n\nThat's my model !! \n\n\n\n")
-        exit(0)
+        # print("\n\n\n\n\nThat's my model !! \n\n\n\n")
+        # exit(0)
         self.convolutional_upsampling = convolutional_upsampling
         self.convolutional_pooling = convolutional_pooling
         self.upscale_logits = upscale_logits
