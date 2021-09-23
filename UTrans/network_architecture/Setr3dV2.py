@@ -119,7 +119,7 @@ class Setr3d_Module(nn.Module):
         self.in_dim_ = 4096
         self.d_model = 1024 
         # self.filters = [128, 256, 512, 1024]
-        self.filters = [self.MODEL_NUM_CLASSES, 256, 256, 256]
+        self.filters = [256, 256, 256, 256]
         d_model = self.d_model
 
         self.linear_projection = nn.Linear(self.in_dim_, d_model)
@@ -181,7 +181,7 @@ class Setr3d_Module(nn.Module):
                                                 nn.Upsample(scale_factor=2))
 
 
-        # self.cls_conv = nn.Conv3d(self.filters[0], self.MODEL_NUM_CLASSES, kernel_size=1)
+        self.cls_conv = nn.Conv3d(self.filters[0], self.MODEL_NUM_CLASSES, kernel_size=1)
 
         for m in self.modules():
             if isinstance(m, (nn.Conv3d, Conv3d_wd, nn.ConvTranspose3d, nn.Linear)):
@@ -264,7 +264,7 @@ class Setr3d_Module(nn.Module):
         result = self.transposeconv_stage0(result)
 
         # Prediction
-        # result = self.cls_conv(result)
+        result = self.cls_conv(result)
 
         # print("result", result.shape)
         # print("ds0", ds0.shape)
