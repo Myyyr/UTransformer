@@ -388,7 +388,7 @@ class Generic_UNet(SegmentationNetwork):
             # self.apply(print_module_training_status)
 
     def forward(self, x):
-        print(x.shape)
+        # print(x.shape)
         skips = []
         seg_outputs = []
         for d in range(len(self.conv_blocks_context) - 1):
@@ -409,8 +409,8 @@ class Generic_UNet(SegmentationNetwork):
             ret = tuple([seg_outputs[-1]] + [i(j) for i, j in
                                               zip(list(self.upscale_logits_ops)[::-1], seg_outputs[:-1][::-1])])
             
-            print(seg_outputs[-1].shape)
-            exit(0)
+            # print(seg_outputs[-1].shape)
+            # exit(0)
             return ret
         else:
             return seg_outputs[-1]
