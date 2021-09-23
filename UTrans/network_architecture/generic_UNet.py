@@ -405,7 +405,7 @@ class Generic_UNet(SegmentationNetwork):
             x = self.conv_blocks_localization[u](x)
             seg_outputs.append(self.final_nonlin(self.seg_outputs[u](x)))
 
-        print(x.shape)
+        print(seg_outputs[-1].shape)
         exit(0)
         if self._deep_supervision and self.do_ds:
             return tuple([seg_outputs[-1]] + [i(j) for i, j in
