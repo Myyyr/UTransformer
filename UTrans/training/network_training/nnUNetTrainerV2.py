@@ -74,6 +74,11 @@ class nnUNetTrainerV2(nnUNetTrainer):
 
             if force_load_plans or (self.plans is None):
                 self.load_plans_file()
+                print("\n\n\n\n",self.plans.keys())
+                print("\n\n\n\n",len(self.plans['plans_per_stage']))
+                print("\n\n\n\n",self.plans['plans_per_stage'][1].keys())
+
+
                 self.plans['plans_per_stage'][1]['patch_size'] = [48,192,192]
                 print("Patch size is %s" % self.plans['plans_per_stage'][1]['patch_size'])
 
