@@ -940,7 +940,6 @@ class swintransformer(SegmentationNetwork):
         
         for i in range(len(out)):  
             seg_outputs.append(self.final[-(i+1)](out[i]))
-            print(seg_outputs[-1].shape)
 
         if self._deep_supervision and self.do_ds:
             return tuple([seg_outputs[-1]] + [i(j) for i, j in
