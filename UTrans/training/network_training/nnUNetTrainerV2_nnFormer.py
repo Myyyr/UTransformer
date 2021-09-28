@@ -148,7 +148,7 @@ class nnUNetTrainerV2_nnFormer(nnUNetTrainer):
         """
         # self.network = ResTranUnet(norm_cfg=self.norm_cfg, activation_cfg=self.activation_cfg, img_size=self.plans['plans_per_stage'][1]['patch_size'],
         #                          num_classes=self.num_classes, weight_std=False, deep_supervision=True).cuda()
-        self.network = swintransformer(1, self.base_num_features, self.num_classes,
+        self.network = swintransformer(self.num_input_channels, self.base_num_features, self.num_classes,
                                     len(self.net_num_pool_op_kernel_sizes),
                                     self.conv_per_stage, 2, conv_op, norm_op, norm_op_kwargs, dropout_op,
                                     dropout_op_kwargs,
