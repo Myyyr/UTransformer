@@ -148,6 +148,14 @@ class nnUNetTrainerV2_nnFormer(nnUNetTrainer):
         """
         # self.network = ResTranUnet(norm_cfg=self.norm_cfg, activation_cfg=self.activation_cfg, img_size=self.plans['plans_per_stage'][1]['patch_size'],
         #                          num_classes=self.num_classes, weight_std=False, deep_supervision=True).cuda()
+        conv_op = nn.Conv3d
+        dropout_op = nn.Dropout3d
+        norm_op = nn.InstanceNorm3d
+        norm_op_kwargs = {'eps': 1e-5, 'affine': True}
+        dropout_op_kwargs = {'p': 0, 'inplace': True}
+        net_nonlin = nn.LeakyReLU
+        net_nonlin_kwargs = {'negative_slope': 1e-2, 'inplace': True}
+        
         self.network = swintransformer(self.num_input_channels, self.base_num_features, self.num_classes,
                                     len(self.net_num_pool_op_kernel_sizes),
                                     self.conv_per_stage, 2, conv_op, norm_op, norm_op_kwargs, dropout_op,
