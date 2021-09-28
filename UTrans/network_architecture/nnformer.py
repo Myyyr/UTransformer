@@ -938,9 +938,9 @@ class swintransformer(SegmentationNetwork):
         out=self.encoder(neck,skips)
         
         for i in range(len(out)):  
-            print(seg_outputs[-1])
             seg_outputs.append(self.final[-(i+1)](out[i]))
-            
+            print(seg_outputs[-1].shape)
+
         if self._deep_supervision and self.do_ds:
             return tuple([seg_outputs[-1]] + [i(j) for i, j in
                                               zip(list(self.upscale_logits_ops)[::-1], seg_outputs[:-1][::-1])])
