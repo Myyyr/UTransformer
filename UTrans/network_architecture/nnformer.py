@@ -1,6 +1,6 @@
 from einops import rearrange
 from copy import deepcopy
-from UTrans.utilities.nd_softmax import softmax_helper
+from nnunet.utilities.nd_softmax import softmax_helper
 from torch import nn
 import torch
 import numpy as np
