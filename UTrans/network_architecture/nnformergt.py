@@ -473,7 +473,7 @@ class BasicLayer(nn.Module):
         self.window_size = window_size
         self.shift_size = window_size // 2
 
-        self.global_token = torch.nn.Parameter(torch.randn(gt_num,self.dim))
+        self.global_token = torch.nn.Parameter(torch.randn(gt_num,dim))
         self.global_token.requires_grad = True
 
 
@@ -594,7 +594,7 @@ class BasicLayer_up(nn.Module):
         self.shift_size = window_size // 2
         self.depth = depth
 
-        self.global_token = torch.nn.Parameter(torch.randn(gt_num,self.dim))
+        self.global_token = torch.nn.Parameter(torch.randn(gt_num,dim))
         self.global_token.requires_grad = True
         
 
