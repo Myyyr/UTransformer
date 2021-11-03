@@ -110,10 +110,11 @@ class ClassicAttention(nn.Module):
         m = pe.shape[0]
         strt = m//2-N//2
         pe = pe[strt:strt+N,:]
-        print("############ info ############")
+        print("\n############ info ############")
         print("x", x.shape)
         print("pe", pe.shape)
-        print("##############################")
+        print("##############################\n")
+
         x = x + pe
 
         qkv = self.qkv(x).reshape(B_, N, 3, self.num_heads, C // self.num_heads).permute(2, 0, 3, 1, 4)
@@ -518,6 +519,10 @@ class BasicLayer(nn.Module):
             H, W: Spatial resolution of the input feature.
         """
 
+        print("\n----------- basic layer -----------")
+        print("x", x.shape)
+        print("s h w", S, H, W)
+
         # calculate attention mask for SW-MSA
         Sp = int(np.ceil(S / self.window_size)) * self.window_size
         Hp = int(np.ceil(H / self.window_size)) * self.window_size
@@ -632,6 +637,10 @@ class BasicLayer_up(nn.Module):
             x: Input feature, tensor size (B, H*W, C).
             H, W: Spatial resolution of the input feature.
         """
+
+        print("\n----------- basic layer up -----------")
+        print("x", x.shape)
+        print("s h w", S, H, W)
       
         x_up = self.Upsample(x, S, H, W)
        
