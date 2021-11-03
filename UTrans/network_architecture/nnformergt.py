@@ -641,6 +641,7 @@ class BasicLayer_up(nn.Module):
         print("\n----------- basic layer up -----------")
         print("x", x.shape)
         print("s h w", S, H, W)
+        print("self.pe", self.pe.shape)
       
         x_up = self.Upsample(x, S, H, W)
        
