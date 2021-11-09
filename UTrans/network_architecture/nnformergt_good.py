@@ -313,7 +313,7 @@ class SwinTransformerBlock(nn.Module):
         assert L == S * H * W, "input feature has wrong size"
         
         if len(gt.shape) != 3:
-            gt = repeat(gt, "g c -> b g c", b=B_)# shape of (num_windows*B, G, C)
+            gt = repeat(gt, "g c -> b g c", b=B)# shape of (num_windows*B, G, C)
 
 
         shortcut = x
