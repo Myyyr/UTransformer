@@ -229,7 +229,9 @@ class WindowAttention(nn.Module):
             self.window_size[0] * self.window_size[1] * self.window_size[2],
             self.window_size[0] * self.window_size[1] * self.window_size[2], -1)  
         relative_position_bias = relative_position_bias.permute(2, 0, 1).contiguous()  
-        attn = attn + relative_position_bias.unsqueeze(0)
+        # attn = attn + relative_position_bias.unsqueeze(0)
+        attn[:,:,self.gt_num:,self.gt_num:] = attn[:,:,self.gt_num:,self.gt_num:] + relative_position_bias.unsqueeze(0)
+        
 
         if mask is not None:
             nW = mask.shape[0]
