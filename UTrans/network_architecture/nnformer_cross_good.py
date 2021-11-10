@@ -601,7 +601,7 @@ class Patch_Expanding(nn.Module):
         self.dim = dim
         self.norm = norm_layer(dim)
         self.up=nn.ConvTranspose3d(dim,dim//2,2,2)
-    def forward(self, x, S, H, W, pad):
+    def forward(self, x, S, H, W, pad=None):
         """ Forward function.
 
         Args:
