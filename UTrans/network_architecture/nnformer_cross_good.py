@@ -609,11 +609,11 @@ class Patch_Expanding(nn.Module):
             H, W: Spatial resolution of the input feature.
         """
         
-        # print('\n---->x', x.shape,'\n')
+        print('\n---->x', x.shape,'\n')
         B, L, C = x.shape
-        # print('\n---->SHW', S, H, W,'\n')
-        # print('\n---->S*H*W', S*H*W,'\n')
-        # exit(0)
+        print('\n---->SHW', S, H, W,'\n')
+        print('\n---->S*H*W', S*H*W,'\n')
+        exit(0)
         assert L == H * W * S, "input feature has wrong size"
 
         x = x.view(B, S, H, W, C)
