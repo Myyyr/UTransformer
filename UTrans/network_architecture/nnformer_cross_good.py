@@ -609,6 +609,7 @@ class Patch_Expanding(nn.Module):
             H, W: Spatial resolution of the input feature.
         """
         
+        # print('\n---->x', x.shape,'\n')
         B, L, C = x.shape
         assert L == H * W * S, "input feature has wrong size"
 
@@ -1319,7 +1320,7 @@ class encoder(nn.Module):
             
         outs=[]
         # # S, H, W = x.size(2), x.size(3), x.size(4)
-        # x = x.flatten(2).transpose(1, 2)
+        x = x.flatten(2).transpose(1, 2)
         # # for index,i in enumerate(skips): ##### à vérif ici
         # #      i = i.flatten(2).transpose(1, 2)
         # #      skips[index]=i
