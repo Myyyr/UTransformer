@@ -1230,7 +1230,7 @@ class SwinTransformer(nn.Module):
                 out = x_out.view(-1, S, H, W, self.num_features[i]).permute(0, 4, 1, 2, 3).contiguous()
               
                 # down.append(out)
-        return out, x_downsample, x_downsample_resolutions, Ws, Wh, Ww, padswh
+        return out, x_downsample, x_downsample_resolutions, S, H, W, padswh
 
     def train(self, mode=True):
         """Convert the model into training mode while keep layers freezed."""
