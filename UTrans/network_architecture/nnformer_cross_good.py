@@ -613,7 +613,7 @@ class Patch_Expanding(nn.Module):
         B, L, C = x.shape
         print('\n---->SHW', S, H, W,'\n')
         print('\n---->S*H*W', S*H*W,'\n')
-        exit(0)
+        # exit(0)
         assert L == H * W * S, "input feature has wrong size"
 
         x = x.view(B, S, H, W, C)
