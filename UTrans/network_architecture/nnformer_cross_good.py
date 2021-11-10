@@ -922,7 +922,7 @@ class BasicLayer_up(nn.Module):
 
         # patch merging layer
         
-        self.Upsample = upsample(dim=2*dim, norm_layer=norm_layer)
+        self.Upsample = upsample(dim=dim, norm_layer=norm_layer)
     def forward(self, x, S, H, W):
         """ Forward function.
 
