@@ -21,7 +21,7 @@ from torch.cuda.amp import autocast
 from nnunet.training.learning_rate.poly_lr import poly_lr
 from batchgenerators.utilities.file_and_folder_operations import *
 
-from UTrans.network_architecture.nnformer_good import swintransformer
+from UTrans.network_architecture.nnformer_cross_good import swintransformer
 # from nnunet.network_architecture.generic_modular_UNet import get_default_network_config
 # python run_training.py -network='2d' -network_trainer=nnUNetTrainerV2_utrans_mhsa -task=062 -fold='all' -gpu=1 -outpath='MHSA'
 def get_n_params(model):
@@ -32,7 +32,7 @@ def get_n_params(model):
             nn = nn*s
         pp += nn
     return pp
-class nnUNetTrainerV2_nnFormerGood(nnUNetTrainer):
+class nnUNetTrainerV2_nnFormerCrossGood(nnUNetTrainer):
 
     def __init__(self, plans_file, fold, norm_cfg, activation_cfg, output_folder=None, dataset_directory=None, batch_dice=True, stage=None,
                  unpack_data=True, deterministic=True, fp16=False):
