@@ -327,7 +327,7 @@ class CrossAttentionBlock(nn.Module):
 
         self.proj_shortcut = nn.Linear(dim, dim // self.channel_scale)
         # self.upsample_shortcut = nn.UpsamplingBilinear2d(scale_factor=(2,2))
-        self.expand = PatchExpand(input_resolution, dim)
+        self.expand = Patch_Expanding(input_resolution, dim)
 
         self.residual_patch_expand = residual_patch_expand
         
