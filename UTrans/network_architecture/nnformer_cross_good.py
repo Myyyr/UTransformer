@@ -923,7 +923,7 @@ class BasicLayer_up(nn.Module):
         # patch merging layer
         
         self.Upsample = upsample(dim=2*dim, norm_layer=norm_layer)
-    def forward(self, x,skip, S, H, W):
+    def forward(self, x, S, H, W):
         """ Forward function.
 
         Args:
@@ -1366,7 +1366,7 @@ class encoder(nn.Module):
             print("\n########## check")
             print('x', x.shape)
             print('Ws, Wh, Ww', Ws, Wh, Ww)
-            x, Ws, Wh, Ww = layer_up(x, Ws, Wh, Ww, padwh)
+            x, Ws, Wh, Ww = layer_up(x, Ws, Wh, Ww)
             outs.append(x)
 
         # x = self.norm_up(x)  # B L C
