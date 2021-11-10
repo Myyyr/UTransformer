@@ -1113,6 +1113,9 @@ class SwinTransformer(nn.Module):
             patch_size=patch_size, in_chans=in_chans, embed_dim=embed_dim,
             norm_layer=norm_layer if self.patch_norm else None)
 
+        patches_resolution = self.patch_embed.patches_resolution
+        self.patches_resolution = patches_resolution
+
         # absolute position embedding
         if self.ape:
             pretrain_img_size = to_3tuple(pretrain_img_size)
@@ -1239,13 +1242,14 @@ class encoder(nn.Module):
                  attn_drop_rate=0.,
                  drop_path_rate=0.2,
                  norm_layer=nn.LayerNorm, final_upsample="expand_first",
-                 residual_patch_expand=True
+                 residual_patch_expand=True, patches_resolution=None
                  ):
         super().__init__()
         
 
         self.num_layers = len(depths)
         self.pos_drop = nn.Dropout(p=drop_rate)
+        self.patches_resolution = patches_resolution
 
         # stochastic depth
         dpr = [x.item() for x in torch.linspace(0, drop_path_rate, sum(depths))]  # stochastic depth decay rule
@@ -1412,7 +1416,7 @@ class swintransformer(SegmentationNetwork):
         num_heads=[6, 12, 24, 48]
         patch_size=[2,4,4]
         self.model_down=SwinTransformer(pretrain_img_size=[64,128,128],window_size=4,embed_dim=embed_dim,patch_size=patch_size,depths=depths,num_heads=num_heads,in_chans=1)
-        self.encoder=encoder(pretrain_img_size=[64,128,128],embed_dim=embed_dim,window_size=4,patch_size=patch_size,num_heads=[24,12,6],depths=[2,2,2], final_upsample="expand_first", residual_patch_expand=True)
+        self.encoder=encoder(pretrain_img_size=[64,128,128],embed_dim=embed_dim,window_size=4,patch_size=patch_size,num_heads=[24,12,6],depths=[2,2,2], final_upsample="expand_first", residual_patch_expand=True, patches_resolution=self.model_down.patches_resolution)
    
         self.final=[]
         self.final.append(final_patch_expanding(embed_dim*2**0,14,patch_size=(2,4,4)))
