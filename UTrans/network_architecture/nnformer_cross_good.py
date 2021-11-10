@@ -1303,7 +1303,7 @@ class encoder(nn.Module):
                                                            attn_drop=attn_drop_rate,
                                                            drop_path=dpr[sum(depths[:(self.num_layers-1-i_layer)]):sum(depths[:(self.num_layers-1-i_layer) + 1])],
                                                            norm_layer=norm_layer,
-                                                           residual_patch_expand=self.residual_patch_expand)
+                                                           residual_patch_expand=residual_patch_expand)
             patch_expand = Patch_Expanding(input_resolution=(patches_resolution[0] // (2 ** (self.num_layers-1-i_layer)),
                                                          patches_resolution[1] // (2 ** (self.num_layers-1-i_layer))),
                                        dim=int(embed_dim * 2 ** (self.num_layers-1-i_layer + 1)),
