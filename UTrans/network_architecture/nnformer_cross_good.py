@@ -1310,7 +1310,8 @@ class encoder(nn.Module):
                                                            residual_patch_expand=residual_patch_expand)
             # patch_expand = Patch_Expanding(input_resolution=(patches_resolution[0] // (2 ** (self.num_layers-1-i_layer)),
             #                                              patches_resolution[1] // (2 ** (self.num_layers-1-i_layer))),
-            patch_expand = Patch_Expanding(dim=int(embed_dim * 2 ** (self.num_layers-1-i_layer + 1)))
+            # patch_expand = Patch_Expanding(dim=int(embed_dim * 2 ** (self.num_layers-1-i_layer + 1)))
+            patch_expand = Patch_Expanding(dim=int(embed_dim * 2 ** (i_layer + 1)))
                                        # dim_scale=2)
             self.layers.append(layer)
             self.concat_back_dim.append(concat_linear)
