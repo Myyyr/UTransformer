@@ -1275,7 +1275,7 @@ class encoder(nn.Module):
             int(embed_dim*2**(self.num_layers-1-i_layer))) if i_layer > 0 else nn.Identity()
             
             layer = BasicLayer_up(
-                dim=int(embed_dim * 2 ** (len(depths)-i_layer-1)),
+                dim=int(embed_dim * 2 ** (i_layer)),
                 input_resolution=(
                     pretrain_img_size[0] // patch_size[0] // 2 ** (len(depths)-i_layer-1), pretrain_img_size[1] // patch_size[1] // 2 ** (len(depths)-i_layer-1),
                     pretrain_img_size[2] // patch_size[2] // 2 ** (len(depths)-i_layer-1)),
