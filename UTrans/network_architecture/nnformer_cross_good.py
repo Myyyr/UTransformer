@@ -609,8 +609,11 @@ class Patch_Expanding(nn.Module):
             H, W: Spatial resolution of the input feature.
         """
         
-        # print('\n---->x', x.shape,'\n')
+        print('\n---->x', x.shape,'\n')
         B, L, C = x.shape
+        print('\n---->SHW', S, H, W,'\n')
+        print('\n---->S*H*W', S*H*W,'\n')
+        exit(0)
         assert L == H * W * S, "input feature has wrong size"
 
         x = x.view(B, S, H, W, C)
@@ -1320,6 +1323,8 @@ class encoder(nn.Module):
             
         outs=[]
         # # S, H, W = x.size(2), x.size(3), x.size(4)
+        print('\n---->xb', x.shape,'\n')
+
         x = x.flatten(2).transpose(1, 2)
         # # for index,i in enumerate(skips): ##### à vérif ici
         # #      i = i.flatten(2).transpose(1, 2)
