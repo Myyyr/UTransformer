@@ -1363,6 +1363,9 @@ class encoder(nn.Module):
 
             x = torch.cat([x, skip_co],-1)
             x = self.concat_back_dim[inx](x)
+            print("\n########## check")
+            print('x', x.shape)
+            print('Ws, Wh, Ww', Ws, Wh, Ww)
             x, Ws, Wh, Ww = layer_up(x, Ws, Wh, Ww, padwh)
             outs.append(x)
 
