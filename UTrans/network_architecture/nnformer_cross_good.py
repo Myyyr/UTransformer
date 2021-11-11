@@ -1365,14 +1365,14 @@ class encoder(nn.Module):
             # x = torch.cat([x, skip_co],-1)
             x = x+skip_co
             # x = self.concat_back_dim[inx](x)
-            print("\n########## check")
+            # print("\n########## check")
             x, Ws, Wh, Ww = layer_up(x, Ws, Wh, Ww)
-            print('x', x.shape)
-            print('Ws, Wh, Ww', Ws, Wh, Ww)
-            print("self.num_features[inx]", self.num_features[-(1+inx)])
+            # print('x', x.shape)
+            # print('Ws, Wh, Ww', Ws, Wh, Ww)
+            # print("self.num_features[inx]", self.num_features[-(1+inx)])
 
             outs.append(x.view(-1, Ws, Wh, Ww, self.num_features[-(1+inx)]))
-            print("\nend check ##########")
+            # print("\nend check ##########")
 
         # x = self.norm_up(x)  # B L C
   
@@ -1460,8 +1460,8 @@ class swintransformer(SegmentationNetwork):
         for i in range(len(out)):  
             seg_outputs.append(self.final[-(i+1)](out[i]))
 
-        print("Je pari qu'il est 2h du mat (23h50 quand j'écris ça). Franchement va dormir !!! (en vrai bravo)")
-        exit(0)
+        # print("Je pari qu'il est 2h du mat (23h50 quand j'écris ça). Franchement va dormir !!! (en vrai bravo)")
+        # exit(0)
 
         if self._deep_supervision and self.do_ds:
             return tuple([seg_outputs[-1]] + [i(j) for i, j in
