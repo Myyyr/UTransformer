@@ -1277,13 +1277,13 @@ class encoder(nn.Module):
         self.concat_back_dim = nn.ModuleList()
         for i_layer in range(self.num_layers):
 
-            concat_linear = nn.Linear(2*int(embed_dim*2**(self.num_layers-1-i_layer)),
-            int(embed_dim*2**(self.num_layers-1-i_layer)))
+            # concat_linear = nn.Linear(2*int(embed_dim*2**(self.num_layers-1-i_layer)),
+            # int(embed_dim*2**(self.num_layers-1-i_layer))) if i_layer > 0 else nn.Identity()
             
             layer = BasicLayer_up(dim=int(embed_dim * 2 ** (self.num_layers-1-i_layer)),
                                      input_resolution=(patches_resolution[0] // (2 ** (self.num_layers-1-i_layer)),
                                                        patches_resolution[1] // (2 ** (self.num_layers-1-i_layer)),
-                                                       patches_resolution[2] // (2 ** (self.num_layers-1-i_layer))),
+                                                       patches_resolution[] // (2 ** (self.num_layers-1-i_layer))),
                                      depth=depths[(self.num_layers-1-i_layer)],
                                      num_heads=num_heads[(self.num_layers-1-i_layer)],
                                      window_size=window_size,
@@ -1315,7 +1315,7 @@ class encoder(nn.Module):
             # patch_expand = Patch_Expanding(dim=int(embed_dim * 2 ** (i_layer + 1)))
                                        # dim_scale=2)
             self.layers.append(layer)
-            self.concat_back_dim.append(concat_linear)
+            # self.concat_back_dim.append(concat_linear)
             self.layers_cross_attention_up.append(layer_cross_attention_up)
             self.layers_patch_expand.append(patch_expand)
 
@@ -1362,8 +1362,9 @@ class encoder(nn.Module):
             
             x, Ws, Wh, Ww = self.layers_patch_expand[inx](x, Ws, Wh, Ww, padwh)
 
-            x = torch.cat([x, skip_co],-1)
-            x = self.concat_back_dim[inx](x)
+            # x = torch.cat([x, skip_co],-1)
+            x = x+skip_co
+            # x = self.concat_back_dim[inx](x)
             print("\n########## check")
             print('x', x.shape)
             print('Ws, Wh, Ww', Ws, Wh, Ww)
