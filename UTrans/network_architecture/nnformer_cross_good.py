@@ -1366,9 +1366,11 @@ class encoder(nn.Module):
             x = x+skip_co
             # x = self.concat_back_dim[inx](x)
             print("\n########## check")
+            x, Ws, Wh, Ww = layer_up(x, Ws, Wh, Ww)
             print('x', x.shape)
             print('Ws, Wh, Ww', Ws, Wh, Ww)
-            x, Ws, Wh, Ww = layer_up(x, Ws, Wh, Ww)
+            print("self.num_features[inx]", self.num_features[inx])
+
             outs.append(x.view(-1, Ws, Wh, Ww, self.num_features[inx]))
             print("\nend check ##########")
 
