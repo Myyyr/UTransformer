@@ -508,6 +508,7 @@ class SwinTransformerBlock(nn.Module):
             mask_matrix: Attention mask for cyclic shift.
         """
         B, L, C = x.shape
+        print("self.input_resolution", self.input_resolution)
         S, H, W = self.input_resolution
 
         print("\n~~~~~~~~~", "SHW", S,H,W)
