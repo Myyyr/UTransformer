@@ -511,8 +511,8 @@ class SwinTransformerBlock(nn.Module):
         S, H, W = self.input_resolution
 
         print("\n~~~~~~~~~", "SHW", S,H,W)
-        print("\n~~~~~~~~~", "S*H*W", S*H*W)
-        print("\n~~~~~~~~~", "x", x.shape)
+        print("~~~~~~~~~", "S*H*W", S*H*W)
+        print("~~~~~~~~~", "x", x.shape)
 
         
         assert L == S * H * W, "input feature has wrong size"
@@ -738,6 +738,8 @@ class BasicLayer_up_Xattn(nn.Module):
         for inx, blk in enumerate(self.blocks):
             blk.input_resolution = (S, H, W)
             blk.skip_connection_resolution = (S_d, H_d, W_d)
+            print("lk.input_resolution", blk.input_resolution)
+            print("blk.skip_connection_resolution", blk.skip_connection_resolution)
             if self.use_checkpoint:
                 x = checkpoint.checkpoint(blk, x)
             else:
