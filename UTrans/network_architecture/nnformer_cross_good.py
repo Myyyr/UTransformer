@@ -1278,7 +1278,7 @@ class encoder(nn.Module):
         for i_layer in range(self.num_layers):
 
             concat_linear = nn.Linear(2*int(embed_dim*2**(self.num_layers-1-i_layer)),
-            int(embed_dim*2**(self.num_layers-1-i_layer))) if i_layer > 0 else nn.Identity()
+            int(embed_dim*2**(self.num_layers-1-i_layer)))
             
             layer = BasicLayer_up(dim=int(embed_dim * 2 ** (self.num_layers-1-i_layer)),
                                      input_resolution=(patches_resolution[0] // (2 ** (self.num_layers-1-i_layer)),
