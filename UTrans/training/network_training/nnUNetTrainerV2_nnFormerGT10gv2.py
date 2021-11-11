@@ -41,7 +41,7 @@ class nnUNetTrainerV2_nnFormerGT10gv2(nnUNetTrainer):
 
         # print("!!! OK !!!")
         # exit(0)
-        self.max_num_epochs = 1000
+        self.max_num_epochs = 1250
         self.initial_lr = 1e-2
         self.deep_supervision_scales = None
         self.ds_loss_weights = None
