@@ -927,7 +927,7 @@ class BasicLayer_up(nn.Module):
 
         # patch merging layer
         
-        self.Upsample = upsample(dim=dim, norm_layer=norm_layer)
+        # self.Upsample = upsample(dim=dim, norm_layer=norm_layer)
     def forward(self, x, S, H, W):
         """ Forward function.
 
@@ -1290,8 +1290,7 @@ class encoder(nn.Module):
                                      drop=drop_rate, attn_drop=attn_drop_rate,
                                      drop_path=dpr[sum(depths[:(self.num_layers-1-i_layer)]):sum(depths[:(self.num_layers-1-i_layer) + 1])],
                                      norm_layer=norm_layer,
-                                     upsample=None,
-                                     use_checkpoint=use_checkpoint)
+                                     upsample=None)
             layer_cross_attention_up = BasicLayer_up_Xattn(dim=int(embed_dim * 2 ** (self.num_layers-1-i_layer + 1)),
                                                            input_resolution=(patches_resolution[0] // (2 ** (self.num_layers-1-i_layer)),
                                                                              patches_resolution[1] // (2 ** (self.num_layers-1-i_layer))),
