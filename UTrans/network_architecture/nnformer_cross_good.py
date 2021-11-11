@@ -1370,6 +1370,7 @@ class encoder(nn.Module):
             print('Ws, Wh, Ww', Ws, Wh, Ww)
             x, Ws, Wh, Ww = layer_up(x, Ws, Wh, Ww)
             outs.append(x)
+            print("\nend check ##########")
 
         # x = self.norm_up(x)  # B L C
   
