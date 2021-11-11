@@ -1282,7 +1282,8 @@ class encoder(nn.Module):
             
             layer = BasicLayer_up(dim=int(embed_dim * 2 ** (self.num_layers-1-i_layer)),
                                      input_resolution=(patches_resolution[0] // (2 ** (self.num_layers-1-i_layer)),
-                                                       patches_resolution[1] // (2 ** (self.num_layers-1-i_layer))),
+                                                       patches_resolution[1] // (2 ** (self.num_layers-1-i_layer)),
+                                                       patches_resolution[2] // (2 ** (self.num_layers-1-i_layer))),
                                      depth=depths[(self.num_layers-1-i_layer)],
                                      num_heads=num_heads[(self.num_layers-1-i_layer)],
                                      window_size=window_size,
