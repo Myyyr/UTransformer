@@ -940,7 +940,7 @@ class BasicLayer_up(nn.Module):
         # x_up,_,_,_ = self.Upsample(x, S, H, W)
        
         # x_up+=skip
-        S, H, W = S * 2, H * 2, W * 2
+        # S, H, W = S * 2, H * 2, W * 2
         # calculate attention mask for SW-MSA
         Sp = int(np.ceil(S / self.window_size)) * self.window_size
         Hp = int(np.ceil(H / self.window_size)) * self.window_size
