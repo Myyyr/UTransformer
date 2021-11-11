@@ -1369,9 +1369,9 @@ class encoder(nn.Module):
             x, Ws, Wh, Ww = layer_up(x, Ws, Wh, Ww)
             print('x', x.shape)
             print('Ws, Wh, Ww', Ws, Wh, Ww)
-            print("self.num_features[inx]", self.num_features[inx])
+            print("self.num_features[inx]", self.num_features[-(1+inx)])
 
-            outs.append(x.view(-1, Ws, Wh, Ww, self.num_features[inx]))
+            outs.append(x.view(-1, Ws, Wh, Ww, self.num_features[-(1+inx)]))
             print("\nend check ##########")
 
         # x = self.norm_up(x)  # B L C
