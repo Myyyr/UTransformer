@@ -935,7 +935,7 @@ class BasicLayer_up(nn.Module):
             x: Input feature, tensor size (B, H*W, C).
             H, W: Spatial resolution of the input feature.
         """
-      
+        x_up = x
         # x_up,_,_,_ = self.Upsample(x, S, H, W)
        
         # x_up+=skip
