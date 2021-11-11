@@ -1285,7 +1285,7 @@ class encoder(nn.Module):
                                      depth=depths[(self.num_layers-1-i_layer)],
                                      num_heads=num_heads[(self.num_layers-1-i_layer)],
                                      window_size=window_size,
-                                     mlp_ratio=self.mlp_ratio,
+                                     mlp_ratio=mlp_ratio,
                                      qkv_bias=qkv_bias, qk_scale=qk_scale,
                                      drop=drop_rate, attn_drop=attn_drop_rate,
                                      drop_path=dpr[sum(depths[:(self.num_layers-1-i_layer)]):sum(depths[:(self.num_layers-1-i_layer) + 1])],
