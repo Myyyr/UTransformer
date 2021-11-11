@@ -508,12 +508,12 @@ class SwinTransformerBlock(nn.Module):
             mask_matrix: Attention mask for cyclic shift.
         """
         B, L, C = x.shape
-        print("self.input_resolution", self.input_resolution)
+        # print("self.input_resolution", self.input_resolution)
         S, H, W = self.input_resolution
 
-        print("\n~~~~~~~~~", "SHW", S,H,W)
-        print("~~~~~~~~~", "S*H*W", S*H*W)
-        print("~~~~~~~~~", "x", x.shape)
+        # print("\n~~~~~~~~~", "SHW", S,H,W)
+        # print("~~~~~~~~~", "S*H*W", S*H*W)
+        # print("~~~~~~~~~", "x", x.shape)
 
         
         assert L == S * H * W, "input feature has wrong size"
@@ -615,10 +615,10 @@ class Patch_Expanding(nn.Module):
             H, W: Spatial resolution of the input feature.
         """
         
-        print('\n---->x', x.shape,'\n')
+        # print('\n---->x', x.shape,'\n')
         B, L, C = x.shape
-        print('\n---->SHW', S, H, W,'\n')
-        print('\n---->S*H*W', S*H*W,'\n')
+        # print('\n---->SHW', S, H, W,'\n')
+        # print('\n---->S*H*W', S*H*W,'\n')
         # exit(0)
         assert L == H * W * S, "input feature has wrong size"
 
@@ -1325,7 +1325,7 @@ class encoder(nn.Module):
             
         outs=[]
         # # S, H, W = x.size(2), x.size(3), x.size(4)
-        print('\n---->xb', x.shape,'\n')
+        # print('\n---->xb', x.shape,'\n')
 
         x = x.flatten(2).transpose(1, 2)
         # # for index,i in enumerate(skips): ##### à vérif ici
@@ -1369,7 +1369,7 @@ class encoder(nn.Module):
             print('x', x.shape)
             print('Ws, Wh, Ww', Ws, Wh, Ww)
             x, Ws, Wh, Ww = layer_up(x, Ws, Wh, Ww)
-            outs.append(x.view(-1, Ws, Wh, Ww, self.num_features[i]))
+            outs.append(x.view(-1, Ws, Wh, Ww, self.num_features[inx]))
             print("\nend check ##########")
 
         # x = self.norm_up(x)  # B L C
