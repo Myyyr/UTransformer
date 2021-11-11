@@ -212,6 +212,9 @@ class WindowAttention(nn.Module):
         """
         B_, N_, C = x.shape
 
+        print('\n->>>>>>> gt', gt.shape)
+        print('self.gt_num', self.gt_num)
+        exit(0)
         
         x = torch.cat([gt, x], dim=1) # x of shape (num_windows*B, G+N_, C)
         B_, N, C = x.shape
