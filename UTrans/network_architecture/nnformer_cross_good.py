@@ -936,7 +936,7 @@ class BasicLayer_up(nn.Module):
             H, W: Spatial resolution of the input feature.
         """
       
-        x_up,_,_,_ = self.Upsample(x, S, H, W)
+        # x_up,_,_,_ = self.Upsample(x, S, H, W)
        
         # x_up+=skip
         S, H, W = S * 2, H * 2, W * 2
