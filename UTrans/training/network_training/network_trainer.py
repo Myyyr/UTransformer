@@ -463,6 +463,7 @@ class NetworkTrainer(object):
                     val_losses.append(l)
                 self.all_val_losses.append(np.mean(val_losses))
                 self.print_to_log_file("validation loss: %.4f" % self.all_val_losses[-1])
+                self.writer.add_scalar("validation loss", self.all_tr_losses[-1], self.epoch)
 
                 if self.also_val_in_tr_mode:
                     self.network.train()
