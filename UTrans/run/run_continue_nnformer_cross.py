@@ -9,6 +9,6 @@ for i in range(1,10):
 	pth = os.path.join(BASE_DIR,mod,MODEL_PATH)
 	print(pth)
 	# exit(0)
-	run.main(gpu='1', network='3d', network_trainer='nnUNetTrainerV2_nnFormerCrossGood', task='017', fold=1, outpath='NNFORMERCROSS_c'+str(i), val=False, npz=True, c=False, ep=50, lr=2e-05, pretrained_weights=pth)
-	run.main(gpu='1', network='3d', network_trainer='nnUNetTrainerV2_nnFormerCrossGood', task='017', fold=1, outpath='NNFORMERCROSS_c'+str(i), val=True,  npz=True, c=False, ep=50, lr=2e-05 )
+	run.main(gpu='1', network='3d_fullres', network_trainer='nnUNetTrainerV2_nnFormerCrossGood', task='017', fold=1, outpath='NNFORMERCROSS_c'+str(i), val=False, npz=True, c=False, ep=50, lr=2e-05, pretrained_weights=pth)
+	run.main(gpu='1', network='3d_fullres', network_trainer='nnUNetTrainerV2_nnFormerCrossGood', task='017', fold=1, outpath='NNFORMERCROSS_c'+str(i), val=True,  npz=True, c=False, ep=50, lr=2e-05 )
 	mod = "NNFORMERCROSS_c"+str(i)+"_IN_LeakyReLU/"
