@@ -15,7 +15,7 @@
 
 import argparse
 from batchgenerators.utilities.file_and_folder_operations import *
-from UTrans.run.default_configuration import get_default_configuration
+from nnunet.run.default_configuration import get_default_configuration
 from nnunet.paths import default_plans_identifier
 from nnunet.run.load_pretrained_weights import load_pretrained_weights
 from nnunet.training.cascade_stuff.predict_next_stage import predict_next_stage
