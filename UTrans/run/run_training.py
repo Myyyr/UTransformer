@@ -14,7 +14,7 @@ from nnunet.utilities.task_name_id_conversion import convert_id_to_task_name
 import os
 import UTrans
 # os.environ['nnUNet_raw_data_base'] = '/local/DEEPLEARNING/MULTI_ATLAS/MULTI_ATLAS/Task017_BCV/'
-def main(gpu, network, network_trainer, task, fold, outpath, val, npz, c=False, ep=200, lr=1e-2, pretrained_weights=None):
+def main(gpu, network, network_trainer, task, fold, outpath, val, npz, c=False, ep=1000, lr=1e-2, pretrained_weights=None):
     parser = argparse.ArgumentParser()
     parser.add_argument("-gpu", type=str, default='0')
 
@@ -124,6 +124,10 @@ def main(gpu, network, network_trainer, task, fold, outpath, val, npz, c=False, 
                             batch_dice=batch_dice, stage=stage, unpack_data=decompress_data,
                             deterministic=deterministic,
                             fp16=run_mixed_precision)
+
+    if c:
+        trainer.max_num_epochs = ep
+        trainer.initial_lr = lr
 
     # print("Here its ok 3")
     # exit(0)
