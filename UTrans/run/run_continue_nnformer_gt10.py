@@ -4,7 +4,7 @@ BASE_DIR="/etudiants/siscol/t/themyr_l/nnUNetData/nnUNet_trained_models/nnUNet/3
 MODEL_PATH = "fold_1/model_final_checkpoint.model"
 
 
-mod = "NNFORMERGT10gv2_IN_LeakyReLU/"
+mod = "NNFORMERGT10gv2_c1_IN_LeakyReLU/"
 for i in range(2,10):
 	pth = os.path.join(BASE_DIR,mod,MODEL_PATH)
 	print(pth)
