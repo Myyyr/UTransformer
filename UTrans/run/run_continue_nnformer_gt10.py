@@ -5,7 +5,7 @@ MODEL_PATH = "fold_1/model_final_checkpoint.model"
 
 
 mod = "NNFORMERGT10gv2_IN_LeakyReLU/"
-for i in range(1,10):
+for i in range(2,10):
 	pth = os.path.join(BASE_DIR,mod,MODEL_PATH)
 	print(pth)
 	# exit(0)
