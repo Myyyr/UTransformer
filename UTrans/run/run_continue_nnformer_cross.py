@@ -6,7 +6,7 @@ BASE_DIR="/local/DEEPLEARNING/nnUNetData/nnUNet_trained_models/nnUNet/3d_fullres
 MODEL_PATH = "fold_1/model_final_checkpoint.model"
 
 
-mod = "NNFORMERCROSS_c2_IN_LeakyReLU/"
+mod = "NNFORMERCROSS_c1_IN_LeakyReLU/"
 for i in range(2,10):
 	pth = os.path.join(BASE_DIR,mod,MODEL_PATH)
 	print(pth)
@@ -16,4 +16,3 @@ for i in range(2,10):
 	run.main(gpu='1', network='3d_fullres', network_trainer='nnUNetTrainerV2_nnFormerCrossGood', task='017', fold=1, outpath='NNFORMERCROSS_c'+str(i), val=True,  npz=True, c=False, ep=50, lr=2e-05 )
 	mod = "NNFORMERCROSS_c"+str(i)+"_IN_LeakyReLU/"
 	torch.cuda.empty_cache()
-	
