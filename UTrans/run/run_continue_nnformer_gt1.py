@@ -1,7 +1,7 @@
 import UTrans.run.nnunet_run_training as run
 import os
 import torch
-BASE_DIR="/local/DEEPLEARNING/nnUNetData/nnUNetData/nnUNet_trained_models/nnUNet/3d_fullres_nnUNetPlansv2.1/Task017_BCV/"
+BASE_DIR="/local/DEEPLEARNING/nnUNetData/nnUNet_trained_models/nnUNet/3d_fullres_nnUNetPlansv2.1/Task017_BCV/"
 MODEL_PATH = "fold_1/model_final_checkpoint.model"
 
 
