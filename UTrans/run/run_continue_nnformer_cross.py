@@ -6,8 +6,8 @@ BASE_DIR="/local/DEEPLEARNING/nnUNetData/nnUNet_trained_models/nnUNet/3d_fullres
 MODEL_PATH = "fold_1/model_final_checkpoint.model"
 
 
-mod = "NNFORMERCROSS_c2_IN_LeakyReLU/"
-for i in range(3,10):
+mod = "NNFORMERCROSS_c3_IN_LeakyReLU/"
+for i in range(4,10):
 	pth = os.path.join(BASE_DIR,mod,MODEL_PATH)
 	print(pth)
 	# exit(0)
