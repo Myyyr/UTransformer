@@ -1060,8 +1060,10 @@ class swintransformer(SegmentationNetwork):
         
     def forward(self, x):
 
-        if self.imidx == 10:
-            torch.save(x, "/share/DEEPLEARNING/themyr_l/medvisu/x.pt")
+        torch.save(x, "/share/DEEPLEARNING/themyr_l/medvisu/"+str(self.imidx)+"x.pt")
+        
+
+        if self.imidx == 64:
             print("Saved !")
             exit(0)
 
