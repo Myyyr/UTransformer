@@ -312,7 +312,7 @@ class SwinTransformerBlock(nn.Module):
                                             qkv_bias=qkv_bias, qk_scale=qk_scale, attn_drop=attn_drop, 
                                             proj_drop=drop)
 
-    def forward(self, x, mask_matrix, gt, pe, imidx, save):
+    def forward(self, x, mask_matrix, gt, pe, imidx=0, save=False):
         """ Forward function.
 
         Args:
