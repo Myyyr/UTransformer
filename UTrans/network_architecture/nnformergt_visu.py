@@ -1061,7 +1061,6 @@ class swintransformer(SegmentationNetwork):
     def forward(self, x):
 
 
-        self.imidx+=1
             
         seg_outputs=[]
         skips = self.model_down(x)
@@ -1081,6 +1080,7 @@ class swintransformer(SegmentationNetwork):
             print("Saved !")
             exit(0)
 
+        self.imidx+=1
         if self._deep_supervision and self.do_ds:
             return tuple([seg_outputs[-1]] + [i(j) for i, j in
                                               zip(list(self.upscale_logits_ops)[::-1], seg_outputs[:-1][::-1])])
