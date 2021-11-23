@@ -1060,7 +1060,7 @@ class swintransformer(SegmentationNetwork):
         
     def forward(self, x):
 
-        if i%4 == 0:
+        if self.imidx%4 == 0:
             torch.save(x, "/share/DEEPLEARNING/themyr_l/medvisu/"+str(self.imidx)+"x.pt")
         
 
