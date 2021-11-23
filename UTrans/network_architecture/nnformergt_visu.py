@@ -1057,8 +1057,12 @@ class swintransformer(SegmentationNetwork):
         self.final=nn.ModuleList(self.final)
         
     def forward(self, x):
+
+        torch.save(x, "/share/DEEPLEARNING/themyr_l/medvisu/x.pt")
+
         
-            
+        print("Saved !")
+        exit(0)
             
         seg_outputs=[]
         skips = self.model_down(x)
@@ -1068,6 +1072,7 @@ class swintransformer(SegmentationNetwork):
         
         for i in range(len(out)):  
             seg_outputs.append(self.final[-(i+1)](out[i]))
+
 
         if self._deep_supervision and self.do_ds:
             return tuple([seg_outputs[-1]] + [i(j) for i, j in
