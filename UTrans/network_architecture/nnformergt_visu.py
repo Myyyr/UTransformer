@@ -1060,13 +1060,6 @@ class swintransformer(SegmentationNetwork):
         
     def forward(self, x):
 
-        if self.imidx%4 == 0:
-            torch.save(x, "/share/DEEPLEARNING/themyr_l/medvisu/"+str(self.imidx)+"x.pt")
-        
-
-        if self.imidx == 64*4:
-            print("Saved !")
-            exit(0)
 
         self.imidx+=1
             
@@ -1079,6 +1072,14 @@ class swintransformer(SegmentationNetwork):
         for i in range(len(out)):  
             seg_outputs.append(self.final[-(i+1)](out[i]))
 
+        if self.imidx%4 == 0:
+            torch.save(x, "/share/DEEPLEARNING/themyr_l/medvisu/"+str(self.imidx)+"x.pt")
+            torch.save(seg_outputs[-1], "/share/DEEPLEARNING/themyr_l/medvisu/"+str(self.imidx)+"p.pt")
+
+
+        if self.imidx == 64*4:
+            print("Saved !")
+            exit(0)
 
         if self._deep_supervision and self.do_ds:
             return tuple([seg_outputs[-1]] + [i(j) for i, j in
