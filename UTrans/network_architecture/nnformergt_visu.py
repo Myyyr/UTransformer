@@ -1055,14 +1055,17 @@ class swintransformer(SegmentationNetwork):
         for i in range(1,len(depths)-1):
             self.final.append(final_patch_expanding(embed_dim*2**i,14,patch_size=(4,4,4)))
         self.final=nn.ModuleList(self.final)
+
+        self.imidx = 0
         
     def forward(self, x):
 
-        torch.save(x, "/share/DEEPLEARNING/themyr_l/medvisu/x.pt")
+        if self.imidx == 10:
+            torch.save(x, "/share/DEEPLEARNING/themyr_l/medvisu/x.pt")
+            print("Saved !")
+            exit(0)
 
-        
-        print("Saved !")
-        exit(0)
+        self.imidx+=1
             
         seg_outputs=[]
         skips = self.model_down(x)
