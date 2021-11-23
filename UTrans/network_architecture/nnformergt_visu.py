@@ -99,7 +99,7 @@ class ClassicAttention(nn.Module):
         self.softmax = nn.Softmax(dim=-1)
 
 
-    def forward(self, x, pe):
+    def forward(self, x, pe, imidx=0, save=False):
         """
         Args:
             x: input features with shape of (num_windows*B, N, C)
@@ -122,6 +122,9 @@ class ClassicAttention(nn.Module):
         # attn = attn
 
         attn = self.softmax(attn)
+        if imidx == 520 and save:
+            torch.save(attn, "/share/DEEPLEARNING/themyr_l/medvisu/520/"+str(imidx)+str(self.__class__.__name__)+"_.pt")
+
         attn = self.attn_drop(attn)
 
         x = (attn @ v).transpose(1, 2).reshape(B_, N, C)
@@ -202,7 +205,7 @@ class WindowAttention(nn.Module):
         trunc_normal_(self.relative_position_bias_table, std=.02)
         self.softmax = nn.Softmax(dim=-1)
 
-    def forward(self, x, mask=None, gt=None):
+    def forward(self, x, mask=None, gt=None, imidx=0, save=False):
         """ Forward function.
 
         Args:
@@ -245,6 +248,8 @@ class WindowAttention(nn.Module):
         else:
             attn = self.softmax(attn)
 
+        if imidx == 520 and save:
+            torch.save(attn, "/share/DEEPLEARNING/themyr_l/medvisu/520/"+str(imidx)+str(self.__class__.__name__)+"_.pt")
         attn = self.attn_drop(attn)
 
         x = (attn @ v).transpose(1, 2).reshape(B_, N, C)
@@ -307,7 +312,7 @@ class SwinTransformerBlock(nn.Module):
                                             qkv_bias=qkv_bias, qk_scale=qk_scale, attn_drop=attn_drop, 
                                             proj_drop=drop)
 
-    def forward(self, x, mask_matrix, gt, pe):
+    def forward(self, x, mask_matrix, gt, pe, imidx, save):
         """ Forward function.
 
         Args:
@@ -345,12 +350,12 @@ class SwinTransformerBlock(nn.Module):
         x_windows = x_windows.view(-1, self.window_size * self.window_size * self.window_size,
                                    C)  
         # W-MSA/SW-MSA
-        attn_windows, gt = self.attn(x_windows, mask=attn_mask, gt=gt)  
+        attn_windows, gt = self.attn(x_windows, mask=attn_mask, gt=gt, imidx, save)  
 
         tmp, ngt, c = gt.shape
         nw = tmp//B
         gt =rearrange(gt, "(b n) g c -> b (n g) c", b=B)
-        gt = self.gt_attn(gt, pe)
+        gt = self.gt_attn(gt, pe, imidx, save)
         gt = rearrange(gt, "b (n g) c -> (b n) g c",g=ngt, c=C)
 
         # merge windows
@@ -506,7 +511,7 @@ class BasicLayer(nn.Module):
         else:
             self.downsample = None
 
-    def forward(self, x, S, H, W):
+    def forward(self, x, S, H, W, imidx, save):
         """ Forward function.
 
         Args:
@@ -542,12 +547,17 @@ class BasicLayer(nn.Module):
         attn_mask = attn_mask.masked_fill(attn_mask != 0, float(-100.0)).masked_fill(attn_mask == 0, float(0.0))
 
         gt = self.global_token
+        k = 0
         for blk in self.blocks:
             blk.H, blk.W = H, W
             if self.use_checkpoint:
                 x = checkpoint.checkpoint(blk, x, attn_mask)
             else:
-                x, gt = blk(x, attn_mask, gt, self.pe)
+                savek = False
+                if k==0:
+                    savek = save*True
+                x, gt = blk(x, attn_mask, gt, self.pe, imidx, savek)
+            k+=1
         if self.downsample is not None:
             x_down = self.downsample(x, S, H, W)
             Ws, Wh, Ww = (S + 1) // 2, (H + 1) // 2, (W + 1) // 2
@@ -887,7 +897,7 @@ class SwinTransformer(nn.Module):
 
     
 
-    def forward(self, x):
+    def forward(self, x, imidx):
         """Forward function."""
         
         x = self.patch_embed(x)
@@ -906,7 +916,10 @@ class SwinTransformer(nn.Module):
       
         for i in range(self.num_layers):
             layer = self.layers[i]
-            x_out, S, H, W, x, Ws, Wh, Ww = layer(x, Ws, Wh, Ww)
+            save = False
+            if i == 0:
+                save = True
+            x_out, S, H, W, x, Ws, Wh, Ww = layer(x, Ws, Wh, Ww, imidx, save)
             if i in self.out_indices:
                 norm_layer = getattr(self, f'norm{i}')
                 x_out = norm_layer(x_out)
@@ -1063,7 +1076,7 @@ class swintransformer(SegmentationNetwork):
 
             
         seg_outputs=[]
-        skips = self.model_down(x)
+        skips = self.model_down(x, self.imidx)
         neck=skips[-1]
        
         out=self.encoder(neck,skips)
@@ -1071,9 +1084,12 @@ class swintransformer(SegmentationNetwork):
         for i in range(len(out)):  
             seg_outputs.append(self.final[-(i+1)](out[i]))
 
-        if self.imidx%4 == 0:
-            torch.save(x, "/share/DEEPLEARNING/themyr_l/medvisu/"+str(self.imidx)+"x.pt")
-            torch.save(seg_outputs[-1], "/share/DEEPLEARNING/themyr_l/medvisu/"+str(self.imidx)+"p.pt")
+        # if self.imidx%4 == 0:
+        #     torch.save(x, "/share/DEEPLEARNING/themyr_l/medvisu/"+str(self.imidx)+"x.pt")
+        #     torch.save(seg_outputs[-1], "/share/DEEPLEARNING/themyr_l/medvisu/"+str(self.imidx)+"p.pt")
+        if self.imidx == 520:
+            torch.save(x, "/share/DEEPLEARNING/themyr_l/medvisu/520/"+str(self.imidx)+"x.pt")
+            torch.save(seg_outputs[-1], "/share/DEEPLEARNING/themyr_l/medvisu/520/"+str(self.imidx)+"p.pt")
 
 
         if self.imidx == 64*10:
