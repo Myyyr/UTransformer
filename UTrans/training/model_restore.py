@@ -3,7 +3,7 @@ import torch
 from batchgenerators.utilities.file_and_folder_operations import *
 import importlib
 import pkgutil
-from nnunet.training.network_training.nnUNetTrainer import nnUNetTrainer
+from UTrans.training.network_training.nnUNetTrainer import nnUNetTrainer
 
 
 def recursive_find_python_class(folder, trainer_name, current_module):
