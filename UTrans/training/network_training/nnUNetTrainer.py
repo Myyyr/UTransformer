@@ -85,6 +85,7 @@ class nnUNetTrainer(NetworkTrainer):
         print('plans_file', plans_file)
         print('fold', fold)
         print('norm_cfg', norm_cfg)
+        print('activation_cfg', activation_cfg)
         print('output_folder', output_folder)
         print('dataset_directory', dataset_directory)
         print('batch_dice', batch_dice)
