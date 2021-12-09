@@ -33,7 +33,7 @@ def restore_model(pkl_file, checkpoint=None, train=False, fp16=None):
     print("pkl_file",pkl_file)
     info = load_pickle(pkl_file)
     init = info['init']
-    print("init",init)
+    print("init",*init)
     print("-----------------\n\n\n")
     name = info['name']
     search_in = join(UTrans.__path__[0], "training", "network_training")
