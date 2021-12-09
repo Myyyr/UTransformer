@@ -145,6 +145,9 @@ class nnUNetTrainer(NetworkTrainer):
         :return:
         """
         if fold is not None:
+            print("\n\n\n")
+            print("fold", fold)
+            print("\n\n\n")
             if isinstance(fold, str):
                 assert fold == "all" or "xf", "if self.fold is a string then it must be \'all\'"
                 if self.output_folder.endswith("%s" % str(self.fold)):
