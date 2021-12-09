@@ -79,6 +79,22 @@ class nnUNetTrainer(NetworkTrainer):
         in your init accordingly. Otherwise checkpoints won't load properly!
         """
         super(nnUNetTrainer, self).__init__(deterministic, fp16)
+
+
+        print("\n\n\n")
+        print('plans_file', plans_file)
+        print('fold', fold)
+        print('norm_cfg', norm_cfg)
+        print('output_folder', output_folder)
+        print('dataset_directory', dataset_directory)
+        print('batch_dice', batch_dice)
+        print('stage', stage)
+        print('unpack_data', unpack_data)
+        print('deterministic', deterministic)
+        print('fp16', fp16)
+        print("\n\n\n")
+
+
         self.unpack_data = unpack_data
         self.init_args = (plans_file, fold, output_folder, dataset_directory, batch_dice, stage, unpack_data,
                           deterministic, fp16)
