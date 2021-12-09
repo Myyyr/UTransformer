@@ -29,8 +29,12 @@ def recursive_find_python_class(folder, trainer_name, current_module):
 
 
 def restore_model(pkl_file, checkpoint=None, train=False, fp16=None):
+    print("\n\n\n\n\n-----------")
+    print("pkl_file",pkl_file)
     info = load_pickle(pkl_file)
     init = info['init']
+    print("init",init)
+    print("-----------------\n\n\n")
     name = info['name']
     search_in = join(UTrans.__path__[0], "training", "network_training")
     tr = recursive_find_python_class([search_in], name, current_module="UTrans.training.network_training")
@@ -99,6 +103,7 @@ def load_model_and_checkpoint_files(folder, folds=None, mixed_precision=None, ch
         print("found the following folds: ", folds)
     else:
         raise ValueError("Unknown value for folds. Type: %s. Expected: list of int, int, str or None", str(type(folds)))
+
 
     trainer = restore_model(join(folds[0], "%s.model.pkl" % checkpoint_name), fp16=mixed_precision)
     trainer.output_folder = folder
