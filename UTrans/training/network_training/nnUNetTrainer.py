@@ -146,7 +146,7 @@ class nnUNetTrainer(NetworkTrainer):
         """
         if fold is not None:
             print("\n\n\n")
-            print("fold", fold)
+            print("self.output_folder : '", self.output_folder, "' type :", type(self.output_folder))
             print("\n\n\n")
             if isinstance(fold, str):
                 assert fold == "all" or "xf", "if self.fold is a string then it must be \'all\'"
