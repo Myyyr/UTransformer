@@ -52,7 +52,7 @@ matplotlib.use("agg")
 
 
 class nnUNetTrainer(NetworkTrainer):
-    def __init__(self, plans_file, fold, output_folder=None, dataset_directory=None, batch_dice=True, stage=None,
+    def __init__(self, plans_file, fold, norm_cfg=None, activation_cfg=None, output_folder=None, dataset_directory=None, batch_dice=True, stage=None,
                  unpack_data=True, deterministic=True, fp16=False):
         """
         :param deterministic:
