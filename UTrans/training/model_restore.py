@@ -33,9 +33,6 @@ def restore_model(pkl_file, checkpoint=None, train=False, fp16=None):
     print("pkl_file",pkl_file)
     info = load_pickle(pkl_file)
     init = info['init']
-    print("init")
-    for i in init: print(i)
-    print("-----------------\n\n\n")
     name = info['name']
     search_in = join(UTrans.__path__[0], "training", "network_training")
     tr = recursive_find_python_class([search_in], name, current_module="UTrans.training.network_training")
@@ -57,6 +54,9 @@ def restore_model(pkl_file, checkpoint=None, train=False, fp16=None):
     assert issubclass(tr, nnUNetTrainer), "The network trainer was found but is not a subclass of nnUNetTrainer. " \
                                           "Please make it so!"
 
+    print("init")
+    for i in init: print(i)
+    print("-----------------\n\n\n")
     trainer = tr(*init)
 
     if fp16 is not None:
