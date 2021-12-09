@@ -52,7 +52,7 @@ matplotlib.use("agg")
 
 
 class nnUNetTrainer(NetworkTrainer):
-    def __init__(self, plans_file, fold, norm_cfg=None, activation_cfg=None, output_folder=None, dataset_directory=None, batch_dice=True, stage=None,
+    def __init__(self, plans_file, fold, output_folder=None, dataset_directory=None, batch_dice=True, stage=None,
                  unpack_data=True, deterministic=True, fp16=False):
         """
         :param deterministic:
@@ -84,8 +84,8 @@ class nnUNetTrainer(NetworkTrainer):
         print("\n\n\n")
         print('plans_file', plans_file)
         print('fold', fold)
-        print('norm_cfg', norm_cfg)
-        print('activation_cfg', activation_cfg)
+        # print('norm_cfg', norm_cfg)
+        # print('activation_cfg', activation_cfg)
         print('output_folder', output_folder)
         print('dataset_directory', dataset_directory)
         print('batch_dice', batch_dice)
