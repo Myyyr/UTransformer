@@ -221,6 +221,7 @@ class DataLoader3D(SlimDataLoaderBase):
         return data_shape, seg_shape
 
     def generate_train_batch(self):
+        print("---------------------------DBG---------------------------")
         selected_keys = np.random.choice(self.list_of_keys, self.batch_size, True, None)
         data = np.zeros(self.data_shape, dtype=np.float32)
         seg = np.zeros(self.seg_shape, dtype=np.float32)
@@ -349,6 +350,7 @@ class DataLoader3D(SlimDataLoaderBase):
 
             # Myr : We add the shape in the volume size list and the crop center position in the corresponding list.
             volume_size[j] = shape
+            print(bbox_x_lb,bbox_y_lb,bbox_x_lb)
             cx = (valid_bbox_x_ub-valid_bbox_x_lb)//2
             cy = (valid_bbox_y_ub-valid_bbox_y_lb)//2
             cz = (valid_bbox_z_ub-valid_bbox_z_lb)//2
@@ -391,7 +393,6 @@ class DataLoader3D(SlimDataLoaderBase):
                                    'constant', **{'constant_values': 0})
 
 
-        print("---------------------------DBG---------------------------")
         print("pos", center_pos)
         print("size", volume_size)
         print("---------------------------------------------------------")
