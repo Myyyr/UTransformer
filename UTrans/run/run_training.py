@@ -120,7 +120,11 @@ def main(gpu, network, network_trainer, task, fold, outpath, val, npz, c=False, 
     # print("---->",output_folder_name)
     # print("Here its ok 2")
     # exit(0)
-    trainer = trainer_class(plans_file, fold, norm_cfg, activation_cfg, output_folder=output_folder_name, dataset_directory=dataset_directory,
+    # trainer = trainer_class(plans_file, fold, norm_cfg, activation_cfg, output_folder=output_folder_name, dataset_directory=dataset_directory,
+    #                         batch_dice=batch_dice, stage=stage, unpack_data=decompress_data,
+    #                         deterministic=deterministic,
+    #                         fp16=run_mixed_precision)
+    trainer = trainer_class(plans_file, fold, output_folder=output_folder_name, dataset_directory=dataset_directory,
                             batch_dice=batch_dice, stage=stage, unpack_data=decompress_data,
                             deterministic=deterministic,
                             fp16=run_mixed_precision)
