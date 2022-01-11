@@ -350,10 +350,19 @@ class DataLoader3D(SlimDataLoaderBase):
 
             # Myr : We add the shape in the volume size list and the crop center position in the corresponding list.
             volume_size[j] = shape
-            # print(bbox_x_lb,bbox_y_lb,bbox_x_lb)
+
+            # Myr : here we have the position of the center of the patch we chose ...
             cx = valid_bbox_x_lb + (valid_bbox_x_ub-valid_bbox_x_lb)//2
             cy = valid_bbox_y_lb + (valid_bbox_y_ub-valid_bbox_y_lb)//2
             cz = valid_bbox_z_lb + (valid_bbox_z_ub-valid_bbox_z_lb)//2
+            print('cb', cx, cy , cz)
+            # Myr : But we want this position relative to the center of the volume so here we go ! 
+            cx -= shape[0]//2 
+            cy -= shape[1]//2 
+            cz -= shape[2]//2 
+            print('ca', cx, cy , cz)
+
+
             center_pos[j] = np.array([cx,cy,cz])
 
 
