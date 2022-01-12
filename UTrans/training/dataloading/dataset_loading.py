@@ -221,7 +221,6 @@ class DataLoader3D(SlimDataLoaderBase):
         return data_shape, seg_shape
 
     def generate_train_batch(self):
-        print("---------------------------DBG---------------------------")
         selected_keys = np.random.choice(self.list_of_keys, self.batch_size, True, None)
         data = np.zeros(self.data_shape, dtype=np.float32)
         seg = np.zeros(self.seg_shape, dtype=np.float32)
@@ -355,12 +354,10 @@ class DataLoader3D(SlimDataLoaderBase):
             cx = valid_bbox_x_lb + (valid_bbox_x_ub-valid_bbox_x_lb)//2
             cy = valid_bbox_y_lb + (valid_bbox_y_ub-valid_bbox_y_lb)//2
             cz = valid_bbox_z_lb + (valid_bbox_z_ub-valid_bbox_z_lb)//2
-            print('cb', cx, cy , cz)
             # Myr : But we want this position relative to the center of the volume so here we go ! 
             cx -= shape[0]//2 
             cy -= shape[1]//2 
             cz -= shape[2]//2 
-            print('ca', cx, cy , cz)
 
 
             center_pos[j] = np.array([cx,cy,cz])
@@ -401,12 +398,6 @@ class DataLoader3D(SlimDataLoaderBase):
                                                               max(bbox_z_ub - shape[2], 0))),
                                    'constant', **{'constant_values': 0})
 
-
-        print("pos", center_pos)
-        print("size", volume_size)
-        print("---------------------------------------------------------")
-
-        exit(0)
 
         return {'data': data, 'seg': seg, 'properties': case_properties, 'keys': selected_keys, 'pos':center_pos, 'size':volume_size}
 

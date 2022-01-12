@@ -241,9 +241,14 @@ class nnUNetTrainerV2_nnFormerGT1gv2(nnUNetTrainer):
         :param run_online_evaluation:
         :return:
         """
+        print("--------------------------------------DBG--------------------------------------")
         data_dict = next(data_generator)
         data = data_dict['data']
         target = data_dict['target']
+        pos = data_dict['pos']
+        print(pos)
+        print("-------------------------------------------------------------------------------")
+        exit(0)
 
         data = maybe_to_torch(data)
         target = maybe_to_torch(target)
