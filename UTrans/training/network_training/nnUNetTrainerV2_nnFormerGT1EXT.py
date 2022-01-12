@@ -246,7 +246,7 @@ class nnUNetTrainerV2_nnFormerGT1EXT(nnUNetTrainer):
         data = data_dict['data']
         target = data_dict['target']
         pos = data_dict['pos']
-        print(pos)
+        print('ok 0', pos)
         # exit(0)
 
         data = maybe_to_torch(data)
@@ -260,9 +260,7 @@ class nnUNetTrainerV2_nnFormerGT1EXT(nnUNetTrainer):
 
         if self.fp16:
             with autocast():
-                # print(type(self.network))
-                # exit(0)
-                output = self.network(data)
+                output = self.network(data, pos)
                 del data
                 l = self.loss(output, target)
 
@@ -273,9 +271,7 @@ class nnUNetTrainerV2_nnFormerGT1EXT(nnUNetTrainer):
                 self.amp_grad_scaler.step(self.optimizer)
                 self.amp_grad_scaler.update()
         else:
-            # print(type(self.network))
-            # exit(0)
-            output = self.network(data)
+            output = self.network(data, pos)
             del data
             l = self.loss(output, target)
 
@@ -285,6 +281,7 @@ class nnUNetTrainerV2_nnFormerGT1EXT(nnUNetTrainer):
                 self.optimizer.step()
 
         print("-------------------------------------------------------------------------------")
+        exit(0)
         if run_online_evaluation:
             self.run_online_evaluation(output, target)
 
