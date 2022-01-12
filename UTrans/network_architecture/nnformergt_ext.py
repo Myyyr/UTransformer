@@ -1061,7 +1061,8 @@ class swintransformer(SegmentationNetwork):
             self.final.append(final_patch_expanding(embed_dim*2**i,14,patch_size=(4,4,4)))
         self.final=nn.ModuleList(self.final)
         
-    def forward(self, x):
+    def forward(self, x, pos):
+        print("--> pos", pos)
         
             
             

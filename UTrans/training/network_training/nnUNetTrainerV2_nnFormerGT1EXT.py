@@ -247,8 +247,7 @@ class nnUNetTrainerV2_nnFormerGT1EXT(nnUNetTrainer):
         target = data_dict['target']
         pos = data_dict['pos']
         print(pos)
-        print("-------------------------------------------------------------------------------")
-        exit(0)
+        # exit(0)
 
         data = maybe_to_torch(data)
         target = maybe_to_torch(target)
@@ -285,6 +284,7 @@ class nnUNetTrainerV2_nnFormerGT1EXT(nnUNetTrainer):
                 torch.nn.utils.clip_grad_norm_(self.network.parameters(), 12)
                 self.optimizer.step()
 
+        print("-------------------------------------------------------------------------------")
         if run_online_evaluation:
             self.run_online_evaluation(output, target)
 
