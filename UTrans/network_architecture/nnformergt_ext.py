@@ -117,10 +117,12 @@ class ClassicAttention(nn.Module):
         """
         B_, N, C = x.shape
 
-        m = pe.shape[0]
-        strt = m//2-N//2
-        pe = pe[strt:strt+N,:]
-        x = x + pe
+        if pe != None:
+            m = pe.shape[0]
+            strt = m//2-N//2
+            pe = pe[strt:strt+N,:]
+            x[:, 1:, :] = x[:, 1:, :] + pe
+
 
         qkv = self.qkv(x).reshape(B_, N, 3, self.num_heads, C // self.num_heads).permute(2, 0, 3, 1, 4)
         q, k, v = qkv[0], qkv[1], qkv[2]  # make torchscript happy (cannot use tensor as tuple)
@@ -310,8 +312,11 @@ class SwinTransformerBlock(nn.Module):
         self.gt_attn = ClassicAttention(dim=dim, window_size=(0,0), num_heads=num_heads, 
                                             qkv_bias=qkv_bias, qk_scale=qk_scale, attn_drop=attn_drop, 
                                             proj_drop=drop)
+        self.vt_attn = ClassicAttention(dim=dim, window_size=(0,0), num_heads=num_heads, 
+                                            qkv_bias=qkv_bias, qk_scale=qk_scale, attn_drop=attn_drop, 
+                                            proj_drop=drop)
 
-    def forward(self, x, mask_matrix, gt, pe):
+    def forward(self, x, mask_matrix, gt, pe, vts, vt_pos):
         """ Forward function.
 
         Args:
@@ -366,9 +371,17 @@ class SwinTransformerBlock(nn.Module):
         gt = gt + self.drop_path(self.mlp(self.norm2(gt)))
         tmp, ngt, c = gt.shape
         nw = tmp//B
-        gt =rearrange(gt, "(b n) g c -> b (n g) c", b=B)
+        gt = rearrange(gt, "(b n) g c -> b (n g) c", b=B)
+        vt = vts[vt]
+        gt = torch.cat([vt, gt], dim=1)
         gt = self.gt_attn(gt, pe)
+        vt = gt[:,0,:]
+        gt = gt[:,1:,:]
         gt = rearrange(gt, "b (n g) c -> (b n) g c",g=ngt, c=C)
+
+        # New vts
+        vts[pos] = vt
+        vts = self.vt_attn(vts, None)
 
         # merge windows
         attn_windows = attn_windows.view(-1, self.window_size, self.window_size, self.window_size, C)
@@ -389,7 +402,7 @@ class SwinTransformerBlock(nn.Module):
         x = shortcut + self.drop_path(x)
         x = x + self.drop_path(self.mlp(self.norm2(x)))
 
-        return x, gt
+        return x, gt, vts
 
 
 class PatchMerging(nn.Module):
@@ -495,6 +508,9 @@ class BasicLayer(nn.Module):
         self.global_token = torch.nn.Parameter(torch.randn(gt_num,dim))
         self.global_token.requires_grad = True
 
+        self.volume_token = torch.nn.Parameter(torch.randn(*vt_map,dim))
+        self.volume_token.requires_grad = True
+
         # build blocks
         self.blocks = nn.ModuleList([
             SwinTransformerBlock(
@@ -521,7 +537,7 @@ class BasicLayer(nn.Module):
         else:
             self.downsample = None
 
-    def forward(self, x, S, H, W):
+    def forward(self, x, S, H, W, vt_pos):
         """ Forward function.
 
         Args:
@@ -557,12 +573,13 @@ class BasicLayer(nn.Module):
         attn_mask = attn_mask.masked_fill(attn_mask != 0, float(-100.0)).masked_fill(attn_mask == 0, float(0.0))
 
         gt = self.global_token
+        vts = self.volume_token
         for blk in self.blocks:
             blk.H, blk.W = H, W
             if self.use_checkpoint:
                 x = checkpoint.checkpoint(blk, x, attn_mask)
             else:
-                x, gt = blk(x, attn_mask, gt, self.pe)
+                x, gt, vts = blk(x, attn_mask, gt, self.pe, vts, vt_pos)
         if self.downsample is not None:
             x_down = self.downsample(x, S, H, W)
             Ws, Wh, Ww = (S + 1) // 2, (H + 1) // 2, (W + 1) // 2
@@ -611,6 +628,9 @@ class BasicLayer_up(nn.Module):
 
         self.global_token = torch.nn.Parameter(torch.randn(gt_num,dim))
         self.global_token.requires_grad = True
+
+        self.volume_token = torch.nn.Parameter(torch.randn(*vt_map,dim))
+        self.volume_token.requires_grad = True
         
 
         # build blocks
@@ -636,7 +656,7 @@ class BasicLayer_up(nn.Module):
         # patch merging layer
         
         self.Upsample = upsample(dim=2*dim, norm_layer=norm_layer)
-    def forward(self, x,skip, S, H, W):
+    def forward(self, x,skip, S, H, W, vt_pos):
         """ Forward function.
 
         Args:
@@ -675,8 +695,9 @@ class BasicLayer_up(nn.Module):
         attn_mask = mask_windows.unsqueeze(1) - mask_windows.unsqueeze(2)
         attn_mask = attn_mask.masked_fill(attn_mask != 0, float(-100.0)).masked_fill(attn_mask == 0, float(0.0))
         gt = self.global_token 
+        vts = self.volume_token
         for blk in self.blocks:
-            x_up, gt = blk(x_up, attn_mask, gt, self.pe)
+            x_up, gt, vts = blk(x_up, attn_mask, gt, self.pe, vts, vt_pos)
         
         return x_up, S, H, W
         
@@ -900,7 +921,7 @@ class SwinTransformer(nn.Module):
 
     
 
-    def forward(self, x):
+    def forward(self, x, vt_pos):
         """Forward function."""
         
         x = self.patch_embed(x)
@@ -919,7 +940,7 @@ class SwinTransformer(nn.Module):
       
         for i in range(self.num_layers):
             layer = self.layers[i]
-            x_out, S, H, W, x, Ws, Wh, Ww = layer(x, Ws, Wh, Ww, pos)
+            x_out, S, H, W, x, Ws, Wh, Ww = layer(x, Ws, Wh, Ww, vt_pos)
             if i in self.out_indices:
                 norm_layer = getattr(self, f'norm{i}')
                 x_out = norm_layer(x_out)
@@ -983,7 +1004,7 @@ class encoder(nn.Module):
                 )
             self.layers.append(layer)
         self.num_features = [int(embed_dim * 2 ** i) for i in range(self.num_layers)]
-    def forward(self,x,skips,pos):
+    def forward(self,x,skips,vt_pos):
             
         outs=[]
         S, H, W = x.size(2), x.size(3), x.size(4)
@@ -998,7 +1019,7 @@ class encoder(nn.Module):
             layer = self.layers[i]
             
            
-            x, S, H, W,  = layer(x,skips[i], S, H, W, pos)
+            x, S, H, W,  = layer(x,skips[i], S, H, W, vt_pos)
             out = x.view(-1, S, H, W, self.num_features[i])
             outs.append(out)
         return outs
