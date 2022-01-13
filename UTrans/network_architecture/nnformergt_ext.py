@@ -1075,13 +1075,13 @@ class swintransformer(SegmentationNetwork):
         max_dim = [218,660,660]
 
         # Myr : We put the crop in the bigger image referential
-        rc_pos = [pos[i] + max_dim[i]//2 for i in range(3)]
+        rc_pos = [[p[i] + max_dim[i]//2 for i in range(3)] for p in pos]
 
         pad = [(max_dim[i]-dim[i]*self.vt_map[i])//2 + 0**((max_dim[i]-dim[i]*self.vt_map[i])%2 == 0) for i in range(3)]
 
-        vt_pos = [(rc_pos[i]-pad[i])//dim[i] for i in range(3)]
-        vt_pos = [vt_pos[i]*(0**(vt_pos[i]<0)) for i in range(3)]
-        vt_pos = [vt_pos[i]*(0**((rc_pos[i] - pad[i])>=(self.vt_map[i]*dim[i]))) for i in range(3)]
+        vt_pos = [[(rc[i]-pad[i])//dim[i] for i in range(3)] for rc in rc_pos]
+        vt_pos = [[vt[i]*(0**(vt[i]<0)) for i in range(3)] for vt in vt_pos]
+        vt_pos = [[vt_pos[j][i]*(0**((rc_pos[j][i] - pad[i])>=(self.vt_map[i]*dim[i]))) for i in range(3)] for j in range(len(vt_pos))]
 
         return vt_pos
     
