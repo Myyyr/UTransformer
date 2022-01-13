@@ -17,6 +17,14 @@ from timm.models.layers import DropPath, to_3tuple, trunc_normal_
 from einops import repeat
 
 
+#MAX : 660 660 218
+#AVG : 529 529 150
+#MIN : 401 401 93
+
+#CROP : 128 128 64
+
+#MAX NCROP : 5 5 3
+
 class Mlp(nn.Module):
     """ Multilayer perceptron."""
 
@@ -477,7 +485,7 @@ class BasicLayer(nn.Module):
                  drop_path=0.,
                  norm_layer=nn.LayerNorm,
                  downsample=True,  
-                 use_checkpoint=False, gt_num=1, id_layer=0):
+                 use_checkpoint=False, gt_num=1, id_layer=0, vt_map=(3,5,5)):
         super().__init__()
         self.window_size = window_size
         self.shift_size = window_size // 2
@@ -805,7 +813,7 @@ class SwinTransformer(nn.Module):
                  patch_norm=True,
                  out_indices=(0, 1, 2, 3),
                  frozen_stages=-1,
-                 use_checkpoint=False, gt_num=1):
+                 use_checkpoint=False, gt_num=1, vt_map=(3,5,5)):
         super().__init__()
 
         self.pretrain_img_size = pretrain_img_size
@@ -859,7 +867,7 @@ class SwinTransformer(nn.Module):
                     depths[:i_layer]):sum(depths[:i_layer + 1])],
                 norm_layer=norm_layer,
                 downsample=PatchMerging,
-                use_checkpoint=use_checkpoint, gt_num=gt_num, id_layer=i_layer)
+                use_checkpoint=use_checkpoint, gt_num=gt_num, id_layer=i_layer, vt_map=vt_map)
             self.layers.append(layer)
 
         num_features = [int(embed_dim * 2 ** i) for i in range(self.num_layers)]
@@ -911,7 +919,7 @@ class SwinTransformer(nn.Module):
       
         for i in range(self.num_layers):
             layer = self.layers[i]
-            x_out, S, H, W, x, Ws, Wh, Ww = layer(x, Ws, Wh, Ww)
+            x_out, S, H, W, x, Ws, Wh, Ww = layer(x, Ws, Wh, Ww, pos)
             if i in self.out_indices:
                 norm_layer = getattr(self, f'norm{i}')
                 x_out = norm_layer(x_out)
@@ -940,7 +948,7 @@ class encoder(nn.Module):
                  drop_rate=0.,
                  attn_drop_rate=0.,
                  drop_path_rate=0.2,
-                 norm_layer=nn.LayerNorm, gt_num=1
+                 norm_layer=nn.LayerNorm, gt_num=1, vt_map=(3,5,5)
                  ):
         super().__init__()
         
@@ -971,11 +979,11 @@ class encoder(nn.Module):
                 drop_path=dpr[sum(
                     depths[:i_layer]):sum(depths[:i_layer + 1])],
                 norm_layer=norm_layer,
-                upsample=Patch_Expanding, gt_num=gt_num,id_layer=len(depths)-i_layer-1
+                upsample=Patch_Expanding, gt_num=gt_num,id_layer=len(depths)-i_layer-1, vt_map=vt_map
                 )
             self.layers.append(layer)
         self.num_features = [int(embed_dim * 2 ** i) for i in range(self.num_layers)]
-    def forward(self,x,skips):
+    def forward(self,x,skips,pos):
             
         outs=[]
         S, H, W = x.size(2), x.size(3), x.size(4)
@@ -990,7 +998,7 @@ class encoder(nn.Module):
             layer = self.layers[i]
             
            
-            x, S, H, W,  = layer(x,skips[i], S, H, W)
+            x, S, H, W,  = layer(x,skips[i], S, H, W, pos)
             out = x.view(-1, S, H, W, self.num_features[i])
             outs.append(out)
         return outs
@@ -1031,7 +1039,7 @@ class swintransformer(SegmentationNetwork):
                  conv_kernel_sizes=None,
                  upscale_logits=False, convolutional_pooling=False, convolutional_upsampling=False,
                  max_num_features=None, basic_block=None,
-                 seg_output_use_bias=False, gt_num=1):
+                 seg_output_use_bias=False, gt_num=1, vt_map=(3,5,5)):
     
         super(swintransformer, self).__init__()
         
@@ -1040,6 +1048,7 @@ class swintransformer(SegmentationNetwork):
         self.do_ds = deep_supervision
         self.num_classes=num_classes
         self.conv_op=conv_op
+        self.vt_map = vt_map
        
         
         self.upscale_logits_ops = []
@@ -1052,25 +1061,41 @@ class swintransformer(SegmentationNetwork):
         depths=[2, 2, 2, 2]
         num_heads=[6, 12, 24, 48]
         patch_size=[2,4,4]
-        self.model_down=SwinTransformer(pretrain_img_size=[64,128,128],window_size=4,embed_dim=embed_dim,patch_size=patch_size,depths=depths,num_heads=num_heads,in_chans=1, gt_num=gt_num)
-        self.encoder=encoder(pretrain_img_size=[64,128,128],embed_dim=embed_dim,window_size=4,patch_size=patch_size,num_heads=[24,12,6],depths=[2,2,2], gt_num=gt_num)
+        self.model_down=SwinTransformer(pretrain_img_size=[64,128,128],window_size=4,embed_dim=embed_dim,patch_size=patch_size,depths=depths,num_heads=num_heads,in_chans=1, gt_num=gt_num, vt_map=vt_map)
+        self.encoder=encoder(pretrain_img_size=[64,128,128],embed_dim=embed_dim,window_size=4,patch_size=patch_size,num_heads=[24,12,6],depths=[2,2,2], gt_num=gt_num, vt_map=vt_map)
    
         self.final=[]
         self.final.append(final_patch_expanding(embed_dim*2**0,14,patch_size=(2,4,4)))
         for i in range(1,len(depths)-1):
             self.final.append(final_patch_expanding(embed_dim*2**i,14,patch_size=(4,4,4)))
         self.final=nn.ModuleList(self.final)
-        
+
+    def pos2vtpos(self, pos):
+        dim = [64,128,128]
+        max_dim = [218,660,660]
+
+        # Myr : We put the crop in the bigger image referential
+        rc_pos = [pos[i] + max_dim[i]//2 for i in range(3)]
+
+        pad = [(max_dim[i]-dim[i]*self.vt_map[i])//2 + 0**((max_dim[i]-dim[i]*self.vt_map[i])%2 == 0) for i in range(3)]
+
+        vt_pos = [(rc_pos[i]-pad[i])//dim[i] for i in range(3)]
+        vt_pos = [vt_pos[i]*(0**(vt_pos[i]<0)) for i in range(3)]
+        vt_pos = [vt_pos[i]*(0**((rc_pos[i] - pad[i])>=(self.vt_map[i]*dim[i]))) for i in range(3)]
+
+        return vt_pos
+    
     def forward(self, x, pos):
         print("--> pos", pos)
+        vt_pos = self.pos2vtpos(pos)
+        
         
             
-            
         seg_outputs=[]
-        skips = self.model_down(x)
+        skips = self.model_down(x, vt_pos)
         neck=skips[-1]
        
-        out=self.encoder(neck,skips)
+        out=self.encoder(neck,skips,vt_pos)
         
         for i in range(len(out)):  
             seg_outputs.append(self.final[-(i+1)](out[i]))
