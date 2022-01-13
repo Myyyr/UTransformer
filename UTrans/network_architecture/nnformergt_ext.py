@@ -383,7 +383,7 @@ class SwinTransformerBlock(nn.Module):
         gt = rearrange(gt, "b (n g) c -> (b n) g c",g=ngt, c=C)
 
         # New vts
-        vts_ = vts.copy()
+        vts_ = vts.clone()
         vts_[vt_pos] += vt
         vts_ = self.vt_attn(vts_, None)
 
