@@ -384,7 +384,8 @@ class SwinTransformerBlock(nn.Module):
 
         # New vts
         vts_ = vts.clone()
-        vts_[vt_pos] += vt
+        vts_[vt_pos] = vt
+        print("vts_",vts_.shape)
         vts_ = self.vt_attn(vts_, None)
 
         # merge windows
