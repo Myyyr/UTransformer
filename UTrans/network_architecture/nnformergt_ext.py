@@ -602,7 +602,7 @@ class BasicLayer_up(nn.Module):
                  attn_drop=0.,
                  drop_path=0.,
                  norm_layer=nn.LayerNorm,
-                 upsample=True, gt_num=1,id_layer=0
+                 upsample=True, gt_num=1,id_layer=0, vt_map=(3,5,5)
                 ):
         super().__init__()
         self.window_size = window_size
