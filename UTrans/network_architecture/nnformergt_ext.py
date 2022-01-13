@@ -383,8 +383,9 @@ class SwinTransformerBlock(nn.Module):
         gt = rearrange(gt, "b (n g) c -> (b n) g c",g=ngt, c=C)
 
         # New vts
-        vts[vt_pos] += vt
-        vts = self.vt_attn(vts, None)
+        vts_ = vts.copy()
+        vts_[vt_pos] += vt
+        vts_ = self.vt_attn(vts_, None)
 
         # merge windows
         attn_windows = attn_windows.view(-1, self.window_size, self.window_size, self.window_size, C)
@@ -405,7 +406,7 @@ class SwinTransformerBlock(nn.Module):
         x = shortcut + self.drop_path(x)
         x = x + self.drop_path(self.mlp(self.norm2(x)))
 
-        return x, gt, vts
+        return x, gt, vts_
 
 
 class PatchMerging(nn.Module):
