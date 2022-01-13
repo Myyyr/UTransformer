@@ -508,7 +508,7 @@ class BasicLayer(nn.Module):
         self.global_token = torch.nn.Parameter(torch.randn(gt_num,dim))
         self.global_token.requires_grad = True
 
-        self.volume_token = torch.nn.Parameter(torch.randn(*vt_map,dim))
+        self.volume_token = torch.nn.Parameter(torch.randn(vt_map[0]*vt_map[1]*vt_map[2],dim))
         self.volume_token.requires_grad = True
 
         # build blocks
@@ -629,7 +629,7 @@ class BasicLayer_up(nn.Module):
         self.global_token = torch.nn.Parameter(torch.randn(gt_num,dim))
         self.global_token.requires_grad = True
 
-        self.volume_token = torch.nn.Parameter(torch.randn(*vt_map,dim))
+        self.volume_token = torch.nn.Parameter(torch.randn(vt_map[0]*vt_map[1]*vt_map[2],dim))
         self.volume_token.requires_grad = True
         
 
@@ -1104,6 +1104,8 @@ class swintransformer(SegmentationNetwork):
         vt_pos = [[vt[i]*(0**(vt[i]<0)) for i in range(3)] for vt in vt_pos]
         vt_pos = [[vt_pos[j][i]*(0**((rc_pos[j][i] - pad[i])>=(self.vt_map[i]*dim[i]))) for i in range(3)] for j in range(len(vt_pos))]
         vt_pos = [[int(i) for i in j] for j in vt_pos]
+
+        vt_pos = [vt[0]*self.vt_map[1]*self.vt_map[2] + vt[1]*self.vt_map[2] + vt[2] for vt in vt_pos]
 
         return vt_pos
     
