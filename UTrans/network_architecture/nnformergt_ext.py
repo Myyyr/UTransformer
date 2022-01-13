@@ -383,7 +383,7 @@ class SwinTransformerBlock(nn.Module):
         gt = rearrange(gt, "b (n g) c -> (b n) g c",g=ngt, c=C)
 
         # New vts
-        vts[pos] = vt
+        vts[vt_pos] = vt
         vts = self.vt_attn(vts, None)
 
         # merge windows
