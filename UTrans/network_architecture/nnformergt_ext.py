@@ -395,7 +395,9 @@ class SwinTransformerBlock(nn.Module):
             vts_ = repeat(vts_, "g c -> b g c", b=B)# shape of (num_windows*B, G, C)
         for i in range(B):
             vts_[i, vt_pos[i]] = vt[i]
-        vts_ = self.vt_attn(vts_, None)
+
+        if check:
+            vts_ = self.vt_attn(vts_, None)
 
         # merge windows
         attn_windows = attn_windows.view(-1, self.window_size, self.window_size, self.window_size, C)
@@ -518,12 +520,16 @@ class BasicLayer(nn.Module):
         self.shift_size = window_size // 2
         self.depth = depth
         self.use_checkpoint = use_checkpoint
+        self.vt_map = vt_map
 
         self.global_token = torch.nn.Parameter(torch.randn(gt_num,dim))
         self.global_token.requires_grad = True
 
         self.volume_token = torch.nn.Parameter(torch.randn(vt_map[0]*vt_map[1]*vt_map[2],dim))
         self.volume_token.requires_grad = True
+
+        self.vt_check = torch.nn.Parameter(torch.zeros(vt_map[0]*vt_map[1]*vt_map[2],1))
+        self.vt_check.requires_grad = False
 
         # build blocks
         self.blocks = nn.ModuleList([
@@ -588,12 +594,14 @@ class BasicLayer(nn.Module):
 
         gt = self.global_token
         vts = self.volume_token
+        self.vt_check[vt_pos] += 1
         for blk in self.blocks:
             blk.H, blk.W = H, W
             if self.use_checkpoint:
                 x = checkpoint.checkpoint(blk, x, attn_mask)
             else:
-                x, gt, vts = blk(x, attn_mask, gt, self.pe, vts, vt_pos)
+                check = (self.vt_check.sum() >= self.vt_map[0]*self.vt_map[1]*self.vt_map[2])
+                x, gt, vts = blk(x, attn_mask, gt, self.pe, vts, vt_pos, check)
         if self.downsample is not None:
             x_down = self.downsample(x, S, H, W)
             Ws, Wh, Ww = (S + 1) // 2, (H + 1) // 2, (W + 1) // 2
@@ -639,12 +647,18 @@ class BasicLayer_up(nn.Module):
         self.window_size = window_size
         self.shift_size = window_size // 2
         self.depth = depth
+        self.vt_map = vt_map
 
         self.global_token = torch.nn.Parameter(torch.randn(gt_num,dim))
         self.global_token.requires_grad = True
 
         self.volume_token = torch.nn.Parameter(torch.randn(vt_map[0]*vt_map[1]*vt_map[2],dim))
         self.volume_token.requires_grad = True
+
+        self.vt_check = torch.nn.Parameter(torch.zeros(vt_map[0]*vt_map[1]*vt_map[2],1))
+        self.vt_check.requires_grad = False
+
+
         
 
         # build blocks
@@ -710,8 +724,10 @@ class BasicLayer_up(nn.Module):
         attn_mask = attn_mask.masked_fill(attn_mask != 0, float(-100.0)).masked_fill(attn_mask == 0, float(0.0))
         gt = self.global_token 
         vts = self.volume_token
+        self.vt_check[vt_pos] += 1
         for blk in self.blocks:
-            x_up, gt, vts = blk(x_up, attn_mask, gt, self.pe, vts, vt_pos)
+            check = (self.vt_check.sum() >= self.vt_map[0]*self.vt_map[1]*self.vt_map[2])
+            x_up, gt, vts = blk(x_up, attn_mask, gt, self.pe, vts, vt_pos, check)
         
         return x_up, S, H, W
         
