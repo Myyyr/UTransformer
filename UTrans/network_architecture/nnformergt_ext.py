@@ -528,8 +528,8 @@ class BasicLayer(nn.Module):
         self.volume_token = torch.nn.Parameter(torch.randn(vt_map[0]*vt_map[1]*vt_map[2],dim))
         self.volume_token.requires_grad = True
 
-        self.vt_check = torch.nn.Parameter(torch.zeros(vt_map[0]*vt_map[1]*vt_map[2],1))
-        self.vt_check.requires_grad = False
+        # self.vt_check = torch.nn.Parameter(torch.zeros(vt_map[0]*vt_map[1]*vt_map[2],1))
+        # self.vt_check.requires_grad = False
 
         # build blocks
         self.blocks = nn.ModuleList([
@@ -557,7 +557,7 @@ class BasicLayer(nn.Module):
         else:
             self.downsample = None
 
-    def forward(self, x, S, H, W, vt_pos):
+    def forward(self, x, S, H, W, vt_pos, check):
         """ Forward function.
 
         Args:
@@ -594,13 +594,13 @@ class BasicLayer(nn.Module):
 
         gt = self.global_token
         vts = self.volume_token
-        self.vt_check[vt_pos] += 1
+        # self.vt_check[vt_pos] += 1
         for blk in self.blocks:
             blk.H, blk.W = H, W
             if self.use_checkpoint:
                 x = checkpoint.checkpoint(blk, x, attn_mask)
             else:
-                check = (self.vt_check.sum() >= self.vt_map[0]*self.vt_map[1]*self.vt_map[2])
+                # check = (self.vt_check.sum() >= self.vt_map[0]*self.vt_map[1]*self.vt_map[2])
                 x, gt, vts = blk(x, attn_mask, gt, self.pe, vts, vt_pos, check)
         if self.downsample is not None:
             x_down = self.downsample(x, S, H, W)
@@ -655,8 +655,8 @@ class BasicLayer_up(nn.Module):
         self.volume_token = torch.nn.Parameter(torch.randn(vt_map[0]*vt_map[1]*vt_map[2],dim))
         self.volume_token.requires_grad = True
 
-        self.vt_check = torch.nn.Parameter(torch.zeros(vt_map[0]*vt_map[1]*vt_map[2],1))
-        self.vt_check.requires_grad = False
+        # self.vt_check = torch.nn.Parameter(torch.zeros(vt_map[0]*vt_map[1]*vt_map[2],1))
+        # self.vt_check.requires_grad = False
 
 
         
@@ -684,7 +684,7 @@ class BasicLayer_up(nn.Module):
         # patch merging layer
         
         self.Upsample = upsample(dim=2*dim, norm_layer=norm_layer)
-    def forward(self, x,skip, S, H, W, vt_pos):
+    def forward(self, x,skip, S, H, W, vt_pos, check):
         """ Forward function.
 
         Args:
@@ -724,9 +724,9 @@ class BasicLayer_up(nn.Module):
         attn_mask = attn_mask.masked_fill(attn_mask != 0, float(-100.0)).masked_fill(attn_mask == 0, float(0.0))
         gt = self.global_token 
         vts = self.volume_token
-        self.vt_check[vt_pos] += 1
+        # self.vt_check[vt_pos] += 1
         for blk in self.blocks:
-            check = (self.vt_check.sum() >= self.vt_map[0]*self.vt_map[1]*self.vt_map[2])
+            # check = (self.vt_check.sum() >= self.vt_map[0]*self.vt_map[1]*self.vt_map[2])
             x_up, gt, vts = blk(x_up, attn_mask, gt, self.pe, vts, vt_pos, check)
         
         return x_up, S, H, W
@@ -954,7 +954,7 @@ class SwinTransformer(nn.Module):
 
     
 
-    def forward(self, x, vt_pos):
+    def forward(self, x, vt_pos, check):
         """Forward function."""
         
         x = self.patch_embed(x)
@@ -973,7 +973,7 @@ class SwinTransformer(nn.Module):
       
         for i in range(self.num_layers):
             layer = self.layers[i]
-            x_out, S, H, W, x, Ws, Wh, Ww = layer(x, Ws, Wh, Ww, vt_pos)
+            x_out, S, H, W, x, Ws, Wh, Ww = layer(x, Ws, Wh, Ww, vt_pos, check)
             if i in self.out_indices:
                 norm_layer = getattr(self, f'norm{i}')
                 x_out = norm_layer(x_out)
@@ -1037,7 +1037,7 @@ class encoder(nn.Module):
                 )
             self.layers.append(layer)
         self.num_features = [int(embed_dim * 2 ** i) for i in range(self.num_layers)]
-    def forward(self,x,skips,vt_pos):
+    def forward(self,x,skips,vt_pos, check):
             
         outs=[]
         S, H, W = x.size(2), x.size(3), x.size(4)
@@ -1052,7 +1052,7 @@ class encoder(nn.Module):
             layer = self.layers[i]
             
            
-            x, S, H, W,  = layer(x,skips[i], S, H, W, vt_pos)
+            x, S, H, W,  = layer(x,skips[i], S, H, W, vt_pos, check)
             out = x.view(-1, S, H, W, self.num_features[i])
             outs.append(out)
         return outs
@@ -1153,13 +1153,15 @@ class swintransformer(SegmentationNetwork):
         vts = self.volume_token
         self.vt_check[vt_pos] += 1
         check = (self.vt_check.sum() >= self.vt_map[0]*self.vt_map[1]*self.vt_map[2])
+
+        print(check)
         
             
         seg_outputs=[]
-        skips = self.model_down(x, vt_pos)
+        skips = self.model_down(x, vt_pos, check)
         neck=skips[-1]
        
-        out=self.encoder(neck,skips,vt_pos)
+        out=self.encoder(neck,skips,vt_pos, check)
         
         for i in range(len(out)):  
             seg_outputs.append(self.final[-(i+1)](out[i]))
