@@ -367,7 +367,7 @@ class SwinTransformerBlock(nn.Module):
 
         
         print("vts", vts.shape)
-        if len(vts_.shape) != 3:
+        if len(vts.shape) != 3:
             vt = vts[vt_pos]
         else:
             vt_pos_ = [i*vts.shape[1] + vt_pos[i] for i in range(B)]
