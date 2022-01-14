@@ -1150,7 +1150,6 @@ class swintransformer(SegmentationNetwork):
 
         
 
-        vts = self.volume_token
         self.vt_check[vt_pos] += 1
         check = (self.vt_check.sum() >= self.vt_map[0]*self.vt_map[1]*self.vt_map[2])
 
