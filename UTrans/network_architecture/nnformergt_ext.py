@@ -391,7 +391,8 @@ class SwinTransformerBlock(nn.Module):
         if len(vts_.shape) != 3:
             vts_ = repeat(vts_, "g c -> b g c", b=B)# shape of (num_windows*B, G, C)
         print("vts_",vts_.shape)
-        vts_[vt_pos] = vt
+        for i in range(B):
+            vts_[i, vt_pos[i]] = vt[i]
         print("vts_",vts_.shape)
         vts_ = self.vt_attn(vts_, None)
 
