@@ -1151,9 +1151,12 @@ class swintransformer(SegmentationNetwork):
         
 
         self.vt_check[vt_pos] += 1
-        check = (self.vt_check.sum() >= self.vt_map[0]*self.vt_map[1]*self.vt_map[2])
+        check = ((self.vt_check >= 1).sum() >= self.vt_map[0]*self.vt_map[1]*self.vt_map[2])
 
-        print(check)
+        if check:
+            print(check)
+            print(self.vt_check)
+            
         
             
         seg_outputs=[]
