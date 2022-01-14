@@ -366,7 +366,6 @@ class SwinTransformerBlock(nn.Module):
         attn_windows, gt = self.attn(x_windows, mask=attn_mask, gt=gt)  
 
         
-        print("vts", vts.shape)
         if len(vts.shape) != 3:
             vt = vts[vt_pos]
         else:
@@ -374,7 +373,6 @@ class SwinTransformerBlock(nn.Module):
             vts = rearrange(vts, "b n c -> (b n) c")
             vt = vts[vt_pos_]
             vts = rearrange(vts, "(b n) c -> b n c", b=B)
-        print("vt", vt.shape)
 
 
 
@@ -385,7 +383,6 @@ class SwinTransformerBlock(nn.Module):
         tmp, ngt, c = gt.shape
         nw = tmp//B
         gt = rearrange(gt, "(b n) g c -> b (n g) c", b=B)
-        print("gt", gt.shape)
         gt = torch.cat([vt[:,None,:], gt], dim=1)
         gt = self.gt_attn(gt, pe)
         vt = gt[:,0,:]
@@ -396,10 +393,8 @@ class SwinTransformerBlock(nn.Module):
         vts_ = vts.clone().half()
         if len(vts_.shape) != 3:
             vts_ = repeat(vts_, "g c -> b g c", b=B)# shape of (num_windows*B, G, C)
-        print("vts_",vts_.shape)
         for i in range(B):
             vts_[i, vt_pos[i]] = vt[i]
-        print("vts_",vts_.shape)
         vts_ = self.vt_attn(vts_, None)
 
         # merge windows
@@ -1129,9 +1124,7 @@ class swintransformer(SegmentationNetwork):
         return vt_pos
     
     def forward(self, x, pos):
-        print("--> pos", pos)
         vt_pos = self.pos2vtpos(pos)
-        print("--> vt pos", vt_pos)
         
         
             

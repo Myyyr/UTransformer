@@ -246,8 +246,6 @@ class nnUNetTrainerV2_nnFormerGT1EXT(nnUNetTrainer):
         data = data_dict['data']
         target = data_dict['target']
         pos = data_dict['pos']
-        print('ok 0', pos)
-        # exit(0)
 
         data = maybe_to_torch(data)
         target = maybe_to_torch(target)
