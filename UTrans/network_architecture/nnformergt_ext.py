@@ -924,11 +924,14 @@ class SwinTransformer(nn.Module):
         num_features = [int(embed_dim * 2 ** i) for i in range(self.num_layers)]
         self.num_features = num_features
 
+
         # add a norm layer for each output
         for i_layer in out_indices:
             layer = norm_layer(num_features[i_layer])
             layer_name = f'norm{i_layer}'
             self.add_module(layer_name, layer)
+
+
 
         self._freeze_stages()
 
@@ -1121,6 +1124,9 @@ class swintransformer(SegmentationNetwork):
             self.final.append(final_patch_expanding(embed_dim*2**i,14,patch_size=(4,4,4)))
         self.final=nn.ModuleList(self.final)
 
+        self.vt_check = torch.nn.Parameter(torch.zeros(vt_map[0]*vt_map[1]*vt_map[2],1))
+        self.vt_check.requires_grad = False
+
     def pos2vtpos(self, pos):
         dim = [64,128,128]
         max_dim = [218,660,660]
@@ -1141,7 +1147,12 @@ class swintransformer(SegmentationNetwork):
     
     def forward(self, x, pos):
         vt_pos = self.pos2vtpos(pos)
+
         
+
+        vts = self.volume_token
+        self.vt_check[vt_pos] += 1
+        check = (self.vt_check.sum() >= self.vt_map[0]*self.vt_map[1]*self.vt_map[2])
         
             
         seg_outputs=[]

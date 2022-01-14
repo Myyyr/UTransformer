@@ -279,7 +279,7 @@ class nnUNetTrainerV2_nnFormerGT1EXT(nnUNetTrainer):
                 self.optimizer.step()
 
         print("-------------------------------------------------------------------------------")
-        exit(0)
+        # exit(0)
         if run_online_evaluation:
             self.run_online_evaluation(output, target)
 
