@@ -365,6 +365,15 @@ class SwinTransformerBlock(nn.Module):
         # W-MSA/SW-MSA
         attn_windows, gt = self.attn(x_windows, mask=attn_mask, gt=gt)  
 
+        
+        if len(vts.shape) != 3:
+            vts = repeat(vts, "g c -> b g c", b=B)# shape of (num_windows*B, G, C)
+        print("vts", vts.shape)
+        vt = vts[vt_pos]
+        print("vt", vt.shape)
+
+
+
 
         # GT
         gt = skip_gt + self.drop_path(gt)
@@ -372,9 +381,6 @@ class SwinTransformerBlock(nn.Module):
         tmp, ngt, c = gt.shape
         nw = tmp//B
         gt = rearrange(gt, "(b n) g c -> b (n g) c", b=B)
-        vt = vts[vt_pos]
-        print("vts", vts.shape)
-        print("vt", vt.shape)
         print("gt", gt.shape)
         gt = torch.cat([vt[:,None,:], gt], dim=1)
         gt = self.gt_attn(gt, pe)
