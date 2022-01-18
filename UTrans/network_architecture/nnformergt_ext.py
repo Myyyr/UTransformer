@@ -1126,6 +1126,7 @@ class swintransformer(SegmentationNetwork):
 
         self.vt_check = torch.nn.Parameter(torch.zeros(vt_map[0]*vt_map[1]*vt_map[2],1))
         self.vt_check.requires_grad = False
+        self.iter = 0
 
     def pos2vtpos(self, pos):
         dim = [64,128,128]
@@ -1149,9 +1150,13 @@ class swintransformer(SegmentationNetwork):
         vt_pos = self.pos2vtpos(pos)
 
         
-
+        pr_check = ((self.vt_check >= 1).sum() >= self.vt_map[0]*self.vt_map[1]*self.vt_map[2])
         self.vt_check[vt_pos] += 1
         check = ((self.vt_check >= 1).sum() >= self.vt_map[0]*self.vt_map[1]*self.vt_map[2])
+
+        if (pr_check == False) and check:
+            torch.save(self.vt_check, "./log_chech_iter_"+str(self.iter)+".pt")
+        self.iter += 1
 
         # print('|      Stats :')
         # print('| check', check.item())
