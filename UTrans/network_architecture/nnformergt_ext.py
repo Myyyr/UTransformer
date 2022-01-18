@@ -1110,7 +1110,7 @@ class swintransformer(SegmentationNetwork):
         
         self.upscale_logits_ops.append(lambda x: x)
         
-        
+        # n_windows = (64x128x128) / (2x4x4)x(4x4x4) = 512
         embed_dim=192
         depths=[2, 2, 2, 2]
         num_heads=[6, 12, 24, 48]
@@ -1159,7 +1159,7 @@ class swintransformer(SegmentationNetwork):
         # print('| min', self.vt_check.min().item())
         # print('| max', self.vt_check.max().item())
         # print('| n 0', (self.vt_check == 0).sum().item())
-        
+
 
             # print(self.vt_check)
 
