@@ -1153,12 +1153,13 @@ class swintransformer(SegmentationNetwork):
         self.vt_check[vt_pos] += 1
         check = ((self.vt_check >= 1).sum() >= self.vt_map[0]*self.vt_map[1]*self.vt_map[2])
 
-        print('|      Stats :')
-        print('| check', check.item())
-        print('| mean', self.vt_check.mean().item())
-        print('| min', self.vt_check.min().item())
-        print('| max', self.vt_check.max().item())
-        print('| n 0', (self.vt_check == 0).sum().item())
+        # print('|      Stats :')
+        # print('| check', check.item())
+        # print('| mean', self.vt_check.mean().item())
+        # print('| min', self.vt_check.min().item())
+        # print('| max', self.vt_check.max().item())
+        # print('| n 0', (self.vt_check == 0).sum().item())
+        
 
             # print(self.vt_check)
 
