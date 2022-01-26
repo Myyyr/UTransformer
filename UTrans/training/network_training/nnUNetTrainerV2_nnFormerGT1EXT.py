@@ -241,7 +241,6 @@ class nnUNetTrainerV2_nnFormerGT1EXT(nnUNetTrainer):
         :param run_online_evaluation:
         :return:
         """
-        print("--------------------------------------DBG--------------------------------------")
         data_dict = next(data_generator)
         data = data_dict['data']
         target = data_dict['target']
@@ -278,7 +277,6 @@ class nnUNetTrainerV2_nnFormerGT1EXT(nnUNetTrainer):
                 torch.nn.utils.clip_grad_norm_(self.network.parameters(), 12)
                 self.optimizer.step()
 
-        print("-------------------------------------------------------------------------------")
         # exit(0)
         if run_online_evaluation:
             self.run_online_evaluation(output, target)
