@@ -16,7 +16,7 @@ from timm.models.layers import DropPath, to_3tuple, trunc_normal_
 
 from einops import repeat
 
-# train vmsa since start
+# V3 + init VT at -inf
 
 #MAX : 660 660 218
 #AVG : 529 529 150
@@ -527,8 +527,10 @@ class BasicLayer(nn.Module):
         self.global_token = torch.nn.Parameter(torch.randn(gt_num,dim))
         self.global_token.requires_grad = True
 
+        # self.volume_token = torch.nn.Parameter(torch.randn(vt_map[0]*vt_map[1]*vt_map[2],dim))
         self.volume_token = torch.nn.Parameter(torch.randn(vt_map[0]*vt_map[1]*vt_map[2],dim))
         self.volume_token.requires_grad = True
+        self.volume_token -= 1000
 
         # self.vt_check = torch.nn.Parameter(torch.zeros(vt_map[0]*vt_map[1]*vt_map[2],1))
         # self.vt_check.requires_grad = False
@@ -654,8 +656,10 @@ class BasicLayer_up(nn.Module):
         self.global_token = torch.nn.Parameter(torch.randn(gt_num,dim))
         self.global_token.requires_grad = True
 
+        # self.volume_token = torch.nn.Parameter(torch.randn(vt_map[0]*vt_map[1]*vt_map[2],dim))
         self.volume_token = torch.nn.Parameter(torch.randn(vt_map[0]*vt_map[1]*vt_map[2],dim))
         self.volume_token.requires_grad = True
+        self.volume_token -= 10000
 
         # self.vt_check = torch.nn.Parameter(torch.zeros(vt_map[0]*vt_map[1]*vt_map[2],1))
         # self.vt_check.requires_grad = False
