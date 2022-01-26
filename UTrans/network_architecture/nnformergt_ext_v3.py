@@ -529,8 +529,9 @@ class BasicLayer(nn.Module):
 
         # self.volume_token = torch.nn.Parameter(torch.randn(vt_map[0]*vt_map[1]*vt_map[2],dim))
         self.volume_token = torch.nn.Parameter(torch.randn(vt_map[0]*vt_map[1]*vt_map[2],dim))
+        self.volume_token.requires_grad = False
+        self.volume_token -= 10000
         self.volume_token.requires_grad = True
-        self.volume_token -= 1000
 
         # self.vt_check = torch.nn.Parameter(torch.zeros(vt_map[0]*vt_map[1]*vt_map[2],1))
         # self.vt_check.requires_grad = False
