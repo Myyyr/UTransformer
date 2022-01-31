@@ -115,7 +115,6 @@ class ClassicAttention(nn.Module):
 
         qkv = self.qkv(x).reshape(B_, N, 3, self.num_heads, C // self.num_heads).permute(2, 0, 3, 1, 4)
         q, k, v = qkv[0], qkv[1], qkv[2]  # make torchscript happy (cannot use tensor as tuple)
-        print("q, k, v", q.shape, k.shape, v.shape)
 
         q = q * self.scale
         attn = (q @ k.transpose(-2, -1))
@@ -124,9 +123,9 @@ class ClassicAttention(nn.Module):
         # attn = attn
 
         attn = self.softmax(attn)
-        print("attn", attn.shape)
-        exit(0)
         if imidx in [520 , 980 , 988 , 1036 , 1044 , 2892]:
+            print("q, k, v", q.shape, k.shape, v.shape)
+            print("attn", attn.shape)
             torch.save(attn, "/share/DEEPLEARNING/themyr_l/medvisu/keepcrop/"+ str(imidx) +"/"+str(imidx)+str(self.__class__.__name__)+"_.pt")
 
         attn = self.attn_drop(attn)
