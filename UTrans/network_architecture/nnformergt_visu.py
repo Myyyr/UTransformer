@@ -558,7 +558,7 @@ class BasicLayer(nn.Module):
             else:
                 savek = False
                 if k==0:
-                    savek = save*True
+                    savek = True
                 x, gt = blk(x, attn_mask, gt, self.pe, imidx, savek)
             k+=1
         if self.downsample is not None:
