@@ -14,6 +14,7 @@ import torch.nn.functional as F
 import torch.utils.checkpoint as checkpoint
 from timm.models.layers import DropPath, to_3tuple, trunc_normal_
 
+import os
 
 class Mlp(nn.Module):
     """ Multilayer perceptron."""
@@ -1087,6 +1088,8 @@ class swintransformer(SegmentationNetwork):
         # if self.imidx%4 == 0:
         #     torch.save(x, "/share/DEEPLEARNING/themyr_l/medvisu/"+str(self.imidx)+"x.pt")
         #     torch.save(seg_outputs[-1], "/share/DEEPLEARNING/themyr_l/medvisu/"+str(self.imidx)+"p.pt")
+        if not os.path.isdir():
+            os.mkdir("/share/DEEPLEARNING/themyr_l/medvisu/"+str(self.imidx))
         if self.imidx in [520 , 980 , 988 , 1036 , 1044 , 2892]:
             torch.save(x, "/share/DEEPLEARNING/themyr_l/medvisu/"+str(self.imidx)+"/"+str(self.imidx)+"x.pt")
             torch.save(seg_outputs[-1], "/share/DEEPLEARNING/themyr_l/medvisu/"+str(self.imidx)+"/"+str(self.imidx)+"p.pt")
