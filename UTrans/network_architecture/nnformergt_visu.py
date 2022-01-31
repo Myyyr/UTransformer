@@ -1084,12 +1084,12 @@ class swintransformer(SegmentationNetwork):
         for i in range(len(out)):  
             seg_outputs.append(self.final[-(i+1)](out[i]))
 
-        # if self.imidx%4 == 0:
-        #     torch.save(x, "/share/DEEPLEARNING/themyr_l/medvisu/"+str(self.imidx)+"x.pt")
-        #     torch.save(seg_outputs[-1], "/share/DEEPLEARNING/themyr_l/medvisu/"+str(self.imidx)+"p.pt")
-        if self.imidx == 520:
-            torch.save(x, "/share/DEEPLEARNING/themyr_l/medvisu/520/"+str(self.imidx)+"x.pt")
-            torch.save(seg_outputs[-1], "/share/DEEPLEARNING/themyr_l/medvisu/520/"+str(self.imidx)+"p.pt")
+        if self.imidx%4 == 0:
+            torch.save(x, "/share/DEEPLEARNING/themyr_l/medvisu/"+str(self.imidx)+"x.pt")
+            torch.save(seg_outputs[-1], "/share/DEEPLEARNING/themyr_l/medvisu/"+str(self.imidx)+"p.pt")
+        # if self.imidx == 520:
+        #     torch.save(x, "/share/DEEPLEARNING/themyr_l/medvisu/520/"+str(self.imidx)+"x.pt")
+        #     torch.save(seg_outputs[-1], "/share/DEEPLEARNING/themyr_l/medvisu/520/"+str(self.imidx)+"p.pt")
 
 
         if self.imidx == 512*10:
