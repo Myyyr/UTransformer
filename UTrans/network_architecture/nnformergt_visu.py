@@ -126,7 +126,7 @@ class ClassicAttention(nn.Module):
         if (imidx in [520 , 980 , 988 , 1036 , 1044 , 2892]) and (attn.shape == torch.Size([1, 6, 512, 512])):
 
             # print("q, k, v", q.shape, k.shape, v.shape)
-            print("attn",+str(imidx)+, attn.shape)
+            print("attn",str(imidx), attn.shape)
             torch.save(attn, "/share/DEEPLEARNING/themyr_l/medvisu/keepcrop/"+ str(imidx) +"/"+str(imidx)+str(self.__class__.__name__)+"_.pt")
 
         attn = self.attn_drop(attn)
