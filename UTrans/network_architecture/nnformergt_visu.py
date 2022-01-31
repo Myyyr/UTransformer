@@ -1088,7 +1088,7 @@ class swintransformer(SegmentationNetwork):
         # if self.imidx%4 == 0:
         #     torch.save(x, "/share/DEEPLEARNING/themyr_l/medvisu/"+str(self.imidx)+"x.pt")
         #     torch.save(seg_outputs[-1], "/share/DEEPLEARNING/themyr_l/medvisu/"+str(self.imidx)+"p.pt")
-        if not os.path.isdir():
+        if not os.path.isdir("/share/DEEPLEARNING/themyr_l/medvisu/"+str(self.imidx)):
             os.mkdir("/share/DEEPLEARNING/themyr_l/medvisu/"+str(self.imidx))
         if self.imidx in [520 , 980 , 988 , 1036 , 1044 , 2892]:
             torch.save(x, "/share/DEEPLEARNING/themyr_l/medvisu/"+str(self.imidx)+"/"+str(self.imidx)+"x.pt")
