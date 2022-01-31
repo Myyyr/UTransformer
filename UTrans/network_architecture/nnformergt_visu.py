@@ -1092,7 +1092,7 @@ class swintransformer(SegmentationNetwork):
             torch.save(seg_outputs[-1], "/share/DEEPLEARNING/themyr_l/medvisu/520/"+str(self.imidx)+"p.pt")
 
 
-        if self.imidx == 64*10:
+        if self.imidx == 512*10:
             print("Saved !")
             exit(0)
 
