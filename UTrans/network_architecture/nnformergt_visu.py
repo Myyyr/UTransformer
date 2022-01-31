@@ -123,10 +123,11 @@ class ClassicAttention(nn.Module):
         # attn = attn
 
         attn = self.softmax(attn)
-        if (imidx in [520 , 980 , 988 , 1036 , 1044 , 2892]) and (attn.shape == torch.Size([1, 6, 512, 512])):
+        pth="/share/DEEPLEARNING/themyr_l/medvisu/keepcrop/"+ str(imidx) +"/"+str(imidx)+str(self.__class__.__name__)+"_.pt"
+        if (imidx in [520 , 980 , 988 , 1036 , 1044 , 2892]) and not os.path.exists(pth):
 
             # print("q, k, v", q.shape, k.shape, v.shape)
-            print("attn",str(imidx), attn.shape)
+            print("attn_g",str(imidx), attn.shape)
             torch.save(attn, "/share/DEEPLEARNING/themyr_l/medvisu/keepcrop/"+ str(imidx) +"/"+str(imidx)+str(self.__class__.__name__)+"_.pt")
 
         attn = self.attn_drop(attn)
@@ -252,7 +253,9 @@ class WindowAttention(nn.Module):
         else:
             attn = self.softmax(attn)
 
-        if (imidx in [520 , 980 , 988 , 1036 , 1044 , 2892]) and save:
+        pth = "/share/DEEPLEARNING/themyr_l/medvisu/keepcrop/"+str(imidx)+"/"+str(imidx)+str(self.__class__.__name__)+"_.pt"
+        if (imidx in [520 , 980 , 988 , 1036 , 1044 , 2892]) and not os.path.exists(pth):
+            print("attn_w",str(imidx), attn.shape)
             torch.save(attn, "/share/DEEPLEARNING/themyr_l/medvisu/keepcrop/"+str(imidx)+"/"+str(imidx)+str(self.__class__.__name__)+"_.pt")
         attn = self.attn_drop(attn)
 
