@@ -124,7 +124,7 @@ class ClassicAttention(nn.Module):
 
         attn = self.softmax(attn)
         if imidx in [520 , 980 , 988 , 1036 , 1044 , 2892]:
-            torch.save(attn, "/share/DEEPLEARNING/themyr_l/medvisu/"+ str(imidx) +"/"+str(imidx)+str(self.__class__.__name__)+"_.pt")
+            torch.save(attn, "/share/DEEPLEARNING/themyr_l/medvisu/keepcrop/"+ str(imidx) +"/"+str(imidx)+str(self.__class__.__name__)+"_.pt")
 
         attn = self.attn_drop(attn)
 
@@ -250,7 +250,7 @@ class WindowAttention(nn.Module):
             attn = self.softmax(attn)
 
         if imidx in [520 , 980 , 988 , 1036 , 1044 , 2892] and save:
-            torch.save(attn, "/share/DEEPLEARNING/themyr_l/medvisu/"+str(imidx)+"/"+str(imidx)+str(self.__class__.__name__)+"_.pt")
+            torch.save(attn, "/share/DEEPLEARNING/themyr_l/medvisu/keepcrop/"+str(imidx)+"/"+str(imidx)+str(self.__class__.__name__)+"_.pt")
         attn = self.attn_drop(attn)
 
         x = (attn @ v).transpose(1, 2).reshape(B_, N, C)
@@ -1074,6 +1074,10 @@ class swintransformer(SegmentationNetwork):
         
     def forward(self, x):
 
+        if self.imidx in [520 , 980 , 988 , 1036 , 1044 , 2892]:
+            if not os.path.isdir("/share/DEEPLEARNING/themyr_l/medvisu/keepcrop/"+str(self.imidx)):
+                os.mkdir("/share/DEEPLEARNING/themyr_l/medvisu/keepcrop/"+str(self.imidx))
+
 
             
         seg_outputs=[]
@@ -1086,13 +1090,14 @@ class swintransformer(SegmentationNetwork):
             seg_outputs.append(self.final[-(i+1)](out[i]))
 
         # if self.imidx%4 == 0:
-        #     torch.save(x, "/share/DEEPLEARNING/themyr_l/medvisu/"+str(self.imidx)+"x.pt")
-        #     torch.save(seg_outputs[-1], "/share/DEEPLEARNING/themyr_l/medvisu/"+str(self.imidx)+"p.pt")
-        if not os.path.isdir("/share/DEEPLEARNING/themyr_l/medvisu/"+str(self.imidx)):
-            os.mkdir("/share/DEEPLEARNING/themyr_l/medvisu/"+str(self.imidx))
+        #     torch.save(x, "/share/DEEPLEARNING/themyr_l/medvisu/keepcrop/"+str(self.imidx)+"x.pt")
+        #     torch.save(seg_outputs[-1], "/share/DEEPLEARNING/themyr_l/medvisu/keepcrop/"+str(self.imidx)+"p.pt")
+        
         if self.imidx in [520 , 980 , 988 , 1036 , 1044 , 2892]:
-            torch.save(x, "/share/DEEPLEARNING/themyr_l/medvisu/"+str(self.imidx)+"/"+str(self.imidx)+"x.pt")
-            torch.save(seg_outputs[-1], "/share/DEEPLEARNING/themyr_l/medvisu/"+str(self.imidx)+"/"+str(self.imidx)+"p.pt")
+            # if not os.path.isdir("/share/DEEPLEARNING/themyr_l/medvisu/keepcrop/"+str(self.imidx)):
+                # os.mkdir("/share/DEEPLEARNING/themyr_l/medvisu/keepcrop/"+str(self.imidx))
+            torch.save(x, "/share/DEEPLEARNING/themyr_l/medvisu/keepcrop/"+str(self.imidx)+"/"+str(self.imidx)+"x.pt")
+            torch.save(seg_outputs[-1], "/share/DEEPLEARNING/themyr_l/medvisu/keepcrop/"+str(self.imidx)+"/"+str(self.imidx)+"p.pt")
 
 
         if self.imidx == 512*10:
