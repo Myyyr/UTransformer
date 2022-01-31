@@ -123,9 +123,9 @@ class ClassicAttention(nn.Module):
         # attn = attn
 
         attn = self.softmax(attn)
-        if imidx in [520 , 980 , 988 , 1036 , 1044 , 2892]:
-            print("q, k, v", q.shape, k.shape, v.shape)
-            print("attn", attn.shape)
+        if imidx in [520 , 980 , 988 , 1036 , 1044 , 2892] and save:
+            # print("q, k, v", q.shape, k.shape, v.shape)
+            # print("attn", attn.shape)
             torch.save(attn, "/share/DEEPLEARNING/themyr_l/medvisu/keepcrop/"+ str(imidx) +"/"+str(imidx)+str(self.__class__.__name__)+"_.pt")
 
         attn = self.attn_drop(attn)
