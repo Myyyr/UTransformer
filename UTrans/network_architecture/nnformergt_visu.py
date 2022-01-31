@@ -556,11 +556,11 @@ class BasicLayer(nn.Module):
             if self.use_checkpoint:
                 x = checkpoint.checkpoint(blk, x, attn_mask)
             else:
-                savek = False
-                if k==0:
-                    savek = True
-                x, gt = blk(x, attn_mask, gt, self.pe, imidx, savek)
-            k+=1
+                # savek = False
+                # if k==0:
+                #     savek = True
+                x, gt = blk(x, attn_mask, gt, self.pe, imidx, k==0)
+                k+=1
         if self.downsample is not None:
             x_down = self.downsample(x, S, H, W)
             Ws, Wh, Ww = (S + 1) // 2, (H + 1) // 2, (W + 1) // 2
