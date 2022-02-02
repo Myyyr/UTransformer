@@ -137,6 +137,8 @@ class ClassicAttention(nn.Module):
 
         if mask != None:
             attn = attn + repeat(mask, "b m n -> b h m n", h=self.num_heads)
+            print("ok !!!")
+            exit(0)
         attn = self.softmax(attn)
         attn = self.attn_drop(attn)
 
