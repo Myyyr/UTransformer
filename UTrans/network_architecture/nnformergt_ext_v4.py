@@ -428,7 +428,7 @@ class SwinTransformerBlock(nn.Module):
         x = shortcut + self.drop_path(x)
         x = x + self.drop_path(self.mlp(self.norm2(x)))
 
-        return x, gt, vts_
+        return x, gt, vts
 
 
 class PatchMerging(nn.Module):
