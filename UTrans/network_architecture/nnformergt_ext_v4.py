@@ -399,7 +399,7 @@ class SwinTransformerBlock(nn.Module):
         #     vts_[i, vt_pos[i]] = vt[i]
 
         # Modif the vts
-        z = torch.zeros(vts.shape, , device=vts.device)
+        z = torch.zeros(vts.shape, device=vts.device)
         z[vt_pos_] = vt
         vts = vts + z
         vts = rearrange(vts, "(b n) c -> b n c", b=B)        
