@@ -16,7 +16,7 @@ from timm.models.layers import DropPath, to_3tuple, trunc_normal_
 
 from einops import repeat
 
-# V2 + init VT at -inf
+# V2 + masking vt attention to 0
 
 #MAX : 660 660 218
 #AVG : 529 529 150
@@ -367,13 +367,14 @@ class SwinTransformerBlock(nn.Module):
         attn_windows, gt = self.attn(x_windows, mask=attn_mask, gt=gt)  
 
         
+
         if len(vts.shape) != 3:
-            vt = vts[vt_pos]
-        else:
-            vt_pos_ = [i*vts.shape[1] + vt_pos[i] for i in range(B)]
-            vts = rearrange(vts, "b n c -> (b n) c")
-            vt = vts[vt_pos_]
-            vts = rearrange(vts, "(b n) c -> b n c", b=B)
+            vts = repeat(vts, "g c -> b g c", b=B)# shape of (num_windows*B, G, C)
+
+        vt_pos_ = [i*vts.shape[1] + vt_pos[i] for i in range(B)]
+        vts = rearrange(vts, "b n c -> (b n) c")
+        vt = vts[vt_pos_]
+        # vts = rearrange(vts, "(b n) c -> b n c", b=B)
 
 
 
@@ -391,15 +392,22 @@ class SwinTransformerBlock(nn.Module):
         gt = rearrange(gt, "b (n g) c -> (b n) g c",g=ngt, c=C)
 
         # New vts
-        vts_ = vts.clone().half()
-        if len(vts_.shape) != 3:
-            vts_ = repeat(vts_, "g c -> b g c", b=B)# shape of (num_windows*B, G, C)
-        for i in range(B):
-            vts_[i, vt_pos[i]] = vt[i]
+        # vts_ = vts.clone().half()
+        # if len(vts_.shape) != 3:
+        #     vts_ = repeat(vts_, "g c -> b g c", b=B)# shape of (num_windows*B, G, C)
+        # for i in range(B):
+        #     vts_[i, vt_pos[i]] = vt[i]
+
+        # Modif the vts
+        z = torch.zeros(vts.shape, , device=vts.device)
+        z[vt_pos_] = vt
+        vts = vts + z
+        vts = rearrange(vts, "(b n) c -> b n c", b=B)        
+
 
         # if check:
         #     vts_ = self.vt_attn(vts_, None)
-        vts_ = self.vt_attn(vts_, None)
+        vts = self.vt_attn(vts, None)
 
         # merge windows
         attn_windows = attn_windows.view(-1, self.window_size, self.window_size, self.window_size, C)
@@ -529,8 +537,6 @@ class BasicLayer(nn.Module):
 
         # self.volume_token = torch.nn.Parameter(torch.randn(vt_map[0]*vt_map[1]*vt_map[2],dim))
         self.volume_token = torch.nn.Parameter(torch.randn(vt_map[0]*vt_map[1]*vt_map[2],dim))
-        self.volume_token.requires_grad = False
-        self.volume_token -= 10000
         self.volume_token.requires_grad = True
 
         # self.vt_check = torch.nn.Parameter(torch.zeros(vt_map[0]*vt_map[1]*vt_map[2],1))
@@ -659,8 +665,6 @@ class BasicLayer_up(nn.Module):
 
         # self.volume_token = torch.nn.Parameter(torch.randn(vt_map[0]*vt_map[1]*vt_map[2],dim))
         self.volume_token = torch.nn.Parameter(torch.randn(vt_map[0]*vt_map[1]*vt_map[2],dim))
-        self.volume_token.requires_grad = False
-        self.volume_token -= 10000
         self.volume_token.requires_grad = True
 
         # self.vt_check = torch.nn.Parameter(torch.zeros(vt_map[0]*vt_map[1]*vt_map[2],1))
