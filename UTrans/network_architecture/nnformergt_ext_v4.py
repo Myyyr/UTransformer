@@ -16,7 +16,8 @@ from timm.models.layers import DropPath, to_3tuple, trunc_normal_
 
 from einops import repeat
 
-# V2 + masking vt attention to 0
+# V1 --> vt is skip connection : vts+new_vt (no clone)
+# V3 --> masking attention to 0
 
 #MAX : 660 660 218
 #AVG : 529 529 150
@@ -110,7 +111,7 @@ class ClassicAttention(nn.Module):
         self.softmax = nn.Softmax(dim=-1)
 
 
-    def forward(self, x, pe):
+    def forward(self, x, pe, mask=None):
         """
         Args:
             x: input features with shape of (num_windows*B, N, C)
@@ -134,6 +135,8 @@ class ClassicAttention(nn.Module):
         # exit(0)
         # attn = attn
 
+        if mask != None:
+            attn = attn + repeat(mask, "b m n -> b h m n", h=self.num_heads)
         attn = self.softmax(attn)
         attn = self.attn_drop(attn)
 
@@ -404,10 +407,11 @@ class SwinTransformerBlock(nn.Module):
         vts = vts + z
         vts = rearrange(vts, "(b n) c -> b n c", b=B)        
 
-
-        # if check:
-        #     vts_ = self.vt_attn(vts_, None)
-        vts = self.vt_attn(vts, None)
+        check_pos = check.nonzero(as_tuple=True)[0]
+        vt_mask = torch.zeros((vts.shape[1], vts.shape[1]), dtype=vts.dtype, device=vts.device)-1000
+        vt_mask[:, check_pos] = 0
+        vt_mask = repeat(vt_mask, "n c -> b n c", b=B)
+        vts = self.vt_attn(vts, None,vt_mask)
 
         # merge windows
         attn_windows = attn_windows.view(-1, self.window_size, self.window_size, self.window_size, C)
@@ -1183,10 +1187,10 @@ class swintransformer(SegmentationNetwork):
         
             
         seg_outputs=[]
-        skips = self.model_down(x, vt_pos, check)
+        skips = self.model_down(x, vt_pos, self.vt_check >= 1)
         neck=skips[-1]
        
-        out=self.encoder(neck,skips,vt_pos, check)
+        out=self.encoder(neck,skips,vt_pos, self.vt_check >= 1)
         
         for i in range(len(out)):  
             seg_outputs.append(self.final[-(i+1)](out[i]))
