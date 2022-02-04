@@ -16,7 +16,7 @@ from timm.models.layers import DropPath, to_3tuple, trunc_normal_
 
 from einops import repeat
 
-# V4 + multiple token, taken intersec
+# V4 + multiple token, take intersec
 
 #MAX : 660 660 218
 #AVG : 529 529 150
