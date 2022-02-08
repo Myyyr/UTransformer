@@ -46,8 +46,8 @@ class nnUNetTrainerV2_nnFormer(nnUNetTrainer):
         self.deep_supervision_scales = None
         self.ds_loss_weights = None
 
-        self.norm_cfg = norm_cfg
-        self.activation_cfg = activation_cfg
+        # self.norm_cfg = norm_cfg
+        # self.activation_cfg = activation_cfg
 
         self.pin_memory = True
 
@@ -72,8 +72,8 @@ class nnUNetTrainerV2_nnFormer(nnUNetTrainer):
                 self.plans['plans_per_stage'][1]['patch_size'] = [48,192,192]
                 print("Patch size is %s" % self.plans['plans_per_stage'][1]['patch_size'])
                 # exit(0)
-                if self.norm_cfg=='BN':
-                    self.plans['plans_per_stage'][1]['batch_size'] = 8
+                # if self.norm_cfg=='BN':
+                    # self.plans['plans_per_stage'][1]['batch_size'] = 8
 
                 # self.plans['plans_per_stage'][1]['batch_size'] = 1   #Debug
                 print("Batch size is %s" % self.plans['plans_per_stage'][1]['batch_size'])
