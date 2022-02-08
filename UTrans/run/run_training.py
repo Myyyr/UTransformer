@@ -14,7 +14,7 @@ from nnunet.utilities.task_name_id_conversion import convert_id_to_task_name
 import os
 import UTrans
 # os.environ['nnUNet_raw_data_base'] = '/local/DEEPLEARNING/MULTI_ATLAS/MULTI_ATLAS/Task017_BCV/'
-def main(gpu, network, network_trainer, task, fold, outpath, val, npz, c=False, ep=1000, lr=1e-2, pretrained_weights=None):
+def main(gpu, network, network_trainer, task, fold, outpath, val, npz, c=False, ep=1000, lr=1e-2, pretrained_weights=None, na=False):
     parser = argparse.ArgumentParser()
     parser.add_argument("-gpu", type=str, default='0')
 
@@ -120,11 +120,13 @@ def main(gpu, network, network_trainer, task, fold, outpath, val, npz, c=False, 
     # print("---->",output_folder_name)
     # print("Here its ok 2")
     # exit(0)
-    # trainer = trainer_class(plans_file, fold, norm_cfg, activation_cfg, output_folder=output_folder_name, dataset_directory=dataset_directory,
-    #                         batch_dice=batch_dice, stage=stage, unpack_data=decompress_data,
-    #                         deterministic=deterministic,
-    #                         fp16=run_mixed_precision)
-    trainer = trainer_class(plans_file, fold, output_folder=output_folder_name, dataset_directory=dataset_directory,
+    if na:
+        trainer = trainer_class(plans_file, fold, norm_cfg, activation_cfg, output_folder=output_folder_name, dataset_directory=dataset_directory,
+                            batch_dice=batch_dice, stage=stage, unpack_data=decompress_data,
+                            deterministic=deterministic,
+                            fp16=run_mixed_precision)
+    else:   
+        trainer = trainer_class(plans_file, fold, output_folder=output_folder_name, dataset_directory=dataset_directory,
                             batch_dice=batch_dice, stage=stage, unpack_data=decompress_data,
                             deterministic=deterministic,
                             fp16=run_mixed_precision)
