@@ -298,6 +298,12 @@ class nnUNetTrainerV2_nnFormerGT1gv2(nnUNetTrainer):
         splits_file = join(self.dataset_directory, "splits_final.pkl")
         splits = load_pickle(splits_file)
 
+        print("\n\n\n\n\n\n\n--------------------------------------------DBG---------------------------------------------------")
+
+        print("len(splits)",len(splits))
+        print("type(splits[self.fold])",type(splits[self.fold]))
+
+        print("--------------------------------------------------------------------------------------------------\n\n\n\n\n\n\n")
         tr_keys = splits[self.fold]['train']
         val_keys = splits[self.fold]['val']
 
