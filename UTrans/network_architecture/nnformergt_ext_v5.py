@@ -16,15 +16,15 @@ from timm.models.layers import DropPath, to_3tuple, trunc_normal_
 
 from einops import repeat
 
-# V4 + multiple token, take intersec
+# V4 + vts 2d
 
-#MAX : 660 660 218
-#AVG : 529 529 150
-#MIN : 401 401 93
+#MAX : 660 660 \218
+#AVG : 529 529 \150
+#MIN : 401 401 \93
 
-#CROP : 128 128 64
+#CROP : 128 128 \64
 
-#MAX NCROP : 5 5 3
+#MAX NCROP : 5 5 \3
 
 class Mlp(nn.Module):
     """ Multilayer perceptron."""
@@ -540,11 +540,9 @@ class BasicLayer(nn.Module):
         self.global_token.requires_grad = True
 
         # self.volume_token = torch.nn.Parameter(torch.randn(vt_map[0]*vt_map[1]*vt_map[2],dim))
-        self.volume_token = torch.nn.Parameter(torch.randn(vt_map[0]*vt_map[1]*vt_map[2],dim))
+        self.volume_token = torch.nn.Parameter(torch.randn(vt_map[1]*vt_map[2],dim))
         self.volume_token.requires_grad = True
 
-        # self.vt_check = torch.nn.Parameter(torch.zeros(vt_map[0]*vt_map[1]*vt_map[2],1))
-        # self.vt_check.requires_grad = False
 
         # build blocks
         self.blocks = nn.ModuleList([
@@ -668,11 +666,9 @@ class BasicLayer_up(nn.Module):
         self.global_token.requires_grad = True
 
         # self.volume_token = torch.nn.Parameter(torch.randn(vt_map[0]*vt_map[1]*vt_map[2],dim))
-        self.volume_token = torch.nn.Parameter(torch.randn(vt_map[0]*vt_map[1]*vt_map[2],dim))
+        self.volume_token = torch.nn.Parameter(torch.randn(vt_map[1]*vt_map[2],dim))
         self.volume_token.requires_grad = True
 
-        # self.vt_check = torch.nn.Parameter(torch.zeros(vt_map[0]*vt_map[1]*vt_map[2],1))
-        # self.vt_check.requires_grad = False
 
 
         
@@ -1140,7 +1136,7 @@ class swintransformer(SegmentationNetwork):
             self.final.append(final_patch_expanding(embed_dim*2**i,14,patch_size=(4,4,4)))
         self.final=nn.ModuleList(self.final)
 
-        self.vt_check = torch.nn.Parameter(torch.zeros(vt_map[0]*vt_map[1]*vt_map[2],1))
+        self.vt_check = torch.nn.Parameter(torch.zeros(vt_map[1]*vt_map[2],1))
         self.vt_check.requires_grad = False
         self.iter = 0
 
@@ -1158,7 +1154,8 @@ class swintransformer(SegmentationNetwork):
         vt_pos = [[vt_pos[j][i]*(0**((rc_pos[j][i] - pad[i])>=(self.vt_map[i]*dim[i]))) for i in range(3)] for j in range(len(vt_pos))]
         vt_pos = [[int(i) for i in j] for j in vt_pos]
 
-        vt_pos = [vt[0]*self.vt_map[1]*self.vt_map[2] + vt[1]*self.vt_map[2] + vt[2] for vt in vt_pos]
+        # vt_pos = [vt[0]*self.vt_map[1]*self.vt_map[2] + vt[1]*self.vt_map[2] + vt[2] for vt in vt_pos]
+        vt_pos = [vt[1]*self.vt_map[2] + vt[2] for vt in vt_pos]
 
         return vt_pos
     
