@@ -422,6 +422,7 @@ class SwinTransformerBlock(nn.Module):
         print(vt.shape)
         print(np.array(vt_pos_).shape)
         # exit(0)
+        print(vt_pos_)
         z[vt_pos_] = vt
         vts = vts + z
         vts = rearrange(vts, "(b n) c -> b n c", b=B)        
