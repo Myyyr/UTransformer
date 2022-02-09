@@ -381,6 +381,7 @@ class SwinTransformerBlock(nn.Module):
 
         vts = rearrange(vts, "b n c -> (b n) c")
         vt = vts[vt_pos_]
+        vt = rearrange(vt, "(b n) c -> b n c", b=B)
         # vts = rearrange(vts, "(b n) c -> b n c", b=B)
 
 
@@ -392,7 +393,8 @@ class SwinTransformerBlock(nn.Module):
         tmp, ngt, c = gt.shape
         nw = tmp//B
         gt = rearrange(gt, "(b n) g c -> b (n g) c", b=B)
-        gt = torch.cat([vt[:,None,:], gt], dim=1)
+        # gt = torch.cat([vt[:,None,:], gt], dim=1)
+        gt = torch.cat([vt, gt], dim=1)
         gt = self.gt_attn(gt, pe)
         vt = gt[:,0,:]
         gt = gt[:,1:,:]
