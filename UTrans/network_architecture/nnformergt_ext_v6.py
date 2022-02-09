@@ -146,8 +146,6 @@ class ClassicAttention(nn.Module):
         attn = self.attn_drop(attn)
 
         x = (attn @ v).transpose(1, 2).reshape(B_, N, C)
-        print("here", x.shape)
-        # exit(0)
         x = self.proj(x)
         x = self.proj_drop(x)
         return x
@@ -385,17 +383,9 @@ class SwinTransformerBlock(nn.Module):
 
         # vt_pos_ = [i*vts.shape[1] + vt_pos[i] for i in range(B)]
         vt_pos_ = vt_pos.copy()
-        print("-------bf-----")
-        print(vt_pos_)
         vt_pos_[self.n_vts:] = [self.nc+vt_pos_[self.n_vts + i] for i in range(self.n_vts)]
 
         vts = rearrange(vts, "b n c -> (b n) c")
-        print("-----ok-----")
-        print(self.nc)
-        print(vts.shape)
-        print(np.array(vt_pos_).shape)
-        print(vt_pos_)
-        print("----------")
         vt = vts[vt_pos_]
         vt = rearrange(vt, "(b n) c -> b n c", b=B)
         # vts = rearrange(vts, "(b n) c -> b n c", b=B)
@@ -426,12 +416,6 @@ class SwinTransformerBlock(nn.Module):
         # Modif the vts
         z = torch.zeros(vts.shape, dtype=vt.dtype, device=vts.device)
         vt = rearrange(vt, "b n c -> (b n) c")
-        print(z.shape)
-        print(z[vt_pos_].shape)
-        print(vt.shape)
-        print(np.array(vt_pos_).shape)
-        # exit(0)
-        print(vt_pos_)
         z[vt_pos_] = vt
         vts = vts + z
         vts = rearrange(vts, "(b n) c -> b n c", b=B)        
