@@ -147,7 +147,7 @@ class ClassicAttention(nn.Module):
 
         x = (attn @ v).transpose(1, 2).reshape(B_, N, C)
         print("here", x.shape)
-        exit(0)
+        # exit(0)
         x = self.proj(x)
         x = self.proj_drop(x)
         return x
