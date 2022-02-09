@@ -416,6 +416,7 @@ class SwinTransformerBlock(nn.Module):
         z = torch.zeros(vts.shape, dtype=vt.dtype, device=vts.device)
         vt = rearrange(vt, "b n c -> (b n) c")
         print(z.shape)
+        print(z[vt_pos_].shape)
         print(vt.shape)
         print(np.array(vt_pos_).shape)
         # exit(0)
