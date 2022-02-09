@@ -120,7 +120,7 @@ class ClassicAttention(nn.Module):
         B_, N, C = x.shape
 
         if pe != None:
-            N_ -= self.n_vts
+            N_ = N - self.n_vts
             m = pe.shape[0]
             strt = m//2-N_//2
             pe = pe[strt:strt+N_,:]
