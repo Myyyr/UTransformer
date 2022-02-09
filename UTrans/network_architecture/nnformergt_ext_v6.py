@@ -90,9 +90,10 @@ class ClassicAttention(nn.Module):
         proj_drop (float, optional): Dropout ratio of output. Default: 0.0
     """
 
-    def __init__(self, dim, window_size, num_heads, qkv_bias=True, qk_scale=None, attn_drop=0., proj_drop=0.):
+    def __init__(self, dim, window_size, num_heads, qkv_bias=True, qk_scale=None, attn_drop=0., proj_drop=0., n_vts=4):
 
         super().__init__()
+        self.n_vts = n_vts
         self.dim = dim
         self.window_size = window_size  # Wh, Ww
         self.num_heads = num_heads
@@ -122,7 +123,7 @@ class ClassicAttention(nn.Module):
             m = pe.shape[0]
             strt = m//2-N//2
             pe = pe[strt:strt+N,:]
-            x[:, 1:, :] = x[:, 1:, :] + pe
+            x[:, self.n_vts:, :] = x[:, self.n_vts:, :] + pe
 
 
         qkv = self.qkv(x).reshape(B_, N, 3, self.num_heads, C // self.num_heads).permute(2, 0, 3, 1, 4)
@@ -316,7 +317,7 @@ class SwinTransformerBlock(nn.Module):
 
         self.gt_attn = ClassicAttention(dim=dim, window_size=(0,0), num_heads=num_heads, 
                                             qkv_bias=qkv_bias, qk_scale=qk_scale, attn_drop=attn_drop, 
-                                            proj_drop=drop)
+                                            proj_drop=drop, n_vts=n_vts)
         self.vt_attn = ClassicAttention(dim=dim, window_size=(0,0), num_heads=num_heads, 
                                             qkv_bias=qkv_bias, qk_scale=qk_scale, attn_drop=attn_drop, 
                                             proj_drop=drop)
