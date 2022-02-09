@@ -120,16 +120,16 @@ class ClassicAttention(nn.Module):
         B_, N, C = x.shape
 
         if pe != None:
-            N -= self.n_vts
+            N_ -= self.n_vts
             m = pe.shape[0]
-            strt = m//2-N//2
-            pe = pe[strt:strt+N,:]
+            strt = m//2-N_//2
+            pe = pe[strt:strt+N_,:]
             x[:, self.n_vts:, :] = x[:, self.n_vts:, :] + pe
 
-        print(x.shape)
-        print(B_, N, 3, self.num_heads, C // self.num_heads)
-        print(self.qkv(x).shape)
-        exit(0)
+        # print(x.shape)
+        # print(B_, N, 3, self.num_heads, C // self.num_heads)
+        # print(self.qkv(x).shape)
+        # exit(0)
         qkv = self.qkv(x).reshape(B_, N, 3, self.num_heads, C // self.num_heads).permute(2, 0, 3, 1, 4)
         q, k, v = qkv[0], qkv[1], qkv[2]  # make torchscript happy (cannot use tensor as tuple)
 
