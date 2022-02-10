@@ -88,7 +88,8 @@ def main(gpu, network, network_trainer, task, fold, outpath, val, npz, c=False, 
     decompress_data = not use_compressed_data
 
     deterministic = args.deterministic
-    valbest = args.valbest
+    # valbest = args.valbest
+    valbest = True
 
     fp32 = args.fp32
     run_mixed_precision = not fp32
