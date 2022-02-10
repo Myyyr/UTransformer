@@ -24,8 +24,8 @@ def main():
 			idx = str(i)
 			idx = idx+" "*(len(res)-len(idx))
 
-			ress += res
-			idxs += idx
+			ress += res+" "
+			idxs += idx+" "
 		print(idxs)
 		print(ress)
 		
