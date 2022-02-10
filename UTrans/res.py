@@ -15,7 +15,7 @@ def main():
 	path = os.path.join(path, args.model, "fold_"+args.fold, "validation_raw_postprocessed/summary.json")
 
 	with open(path, 'r') as f:
-		data=json.load(f)
+		data=json.load(f)['results']
 		for key, value in data.items():
 			print("Key:", key)
 
