@@ -17,7 +17,7 @@ def main():
 	with open(path, 'r') as f:
 		data=json.load(f)
 		for key, value in data.items():
-	    	print("Key:", key)
+			print("Key:", key)
 
 
 
