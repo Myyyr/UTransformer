@@ -26,6 +26,7 @@ def main():
 
 			ress += res+" "
 			idxs += idx+" "
+		print(args.model, 'fold_'+args.fold)
 		print(idxs)
 		print(ress)
 		
