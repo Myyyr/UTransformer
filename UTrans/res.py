@@ -6,7 +6,7 @@ import os
 def main():
 	parser = argparse.ArgumentParser()
 	parser.add_argument('-m','--model', type=str, required=True)
-	parser.add_argument('-p','--path', type=str, default='~/')
+	parser.add_argument('-p','--path', type=str, default='/home/themyr_l/')
 	parser.add_argument('-f','--fold', type=str, default='0')
 
 	args = parser.parse_args()
