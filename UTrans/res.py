@@ -16,8 +16,19 @@ def main():
 
 	with open(path, 'r') as f:
 		data=json.load(f)['results']['mean']
-		for key, value in data.items():
-			print("Key:", key)
+		idxs = ""
+		ress = ""
+		for i in range(1,14):
+			res = round(float(data[str(i)]['Dice'])*100,2)
+			res = str(res).replace('.',',')
+			idx = str(i)
+			idx = idx+" "*(len(res)-len(idx))
+
+			ress += res
+			idxs += idx
+		print(idxs)
+		print(ress)
+		
 
 
 
