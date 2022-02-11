@@ -87,7 +87,8 @@ def main(gpu, network, network_trainer, task, fold, outpath, val, npz, c=False, 
     use_compressed_data = args.use_compressed_data
     decompress_data = not use_compressed_data
 
-    deterministic = args.deterministic
+    # deterministic = args.deterministic
+    deterministic = True
     valbest = args.valbest
     # valbest = True
 
