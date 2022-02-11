@@ -387,7 +387,8 @@ class SwinTransformerBlock(nn.Module):
         print("self.n_vts", self.n_vts)
         print("self.nc", self.nc)
 
-        vt_pos_[self.n_vts:] = [self.nc+vt_pos_[self.n_vts + i] for i in range(self.n_vts)]
+        if B==2:
+            vt_pos_[self.n_vts:] = [self.nc+vt_pos_[self.n_vts + i] for i in range(self.n_vts)]
 
         vts = rearrange(vts, "b n c -> (b n) c")
         vt = vts[vt_pos_]
