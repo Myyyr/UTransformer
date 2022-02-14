@@ -78,7 +78,7 @@ class brats_nnUNetTrainerV2_nnFormer(nnUNetTrainer):
         self.deep_supervision_scales = None
         self.ds_loss_weights = None
         self.pin_memory = True
-        self.load_pretrain_weight=True
+        self.load_pretrain_weight=False
         
         self.load_plans_file()    
         
