@@ -64,7 +64,7 @@ from batchgenerators.utilities.file_and_folder_operations import *
 from UTrans.network_architecture.nnformer import swintransformer
 
 
-class BraTS20_Training_nnUNetTrainerV2_nnFormer(nnUNetTrainer):
+class brats_nnUNetTrainerV2_nnFormer(nnUNetTrainer):
     """
     Info for Fabian: same as internal nnUNetTrainerV2_2
     """
