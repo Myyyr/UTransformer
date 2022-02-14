@@ -88,8 +88,8 @@ class brats_nnUNetTrainerV2_nnFormer(nnUNetTrainer):
             Stage=0
             
         self.crop_size=self.plans['plans_per_stage'][Stage]['patch_size']
-        print(self.plans['plans_per_stage'][Stage]['patch_size'])
-        exit(0)
+        # print(self.plans['plans_per_stage'][Stage]['patch_size'])
+        # exit(0)
         self.input_channels=self.plans['num_modalities']
         self.num_classes=self.plans['num_classes'] + 1
         self.conv_op=nn.Conv3d
@@ -202,7 +202,7 @@ class brats_nnUNetTrainerV2_nnFormer(nnUNetTrainer):
                                     self.conv_per_stage, 2, conv_op, norm_op, norm_op_kwargs, dropout_op,
                                     dropout_op_kwargs,
                                     net_nonlin, net_nonlin_kwargs, True, False, lambda x: x, InitWeights_He(1e-2),
-                                    self.net_num_pool_op_kernel_sizes, self.net_conv_kernel_sizes, False, True, True)
+                                    self.net_num_pool_op_kernel_sizes, self.net_conv_kernel_sizes, False, True, True, imsize=[128,128,128])
 
         if self.load_pretrain_weight:
             checkpoint = torch.load("/home/xychen/jsguo/weight/tumor_pretrain.model", map_location='cpu')

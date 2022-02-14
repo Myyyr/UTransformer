@@ -898,7 +898,7 @@ class swintransformer(SegmentationNetwork):
                  conv_kernel_sizes=None,
                  upscale_logits=False, convolutional_pooling=False, convolutional_upsampling=False,
                  max_num_features=None, basic_block=None,
-                 seg_output_use_bias=False):
+                 seg_output_use_bias=False, imsize=[48,192,192]):
     
         super(swintransformer, self).__init__()
         
@@ -919,8 +919,8 @@ class swintransformer(SegmentationNetwork):
         depths=[2, 2, 2, 2]
         num_heads=[6, 12, 24, 48]
         patch_size=[2,4,4]
-        self.model_down=SwinTransformer(pretrain_img_size=[48,192,192],window_size=4,embed_dim=embed_dim,patch_size=patch_size,depths=depths,num_heads=num_heads,in_chans=1)
-        self.encoder=encoder(pretrain_img_size=[48,192,192],embed_dim=embed_dim,window_size=4,patch_size=patch_size,num_heads=[24,12,6],depths=[2,2,2])
+        self.model_down=SwinTransformer(pretrain_img_size=imsize,window_size=4,embed_dim=embed_dim,patch_size=patch_size,depths=depths,num_heads=num_heads,in_chans=1)
+        self.encoder=encoder(pretrain_img_size=imsize,embed_dim=embed_dim,window_size=4,patch_size=patch_size,num_heads=[24,12,6],depths=[2,2,2])
    
         self.final=[]
         self.final.append(final_patch_expanding(embed_dim*2**0,14,patch_size=(2,4,4)))
