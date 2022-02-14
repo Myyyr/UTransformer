@@ -63,7 +63,7 @@ from batchgenerators.utilities.file_and_folder_operations import *
 
 from UTrans.network_architecture.nnformer import swintransformer
 
-    
+
 class brats_nnUNetTrainerV2_nnFormer(nnUNetTrainer):
     """
     Info for Fabian: same as internal nnUNetTrainerV2_2
@@ -481,6 +481,9 @@ class brats_nnUNetTrainerV2_nnFormer(nnUNetTrainer):
         val_keys.sort()
         self.dataset_tr = OrderedDict()
         for i in tr_keys:
+            print(i)
+            print(self.dataset_tr.keys)
+            print(self.dataset.keys)
             self.dataset_tr[i] = self.dataset[i]
         self.dataset_val = OrderedDict()
         for i in val_keys:
