@@ -482,7 +482,7 @@ class brats_nnUNetTrainerV2_nnFormer(nnUNetTrainer):
         self.dataset_tr = OrderedDict()
         for i in tr_keys:
             print(i)
-            print(self.dataset_tr.keys())
+            # print(self.dataset_tr.keys())
             print(self.dataset.keys())
             self.dataset_tr[i] = self.dataset[i]
         self.dataset_val = OrderedDict()
