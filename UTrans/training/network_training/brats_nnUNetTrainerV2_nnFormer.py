@@ -197,7 +197,7 @@ class brats_nnUNetTrainerV2_nnFormer(nnUNetTrainer):
         net_nonlin_kwargs = {'negative_slope': 1e-2, 'inplace': True}
       
         
-        self.network = swintransformer(self.num_input_channels, self.base_num_features, self.num_classes,
+        self.network = swintransformer(4, self.base_num_features, self.num_classes,
                                     len(self.net_num_pool_op_kernel_sizes),
                                     self.conv_per_stage, 2, conv_op, norm_op, norm_op_kwargs, dropout_op,
                                     dropout_op_kwargs,
