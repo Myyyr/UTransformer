@@ -88,6 +88,8 @@ class brats_nnUNetTrainerV2_nnFormer(nnUNetTrainer):
             Stage=0
             
         self.crop_size=self.plans['plans_per_stage'][Stage]['patch_size']
+        print(self.crop_size=self.plans['plans_per_stage'][Stage]['patch_size'])
+        exit(0)
         self.input_channels=self.plans['num_modalities']
         self.num_classes=self.plans['num_classes'] + 1
         self.conv_op=nn.Conv3d
