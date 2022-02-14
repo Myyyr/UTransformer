@@ -16,12 +16,13 @@
 from collections import OrderedDict
 from typing import Tuple
 
+
 import numpy as np
 import torch
-from nnunet.training.data_augmentation.data_augmentation_moreDA import get_moreDA_augmentation
+from nnunet.training.data_augmentation.data_augmentation_moreDA_real import get_moreDA_augmentation
 from nnunet.training.loss_functions.deep_supervision import MultipleOutputLoss2
 from nnunet.utilities.to_torch import maybe_to_torch, to_cuda
-from nnunet.network_architecture.generic_UNet import Generic_UNet
+# from nnunet.network_architecture.nnFormer_synapse import nnFormer
 from nnunet.network_architecture.initialization import InitWeights_He
 from nnunet.network_architecture.neural_network import SegmentationNetwork
 from nnunet.training.data_augmentation.default_data_augmentation import default_2D_augmentation_params, \
@@ -35,10 +36,9 @@ from torch.cuda.amp import autocast
 from nnunet.training.learning_rate.poly_lr import poly_lr
 from batchgenerators.utilities.file_and_folder_operations import *
 
-
 from UTrans.network_architecture.nnformer import swintransformer
 
-
+    
 class brats_nnUNetTrainerV2_nnFormer(nnUNetTrainer):
     """
     Info for Fabian: same as internal nnUNetTrainerV2_2
@@ -52,9 +52,28 @@ class brats_nnUNetTrainerV2_nnFormer(nnUNetTrainer):
         self.initial_lr = 1e-2
         self.deep_supervision_scales = None
         self.ds_loss_weights = None
-
         self.pin_memory = True
-
+        self.load_pretrain_weight=True
+        
+        self.load_plans_file()    
+        
+        if len(self.plans['plans_per_stage'])==2:
+            Stage=1
+        else:
+            Stage=0
+            
+        self.crop_size=self.plans['plans_per_stage'][Stage]['patch_size']
+        self.input_channels=self.plans['num_modalities']
+        self.num_classes=self.plans['num_classes'] + 1
+        self.conv_op=nn.Conv3d
+        
+        self.embedding_dim=96
+        self.depths=[2, 2, 2, 2]
+        self.num_heads=[3, 6, 12, 24]
+        self.embedding_patch_size=[4,4,4]
+        self.window_size=[4,4,8,4]
+        
+        self.deep_supervision=False
     def initialize(self, training=True, force_load_plans=False):
         """
         - replaced get_default_augmentation with get_moreDA_augmentation
@@ -69,32 +88,32 @@ class brats_nnUNetTrainerV2_nnFormer(nnUNetTrainer):
 
             if force_load_plans or (self.plans is None):
                 self.load_plans_file()
-                self.plans['plans_per_stage'][1]['patch_size'] = [64,128,128]
-                print("Patch size is %s" % self.plans['plans_per_stage'][1]['patch_size'])
-
+            
             self.process_plans(self.plans)
 
             self.setup_DA_params()
+            if self.deep_supervision:
+                ################# Here we wrap the loss for deep supervision ############
+                # we need to know the number of outputs of the network
+                net_numpool = len(self.net_num_pool_op_kernel_sizes)
 
-            ################# Here we wrap the loss for deep supervision ############
-            # we need to know the number of outputs of the network
-            net_numpool = len(self.net_num_pool_op_kernel_sizes)
+                # we give each output a weight which decreases exponentially (division by 2) as the resolution decreases
+                # this gives higher resolution outputs more weight in the loss
+                weights = np.array([1 / (2 ** i) for i in range(net_numpool)])
 
-            # we give each output a weight which decreases exponentially (division by 2) as the resolution decreases
-            # this gives higher resolution outputs more weight in the loss
-            weights = np.array([1 / (2 ** i) for i in range(net_numpool)])
-
-            # we don't use the lowest 2 outputs. Normalize weights so that they sum to 1
-            mask = np.array([True] + [True if i < net_numpool - 1 else False for i in range(1, net_numpool)])
-            weights[~mask] = 0
-            weights = weights / weights.sum()
-            self.ds_loss_weights = weights
-            # now wrap the loss
-            self.loss = MultipleOutputLoss2(self.loss, self.ds_loss_weights)
-            ################# END ###################
-
-            self.folder_with_preprocessed_data = join(self.dataset_directory, self.plans['data_identifier'] +
-                                                      "_stage%d" % self.stage)
+                # we don't use the lowest 2 outputs. Normalize weights so that they sum to 1
+                #mask = np.array([True] + [True if i < net_numpool - 1 else False for i in range(1, net_numpool)])
+                #weights[~mask] = 0
+                weights = weights / weights.sum()
+                print(weights)
+                self.ds_loss_weights = weights
+                # now wrap the loss
+                self.loss = MultipleOutputLoss2(self.loss, self.ds_loss_weights)
+                ################# END ###################
+            
+            self.folder_with_preprocessed_data = join(self.dataset_directory, self.plans['data_identifier'] +"_stage%d" % self.stage)
+            seeds_train = np.random.random_integers(0, 99999, self.data_aug_params.get('num_threads'))
+            seeds_val = np.random.random_integers(0, 99999, max(self.data_aug_params.get('num_threads') // 2, 1))                         
             if training:
                 self.dl_tr, self.dl_val = self.get_basic_generators()
                 if self.unpack_data:
@@ -111,9 +130,11 @@ class brats_nnUNetTrainerV2_nnFormer(nnUNetTrainer):
                     self.data_aug_params[
                         'patch_size_for_spatialtransform'],
                     self.data_aug_params,
-                    deep_supervision_scales=self.deep_supervision_scales,
+                    deep_supervision_scales=self.deep_supervision_scales if self.deep_supervision else None,
                     pin_memory=self.pin_memory,
-                    use_nondetMultiThreadedAugmenter=False
+                    use_nondetMultiThreadedAugmenter=False,
+                    seeds_train=seeds_train,
+                    seeds_val=seeds_val
                 )
                 self.print_to_log_file("TRAINING KEYS:\n %s" % (str(self.dataset_tr.keys())),
                                        also_print_to_console=False)
@@ -140,30 +161,34 @@ class brats_nnUNetTrainerV2_nnFormer(nnUNetTrainer):
         Known issue: forgot to set neg_slope=0 in InitWeights_He; should not make a difference though
         :return:
         """
-        if self.threeD:
-            conv_op = nn.Conv3d
-            dropout_op = nn.Dropout3d
-            norm_op = nn.InstanceNorm3d
-
-        else:
-            conv_op = nn.Conv2d
-            dropout_op = nn.Dropout2d
-            norm_op = nn.InstanceNorm2d
-
-        norm_op_kwargs = {'eps': 1e-5, 'affine': True}
-        dropout_op_kwargs = {'p': 0, 'inplace': True}
-        net_nonlin = nn.LeakyReLU
-        net_nonlin_kwargs = {'negative_slope': 1e-2, 'inplace': True}
+  
+      
+        
         self.network = swintransformer(self.num_input_channels, self.base_num_features, self.num_classes,
                                     len(self.net_num_pool_op_kernel_sizes),
                                     self.conv_per_stage, 2, conv_op, norm_op, norm_op_kwargs, dropout_op,
                                     dropout_op_kwargs,
                                     net_nonlin, net_nonlin_kwargs, True, False, lambda x: x, InitWeights_He(1e-2),
                                     self.net_num_pool_op_kernel_sizes, self.net_conv_kernel_sizes, False, True, True)
+
+        if self.load_pretrain_weight:
+            checkpoint = torch.load("/home/xychen/jsguo/weight/tumor_pretrain.model", map_location='cpu')
+            ck={}
+            
+            for i in self.network.state_dict():
+                if i in checkpoint:
+                    print(i)
+                    ck.update({i:checkpoint[i]})
+                else:
+                    ck.update({i:self.network.state_dict()[i]})
+            self.network.load_state_dict(ck)
+            print('I am using the pre_train weight!!')
+        
+     
         if torch.cuda.is_available():
             self.network.cuda()
         self.network.inference_apply_nonlin = softmax_helper
-
+        
     def initialize_optimizer_and_scheduler(self):
         assert self.network is not None, "self.initialize_network must be called first"
         self.optimizer = torch.optim.SGD(self.network.parameters(), self.initial_lr, weight_decay=self.weight_decay,
@@ -178,8 +203,12 @@ class brats_nnUNetTrainerV2_nnFormer(nnUNetTrainer):
         :param target:
         :return:
         """
-        target = target[0]
-        output = output[0]
+        if self.deep_supervision:
+            target = target[0]
+            output = output[0]
+        else:
+            target = target
+            output = output
         return super().run_online_evaluation(output, target)
 
     def validate(self, do_mirroring: bool = True, use_sliding_window: bool = True,
@@ -248,6 +277,7 @@ class brats_nnUNetTrainerV2_nnFormer(nnUNetTrainer):
             with autocast():
                 output = self.network(data)
                 del data
+                
                 l = self.loss(output, target)
 
             if do_backprop:
@@ -310,6 +340,99 @@ class brats_nnUNetTrainerV2_nnFormer(nnUNetTrainer):
                 self.print_to_log_file("The split file contains %d splits." % len(splits))
 
             self.print_to_log_file("Desired fold for training: %d" % self.fold)
+            splits[self.fold]['train']=np.array(['BRATS_001', 'BRATS_002', 'BRATS_003', 'BRATS_004', 'BRATS_005',
+       'BRATS_006', 'BRATS_007', 'BRATS_008', 'BRATS_009', 'BRATS_010',
+       'BRATS_013', 'BRATS_014', 'BRATS_015', 'BRATS_016', 'BRATS_017',
+       'BRATS_019', 'BRATS_022', 'BRATS_023', 'BRATS_024', 'BRATS_025',
+       'BRATS_026', 'BRATS_027', 'BRATS_030', 'BRATS_031', 'BRATS_033',
+       'BRATS_035', 'BRATS_037', 'BRATS_038', 'BRATS_039', 'BRATS_040',
+       'BRATS_042', 'BRATS_043', 'BRATS_044', 'BRATS_045', 'BRATS_046',
+       'BRATS_048', 'BRATS_050', 'BRATS_051', 'BRATS_052', 'BRATS_054',
+       'BRATS_055', 'BRATS_060', 'BRATS_061', 'BRATS_062', 'BRATS_063',
+       'BRATS_064', 'BRATS_065', 'BRATS_066', 'BRATS_067', 'BRATS_068',
+       'BRATS_070', 'BRATS_072', 'BRATS_073', 'BRATS_074', 'BRATS_075',
+       'BRATS_078', 'BRATS_079', 'BRATS_080', 'BRATS_081', 'BRATS_082',
+       'BRATS_083', 'BRATS_084', 'BRATS_085', 'BRATS_086', 'BRATS_087',
+       'BRATS_088', 'BRATS_091', 'BRATS_093', 'BRATS_094', 'BRATS_096',
+       'BRATS_097', 'BRATS_098', 'BRATS_100', 'BRATS_101', 'BRATS_102',
+       'BRATS_104', 'BRATS_108', 'BRATS_110', 'BRATS_111', 'BRATS_112',
+       'BRATS_115', 'BRATS_116', 'BRATS_117', 'BRATS_119', 'BRATS_120',
+       'BRATS_121', 'BRATS_122', 'BRATS_123', 'BRATS_125', 'BRATS_126',
+       'BRATS_127', 'BRATS_128', 'BRATS_129', 'BRATS_130', 'BRATS_131',
+       'BRATS_132', 'BRATS_133', 'BRATS_134', 'BRATS_135', 'BRATS_136',
+       'BRATS_137', 'BRATS_138', 'BRATS_140', 'BRATS_141', 'BRATS_142',
+       'BRATS_143', 'BRATS_144', 'BRATS_146', 'BRATS_148', 'BRATS_149',
+       'BRATS_150', 'BRATS_153', 'BRATS_154', 'BRATS_155', 'BRATS_158',
+       'BRATS_159', 'BRATS_160', 'BRATS_162', 'BRATS_163', 'BRATS_164',
+       'BRATS_165', 'BRATS_166', 'BRATS_167', 'BRATS_168', 'BRATS_169',
+       'BRATS_170', 'BRATS_171', 'BRATS_173', 'BRATS_174', 'BRATS_175',
+       'BRATS_177', 'BRATS_178', 'BRATS_179', 'BRATS_180', 'BRATS_182',
+       'BRATS_183', 'BRATS_184', 'BRATS_185', 'BRATS_186', 'BRATS_187',
+       'BRATS_188', 'BRATS_189', 'BRATS_191', 'BRATS_192', 'BRATS_193',
+       'BRATS_195', 'BRATS_197', 'BRATS_199', 'BRATS_200', 'BRATS_201',
+       'BRATS_202', 'BRATS_203', 'BRATS_206', 'BRATS_207', 'BRATS_208',
+       'BRATS_210', 'BRATS_211', 'BRATS_212', 'BRATS_213', 'BRATS_214',
+       'BRATS_215', 'BRATS_216', 'BRATS_217', 'BRATS_218', 'BRATS_219',
+       'BRATS_222', 'BRATS_223', 'BRATS_224', 'BRATS_225', 'BRATS_226',
+       'BRATS_228', 'BRATS_229', 'BRATS_230', 'BRATS_231', 'BRATS_232',
+       'BRATS_233', 'BRATS_236', 'BRATS_237', 'BRATS_238', 'BRATS_239',
+       'BRATS_241', 'BRATS_243', 'BRATS_244', 'BRATS_246', 'BRATS_247',
+       'BRATS_248', 'BRATS_249', 'BRATS_251', 'BRATS_252', 'BRATS_253',
+       'BRATS_254', 'BRATS_255', 'BRATS_258', 'BRATS_259', 'BRATS_261',
+       'BRATS_262', 'BRATS_263', 'BRATS_264', 'BRATS_265', 'BRATS_266',
+       'BRATS_267', 'BRATS_268', 'BRATS_272', 'BRATS_273', 'BRATS_274',
+       'BRATS_275', 'BRATS_276', 'BRATS_277', 'BRATS_278', 'BRATS_279',
+       'BRATS_280', 'BRATS_283', 'BRATS_284', 'BRATS_285', 'BRATS_286',
+       'BRATS_288', 'BRATS_290', 'BRATS_293', 'BRATS_294', 'BRATS_296',
+       'BRATS_297', 'BRATS_298', 'BRATS_299', 'BRATS_300', 'BRATS_301',
+       'BRATS_302', 'BRATS_303', 'BRATS_304', 'BRATS_306', 'BRATS_307',
+       'BRATS_308', 'BRATS_309', 'BRATS_311', 'BRATS_312', 'BRATS_313',
+       'BRATS_315', 'BRATS_316', 'BRATS_317', 'BRATS_318', 'BRATS_319',
+       'BRATS_320', 'BRATS_321', 'BRATS_322', 'BRATS_324', 'BRATS_326',
+       'BRATS_328', 'BRATS_329', 'BRATS_332', 'BRATS_334', 'BRATS_335',
+       'BRATS_336', 'BRATS_338', 'BRATS_339', 'BRATS_340', 'BRATS_341',
+       'BRATS_342', 'BRATS_343', 'BRATS_344', 'BRATS_345', 'BRATS_347',
+       'BRATS_348', 'BRATS_349', 'BRATS_351', 'BRATS_353', 'BRATS_354',
+       'BRATS_355', 'BRATS_356', 'BRATS_357', 'BRATS_358', 'BRATS_359',
+       'BRATS_360', 'BRATS_363', 'BRATS_364', 'BRATS_365', 'BRATS_366',
+       'BRATS_367', 'BRATS_368', 'BRATS_369', 'BRATS_370', 'BRATS_371',
+       'BRATS_372', 'BRATS_373', 'BRATS_374', 'BRATS_375', 'BRATS_376',
+       'BRATS_377', 'BRATS_378', 'BRATS_379', 'BRATS_380', 'BRATS_381',
+       'BRATS_383', 'BRATS_384', 'BRATS_385', 'BRATS_386', 'BRATS_387',
+       'BRATS_388', 'BRATS_390', 'BRATS_391', 'BRATS_392', 'BRATS_393',
+       'BRATS_394', 'BRATS_395', 'BRATS_396', 'BRATS_398', 'BRATS_399',
+       'BRATS_401', 'BRATS_403', 'BRATS_404', 'BRATS_405', 'BRATS_407',
+       'BRATS_408', 'BRATS_409', 'BRATS_410', 'BRATS_411', 'BRATS_412',
+       'BRATS_413', 'BRATS_414', 'BRATS_415', 'BRATS_417', 'BRATS_418',
+       'BRATS_419', 'BRATS_420', 'BRATS_421', 'BRATS_422', 'BRATS_423',
+       'BRATS_424', 'BRATS_426', 'BRATS_428', 'BRATS_429', 'BRATS_430',
+       'BRATS_431', 'BRATS_433', 'BRATS_434', 'BRATS_435', 'BRATS_436',
+       'BRATS_437', 'BRATS_438', 'BRATS_439', 'BRATS_441', 'BRATS_442',
+       'BRATS_443', 'BRATS_444', 'BRATS_445', 'BRATS_446', 'BRATS_449',
+       'BRATS_451', 'BRATS_452', 'BRATS_453', 'BRATS_454', 'BRATS_455',
+       'BRATS_457', 'BRATS_458', 'BRATS_459', 'BRATS_460', 'BRATS_463',
+       'BRATS_464', 'BRATS_466', 'BRATS_467', 'BRATS_468', 'BRATS_469',
+       'BRATS_470', 'BRATS_472', 'BRATS_475', 'BRATS_477', 'BRATS_478',
+       'BRATS_481', 'BRATS_482', 'BRATS_483','BRATS_400', 'BRATS_402',
+       'BRATS_406', 'BRATS_416', 'BRATS_427', 'BRATS_440', 'BRATS_447',
+       'BRATS_448', 'BRATS_456', 'BRATS_461', 'BRATS_462', 'BRATS_465',
+       'BRATS_471', 'BRATS_473', 'BRATS_474', 'BRATS_476', 'BRATS_479',
+       'BRATS_480', 'BRATS_484'])
+            splits[self.fold]['val']=np.array(['BRATS_011', 'BRATS_012', 'BRATS_018', 'BRATS_020', 'BRATS_021',
+       'BRATS_028', 'BRATS_029', 'BRATS_032', 'BRATS_034', 'BRATS_036',
+       'BRATS_041', 'BRATS_047', 'BRATS_049', 'BRATS_053', 'BRATS_056',
+       'BRATS_057', 'BRATS_069', 'BRATS_071', 'BRATS_089', 'BRATS_090',
+       'BRATS_092', 'BRATS_095', 'BRATS_103', 'BRATS_105', 'BRATS_106',
+       'BRATS_107', 'BRATS_109', 'BRATS_118', 'BRATS_145', 'BRATS_147',
+       'BRATS_156', 'BRATS_161', 'BRATS_172', 'BRATS_176', 'BRATS_181',
+       'BRATS_194', 'BRATS_196', 'BRATS_198', 'BRATS_204', 'BRATS_205',
+       'BRATS_209', 'BRATS_220', 'BRATS_221', 'BRATS_227', 'BRATS_234',
+       'BRATS_235', 'BRATS_245', 'BRATS_250', 'BRATS_256', 'BRATS_257',
+       'BRATS_260', 'BRATS_269', 'BRATS_270', 'BRATS_271', 'BRATS_281',
+       'BRATS_282', 'BRATS_287', 'BRATS_289', 'BRATS_291', 'BRATS_292',
+       'BRATS_310', 'BRATS_314', 'BRATS_323', 'BRATS_327', 'BRATS_330',
+       'BRATS_333', 'BRATS_337', 'BRATS_346', 'BRATS_350', 'BRATS_352',
+       'BRATS_361', 'BRATS_382', 'BRATS_397'])
             if self.fold < len(splits):
                 tr_keys = splits[self.fold]['train']
                 val_keys = splits[self.fold]['val']
@@ -376,16 +499,18 @@ class brats_nnUNetTrainerV2_nnFormer(nnUNetTrainer):
                                                              self.data_aug_params['rotation_z'],
                                                              self.data_aug_params['scale_range'])
             self.basic_generator_patch_size = np.array([self.patch_size[0]] + list(self.basic_generator_patch_size))
+            patch_size_for_spatialtransform = self.patch_size[1:]
         else:
             self.basic_generator_patch_size = get_patch_size(self.patch_size, self.data_aug_params['rotation_x'],
                                                              self.data_aug_params['rotation_y'],
                                                              self.data_aug_params['rotation_z'],
                                                              self.data_aug_params['scale_range'])
+            patch_size_for_spatialtransform = self.patch_size
 
         self.data_aug_params["scale_range"] = (0.7, 1.4)
         self.data_aug_params["do_elastic"] = False
         self.data_aug_params['selected_seg_channels'] = [0]
-        self.data_aug_params['patch_size_for_spatialtransform'] = self.patch_size
+        self.data_aug_params['patch_size_for_spatialtransform'] = patch_size_for_spatialtransform
 
         self.data_aug_params["num_cached_per_thread"] = 2
 
@@ -434,7 +559,10 @@ class brats_nnUNetTrainerV2_nnFormer(nnUNetTrainer):
         self.maybe_update_lr(self.epoch)  # if we dont overwrite epoch then self.epoch+1 is used which is not what we
         # want at the start of the training
         ds = self.network.do_ds
-        self.network.do_ds = True
+        if self.deep_supervision:
+            self.network.do_ds = True
+        else:
+            self.network.do_ds = False
         ret = super().run_training()
         self.network.do_ds = ds
         return ret
