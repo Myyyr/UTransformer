@@ -65,8 +65,10 @@ class NetworkTrainer(object):
             torch.manual_seed(12345)
             if torch.cuda.is_available():
                 torch.cuda.manual_seed_all(12345)
-            cudnn.deterministic = True
-            torch.backends.cudnn.benchmark = False
+            # cudnn.deterministic = True
+            # torch.backends.cudnn.benchmark = False
+            cudnn.deterministic = False
+            torch.backends.cudnn.benchmark = True
         else:
             cudnn.deterministic = False
             torch.backends.cudnn.benchmark = True
