@@ -69,6 +69,8 @@ class brats_nnUNetTrainerV2_nnFormer(nnUNetTrainer):
 
             if force_load_plans or (self.plans is None):
                 self.load_plans_file()
+                self.plans['plans_per_stage'][1]['patch_size'] = [64,128,128]
+                print("Patch size is %s" % self.plans['plans_per_stage'][1]['patch_size'])
 
             self.process_plans(self.plans)
 
