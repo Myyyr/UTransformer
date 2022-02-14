@@ -186,7 +186,13 @@ class brats_nnUNetTrainerV2_nnFormer(nnUNetTrainer):
         Known issue: forgot to set neg_slope=0 in InitWeights_He; should not make a difference though
         :return:
         """
-  
+        conv_op = nn.Conv3d
+        dropout_op = nn.Dropout3d
+        norm_op = nn.InstanceNorm3d
+        norm_op_kwargs = {'eps': 1e-5, 'affine': True}
+        dropout_op_kwargs = {'p': 0, 'inplace': True}
+        net_nonlin = nn.LeakyReLU
+        net_nonlin_kwargs = {'negative_slope': 1e-2, 'inplace': True}
       
         
         self.network = swintransformer(self.num_input_channels, self.base_num_features, self.num_classes,
@@ -481,9 +487,9 @@ class brats_nnUNetTrainerV2_nnFormer(nnUNetTrainer):
         val_keys.sort()
         self.dataset_tr = OrderedDict()
         for i in tr_keys:
-            print(i)
+            # print(i)
             # print(self.dataset_tr.keys())
-            print(self.dataset.keys())
+            # print(self.dataset.keys())
             self.dataset_tr[i] = self.dataset[i]
         self.dataset_val = OrderedDict()
         for i in val_keys:
