@@ -898,7 +898,7 @@ class swintransformer(SegmentationNetwork):
                  conv_kernel_sizes=None,
                  upscale_logits=False, convolutional_pooling=False, convolutional_upsampling=False,
                  max_num_features=None, basic_block=None,
-                 seg_output_use_bias=False, imsize=[48,192,192]):
+                 seg_output_use_bias=False, imsize=[64,128,128]):
     
         super(swintransformer, self).__init__()
         
