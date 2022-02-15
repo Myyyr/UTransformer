@@ -79,7 +79,7 @@ class nnUNetTrainerV2(nnUNetTrainer):
                 # print("\n\n\n\n",self.plans['plans_per_stage'][1].keys())
 
 
-                self.plans['plans_per_stage'][1]['patch_size'] = [48,192,192]
+                self.plans['plans_per_stage'][1]['patch_size'] = [64,128,128]
                 print("Patch size is %s" % self.plans['plans_per_stage'][1]['patch_size'])
 
             self.process_plans(self.plans)
