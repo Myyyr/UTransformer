@@ -25,7 +25,7 @@ import numpy as np
 import torch
 from batchgenerators.utilities.file_and_folder_operations import *
 from nnunet.configuration import default_num_threads
-from nnunet.evaluation.evaluator import aggregate_scores
+from UTrans.evaluation.evaluator import aggregate_scores
 from nnunet.inference.segmentation_export import save_segmentation_nifti_from_softmax
 from nnunet.network_architecture.generic_UNet import Generic_UNet
 from nnunet.network_architecture.initialization import InitWeights_He
