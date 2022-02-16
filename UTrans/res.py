@@ -8,6 +8,9 @@ def main():
 	parser.add_argument('-m','--model', type=str, required=True)
 	parser.add_argument('-p','--path', type=str, default='/home/themyr_l/')
 	parser.add_argument('-f','--fold', type=str, default='0')
+	parser.add_argument('-h','--hd', dest="hd", action='store_true', default=False)
+	# parser.set_defaults(feature=False)
+
 
 	args = parser.parse_args()
 
@@ -19,7 +22,12 @@ def main():
 		idxs = ""
 		ress = ""
 		for i in range(1,14):
-			res = round(float(data[str(i)]['Dice'])*100,2)
+			metric = "Dice"
+			fact=100
+			if args.hd:
+				metric="Hausdorff Distance 95"
+				fact=1
+			res = round(float(data[str(i)][metric])*fact,2)
 			res = str(res).replace('.',',')
 			idx = str(i)
 			idx = idx+" "*(len(res)-len(idx))
