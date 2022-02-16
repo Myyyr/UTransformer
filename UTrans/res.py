@@ -8,7 +8,7 @@ def main():
 	parser.add_argument('-m','--model', type=str, required=True)
 	parser.add_argument('-p','--path', type=str, default='/home/themyr_l/')
 	parser.add_argument('-f','--fold', type=str, default='0')
-	parser.add_argument('-h','--hd', dest="hd", action='store_true', default=False)
+	parser.add_argument('-d','--hd', dest="hd", action='store_true', default=False)
 	# parser.set_defaults(feature=False)
 
 
