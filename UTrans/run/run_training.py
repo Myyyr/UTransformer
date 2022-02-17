@@ -128,6 +128,7 @@ def main(gpu, network, network_trainer, task, fold, outpath, val, npz, c=False, 
     # exit(0)
     if na:
         print(vt_map)
+        exit(0)
         trainer = trainer_class(plans_file, fold, norm_cfg, activation_cfg, output_folder=output_folder_name, dataset_directory=dataset_directory,
                             batch_dice=batch_dice, stage=stage, unpack_data=decompress_data,
                             deterministic=deterministic,
