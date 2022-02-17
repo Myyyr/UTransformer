@@ -9,7 +9,7 @@ def main():
 	parser.add_argument('-p','--path', type=str, default='/home/themyr_l/')
 	parser.add_argument('-f','--fold', type=str, default='0')
 	parser.add_argument('-d','--hd', dest="hd", action='store_true', default=False)
-	parser.add_argument('-t' '--task', type=str, default='017_BCV')
+	parser.add_argument('-t','--task', type=str, default='017_BCV')
 
 	args = parser.parse_args()
 
