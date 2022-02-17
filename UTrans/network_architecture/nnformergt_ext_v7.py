@@ -1130,7 +1130,7 @@ class swintransformer(SegmentationNetwork):
                  seg_output_use_bias=False, gt_num=1, vt_map=(3,5,5,1)):
     
         super(swintransformer, self).__init__()
-        print(vt_map)
+        # print(vt_map)
         # exit(0)
         
         self.over, over = vt_map[-1], vt_map[-1]
@@ -1234,13 +1234,13 @@ class swintransformer(SegmentationNetwork):
             # Now we add the positions of the overlaped tokens. As their grid is bigger, there is no need 
             # to check borders. But we have to start the position at the right index.
             for o in range(self.over - 1):
-                strt = self.vt_map[1]*self.vt_map[2] + (over-1)*(self.vt_map[1]+1)*(self.vt_map[2]+1)
+                strt = self.vt_map[1]*self.vt_map[2] + (self.over-1)*(self.vt_map[1]+1)*(self.vt_map[2]+1)
                 ret.append(strt + vt[1]*self.vt_map[2] + vt[2])
                 ret.append((vt[1]+1)*self.vt_map[2] + vt[2])
                 ret.append(vt[1]*self.vt_map[2] + vt[2]+1)
                 ret.append((vt[1]+1)*self.vt_map[2] + vt[2]+1)
-                print(self.over)
-                exit(0)
+                # print(self.over)
+                # exit(0)
 
             # vt_pos = [vt[1]*self.vt_map[2] + vt[2] for vt in vt_pos]
 
