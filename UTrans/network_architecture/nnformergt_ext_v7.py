@@ -1130,6 +1130,8 @@ class swintransformer(SegmentationNetwork):
                  seg_output_use_bias=False, gt_num=1, vt_map=(3,5,5,1)):
     
         super(swintransformer, self).__init__()
+        print(vt_map)
+        exit(0)
         
         self.over, over = vt_map[-1], vt_map[-1]
         self._deep_supervision = deep_supervision
