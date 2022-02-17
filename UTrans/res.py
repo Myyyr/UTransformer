@@ -9,12 +9,11 @@ def main():
 	parser.add_argument('-p','--path', type=str, default='/home/themyr_l/')
 	parser.add_argument('-f','--fold', type=str, default='0')
 	parser.add_argument('-d','--hd', dest="hd", action='store_true', default=False)
-	# parser.set_defaults(feature=False)
-
+	parser.add_argument('-t' '--task', type=str, default='017_BCV')
 
 	args = parser.parse_args()
 
-	path = os.path.join(args.path, "nnUNetData/nnUNet_trained_models/nnUNet/3d_fullres_nnUNetPlansv2.1/Task017_BCV/")
+	path = os.path.join(args.path, "nnUNetData/nnUNet_trained_models/nnUNet/3d_fullres_nnUNetPlansv2.1/", args.task)
 	path = os.path.join(path, args.model, "fold_"+args.fold, "validation_raw_postprocessed/summary.json")
 
 	with open(path, 'r') as f:
@@ -34,7 +33,7 @@ def main():
 
 			ress += res+" "
 			idxs += idx+" "
-		print(args.model, 'fold_'+args.fold)
+		print(args.task, args.model, 'fold_'+args.fold)
 		print(idxs)
 		print(ress)
 		
