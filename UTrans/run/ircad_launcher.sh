@@ -13,4 +13,5 @@ source /home/lthemyr/cotr/bin/activate
 
 cd /home/lthemyr/nnUNet/nnunet/dataset_conversion
 
-srun python Task082_BraTS_2020.py
+# srun python Task082_BraTS_2020.py
+srun nnUNet_plan_and_preprocess -t 082 --verify_dataset_integrity
