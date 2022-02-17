@@ -546,7 +546,7 @@ class BasicLayer(nn.Module):
                  drop_path=0.,
                  norm_layer=nn.LayerNorm,
                  downsample=True,  
-                 use_checkpoint=False, gt_num=1, id_layer=0, vt_map=(3,5,5)):
+                 use_checkpoint=False, gt_num=1, id_layer=0, vt_map=(3,5,5, 1)):
         super().__init__()
         self.window_size = window_size
         self.shift_size = window_size // 2
@@ -558,7 +558,9 @@ class BasicLayer(nn.Module):
         self.global_token.requires_grad = True
 
         # self.volume_token = torch.nn.Parameter(torch.randn(vt_map[0]*vt_map[1]*vt_map[2],dim))
-        self.volume_token = torch.nn.Parameter(torch.randn(vt_map[1]*vt_map[2],dim))
+        over = vt_map[-1]
+        pad_grid = (over*vt_map[1] + over*vt_map[2] + over)
+        self.volume_token = torch.nn.Parameter(torch.randn(vt_map[1]*vt_map[2] + pad_grid,dim))
         self.volume_token.requires_grad = True
 
 
@@ -672,7 +674,7 @@ class BasicLayer_up(nn.Module):
                  attn_drop=0.,
                  drop_path=0.,
                  norm_layer=nn.LayerNorm,
-                 upsample=True, gt_num=1,id_layer=0, vt_map=(3,5,5)
+                 upsample=True, gt_num=1,id_layer=0, vt_map=(3,5,5, 1)
                 ):
         super().__init__()
         self.window_size = window_size
@@ -684,7 +686,9 @@ class BasicLayer_up(nn.Module):
         self.global_token.requires_grad = True
 
         # self.volume_token = torch.nn.Parameter(torch.randn(vt_map[0]*vt_map[1]*vt_map[2],dim))
-        self.volume_token = torch.nn.Parameter(torch.randn(vt_map[1]*vt_map[2],dim))
+        over = vt_map[-1]
+        pad_grid = (over*vt_map[1] + over*vt_map[2] + over)
+        self.volume_token = torch.nn.Parameter(torch.randn(vt_map[1]*vt_map[2] + pad_grid,dim))
         self.volume_token.requires_grad = True
 
 
@@ -894,7 +898,7 @@ class SwinTransformer(nn.Module):
                  patch_norm=True,
                  out_indices=(0, 1, 2, 3),
                  frozen_stages=-1,
-                 use_checkpoint=False, gt_num=1, vt_map=(3,5,5)):
+                 use_checkpoint=False, gt_num=1, vt_map=(3,5,5, 1)):
         super().__init__()
 
         self.pretrain_img_size = pretrain_img_size
@@ -1032,7 +1036,7 @@ class encoder(nn.Module):
                  drop_rate=0.,
                  attn_drop_rate=0.,
                  drop_path_rate=0.2,
-                 norm_layer=nn.LayerNorm, gt_num=1, vt_map=(3,5,5)
+                 norm_layer=nn.LayerNorm, gt_num=1, vt_map=(3,5,5, 1)
                  ):
         super().__init__()
         
@@ -1123,16 +1127,17 @@ class swintransformer(SegmentationNetwork):
                  conv_kernel_sizes=None,
                  upscale_logits=False, convolutional_pooling=False, convolutional_upsampling=False,
                  max_num_features=None, basic_block=None,
-                 seg_output_use_bias=False, gt_num=1, vt_map=(3,5,5), over=1):
+                 seg_output_use_bias=False, gt_num=1, vt_map=(3,5,5,1)):
     
         super(swintransformer, self).__init__()
         
-        
+        self.over, over = vt_map[-1], vt_map[-1]
         self._deep_supervision = deep_supervision
         self.do_ds = deep_supervision
         self.num_classes=num_classes
         self.conv_op=conv_op
-        self.vt_map = (vt_map[0]*over+1,vt_map[1]*over+1,vt_map[2]*over+1)
+
+        self.vt_map = vt_map#(vt_map[0]*over+1,vt_map[1]*over+1,vt_map[2]*over+1)
        
         
         self.upscale_logits_ops = []
@@ -1154,7 +1159,8 @@ class swintransformer(SegmentationNetwork):
             self.final.append(final_patch_expanding(embed_dim*2**i,14,patch_size=(4,4,4)))
         self.final=nn.ModuleList(self.final)
 
-        self.vt_check = torch.nn.Parameter(torch.zeros(vt_map[1]*vt_map[2],1))
+        pad_grid = (over*vt_map[1] + over*vt_map[2] + over)
+        self.vt_check = torch.nn.Parameter(torch.zeros(vt_map[1]*vt_map[2]*over + pad_grid,1))
         self.vt_check.requires_grad = False
         self.iter = 0
 
@@ -1223,6 +1229,14 @@ class swintransformer(SegmentationNetwork):
                 p4 = (vt[1]+1)*self.vt_map[2] + vt[2]+1
             ret.append(p4)
 
+            # Now we add the positions of the overlaped tokens. As their grid is bigger, there is no need 
+            # to check borders. But we have to start the position at the right index.
+            for o in range(self.over - 1):
+                strt = self.vt_map[1]*self.vt_map[2] + (over-1)*(self.vt_map[1]+1)*(self.vt_map[2]+1)
+                ret.append(strt + vt[1]*self.vt_map[2] + vt[2])
+                ret.append((vt[1]+1)*self.vt_map[2] + vt[2])
+                ret.append(vt[1]*self.vt_map[2] + vt[2]+1)
+                ret.append((vt[1]+1)*self.vt_map[2] + vt[2]+1)
 
             # vt_pos = [vt[1]*self.vt_map[2] + vt[2] for vt in vt_pos]
 
