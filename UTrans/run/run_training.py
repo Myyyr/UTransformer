@@ -13,8 +13,11 @@ from UTrans.training.network_training.nnUNetTrainer import nnUNetTrainer
 from nnunet.utilities.task_name_id_conversion import convert_id_to_task_name
 import os
 import UTrans
+import telegram_send as ts
 # os.environ['nnUNet_raw_data_base'] = '/local/DEEPLEARNING/MULTI_ATLAS/MULTI_ATLAS/Task017_BCV/'
 def main(gpu, network, network_trainer, task, fold, outpath, val, npz, c=False, ep=1000, lr=1e-2, pretrained_weights=None, na=False):
+    ts.send(messages=[network_trainer+" "+task +" "+ str(fold) +" "+ outpath +" val="+ val+" ..."])
+
     parser = argparse.ArgumentParser()
     parser.add_argument("-gpu", type=str, default='0')
 
@@ -171,7 +174,7 @@ def main(gpu, network, network_trainer, task, fold, outpath, val, npz, c=False, 
         if network == '3d_lowres':
             print("predicting segmentations for the next stage of the cascade")
             predict_next_stage(trainer, join(dataset_directory, trainer.plans['data_identifier'] + "_stage%d" % 1))
-
+    ts.send(messages=[network_trainer+" "+task +" "+ str(fold) +" "+ outpath +" val="+ val+" END!"])
 
 if __name__ == "__main__":
     main()
