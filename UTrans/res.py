@@ -13,7 +13,7 @@ def main():
 
 	args = parser.parse_args()
 
-	path = os.path.join(args.path, "nnUNetData/nnUNet_trained_models/nnUNet/3d_fullres_nnUNetPlansv2.1/", args.task)
+	path = os.path.join(args.path, "nnUNetData/nnUNet_trained_models/nnUNet/3d_fullres_nnUNetPlansv2.1/", "Task"+args.task)
 	path = os.path.join(path, args.model, "fold_"+args.fold, "validation_raw_postprocessed/summary.json")
 
 	with open(path, 'r') as f:
