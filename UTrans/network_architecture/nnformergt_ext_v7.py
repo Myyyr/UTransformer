@@ -1131,7 +1131,7 @@ class swintransformer(SegmentationNetwork):
     
         super(swintransformer, self).__init__()
         print(vt_map)
-        exit(0)
+        # exit(0)
         
         self.over, over = vt_map[-1], vt_map[-1]
         self._deep_supervision = deep_supervision
@@ -1239,6 +1239,8 @@ class swintransformer(SegmentationNetwork):
                 ret.append((vt[1]+1)*self.vt_map[2] + vt[2])
                 ret.append(vt[1]*self.vt_map[2] + vt[2]+1)
                 ret.append((vt[1]+1)*self.vt_map[2] + vt[2]+1)
+                print(self.over)
+                exit(0)
 
             # vt_pos = [vt[1]*self.vt_map[2] + vt[2] for vt in vt_pos]
 
