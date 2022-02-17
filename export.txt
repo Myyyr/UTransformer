@@ -1,1 +1,3 @@
 export nnUNet_raw_data_base="/local/DEEPLEARNING/nnUNetData/nnUNet_raw";export nnUNet_preprocessed="/local/DEEPLEARNING/nnUNetData/nnUNet_preprocessed";export RESULTS_FOLDER="/local/DEEPLEARNING/nnUNetData/nnUNet_trained_models"
+export nnUNet_raw_data_base="/home/themyr_l/nnUNetData/nnUNet_raw";export nnUNet_preprocessed="/home/themyr_l/nnUNetData/nnUNet_preprocessed";export RESULTS_FOLDER="/home/themyr_l/nnUNetData/nnUNet_trained_models"
+export nnUNet_raw_data_base="/gpfsscratch/rech/arf/unm89rb/nnUNetData/nnUNet_raw";export nnUNet_preprocessed="/gpfsscratch/rech/arf/unm89rb/nnUNetData/nnUNet_preprocessed";export RESULTS_FOLDER="/gpfsscratch/rech/arf/unm89rb/nnUNetData/nnUNet_trained_models"
