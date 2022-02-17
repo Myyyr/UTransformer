@@ -8,6 +8,7 @@ export nnUNet_raw_data_base="/scratch/lthemyr/nnUNetData/nnUNet_raw"
 export nnUNet_preprocessed="/scratch/lthemyr/nnUNetData/nnUNet_preprocessed"
 export RESULTS_FOLDER="/scratch/lthemyr/nnUNetData/nnUNet_trained_models"
 
+source /opt/server-env.sh
 source /home/lthemyr/cotr/bin/activate
 
 cd /home/lthemyr/nnUNet/nnunet/dataset_conversion
