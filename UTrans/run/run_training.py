@@ -130,7 +130,7 @@ def main(gpu, network, network_trainer, task, fold, outpath, val, npz, c=False, 
         trainer = trainer_class(plans_file, fold, norm_cfg, activation_cfg, output_folder=output_folder_name, dataset_directory=dataset_directory,
                             batch_dice=batch_dice, stage=stage, unpack_data=decompress_data,
                             deterministic=deterministic,
-                            fp16=run_mixed_precision, vt_map=vt_map
+                            fp16=run_mixed_precision, vt_map=vt_map)
     else:   
         trainer = trainer_class(plans_file, fold, output_folder=output_folder_name, dataset_directory=dataset_directory,
                             batch_dice=batch_dice, stage=stage, unpack_data=decompress_data,
