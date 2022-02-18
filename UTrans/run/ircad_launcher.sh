@@ -1,8 +1,8 @@
 #!/bin/bash
 #SBATCH -p public
-#SBATCH --gpus=1
-#SBATCH --output=medtest.out # output file name
-#SBATCH --error=medtest.err  # error file name
+#SBATCH --gpus=0
+#SBATCH --output=data.out # output file name
+#SBATCH --error=data.err  # error file name
 
 export nnUNet_raw_data_base="/scratch/lthemyr/nnUNetData/nnUNet_raw"
 export nnUNet_preprocessed="/scratch/lthemyr/nnUNetData/nnUNet_preprocessed"
