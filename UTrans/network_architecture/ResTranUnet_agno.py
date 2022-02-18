@@ -159,8 +159,12 @@ class U_ResTran3D(nn.Module):
         # 48 192 192
         # torch.Size([2, 7776, 384])
         # torch.Size([2, 384, 6, 12, 12])
-        x = self.transposeconv_stage2(x_trans[:, 6912::].transpose(-1, -2).view(x_convs[-1].shape)) # x_trans length: 12*24*24+6*12*12=7776
-        skip2 = x_trans[:, 0:6912].transpose(-1, -2).view(x_convs[-2].shape)
+
+        # 64 128 128
+        # torch.Size([2, 4608, 384])
+        # torch.Size([2, 384, 8, 8, 8])
+        x = self.transposeconv_stage2(x_trans[:, 4096::].transpose(-1, -2).view(x_convs[-1].shape)) # x_trans length: 12*24*24+6*12*12=7776
+        skip2 = x_trans[:, 0:4096].transpose(-1, -2).view(x_convs[-2].shape)
 
         x = x + skip2
         x = self.stage2_de(x)
