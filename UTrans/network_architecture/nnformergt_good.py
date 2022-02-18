@@ -1052,7 +1052,7 @@ class swintransformer(SegmentationNetwork):
         depths=[2, 2, 2, 2]
         num_heads=[6, 12, 24, 48]
         patch_size=[2,4,4]
-        self.model_down=SwinTransformer(pretrain_img_size=imsize,window_size=4,embed_dim=embed_dim,patch_size=patch_size,depths=depths,num_heads=num_heads,in_chans=1, gt_num=gt_num,in_chans=input_channels)
+        self.model_down=SwinTransformer(pretrain_img_size=imsize,window_size=4,embed_dim=embed_dim,patch_size=patch_size,depths=depths,num_heads=num_heads,in_chans=input_channels, gt_num=gt_num)
         self.encoder=encoder(pretrain_img_size=imsize,embed_dim=embed_dim,window_size=4,patch_size=patch_size,num_heads=[24,12,6],depths=[2,2,2], gt_num=gt_num)
    
         self.final=[]
