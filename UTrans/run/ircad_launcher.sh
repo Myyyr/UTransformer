@@ -11,8 +11,13 @@ export RESULTS_FOLDER="/scratch/lthemyr/nnUNetData/nnUNet_trained_models"
 source /opt/server-env.sh
 source /home/lthemyr/cotr/bin/activate
 
-cd /home/lthemyr/UTransformer/UTrans/run
 
-# srun python Task082_BraTS_2020.py
+
+# PROCESS TASK001
+srun nnUNet_convert_decathlon_task -i /scratch/lthemyr/Task01_BrainTumour -p 8
 # srun nnUNet_plan_and_preprocess -t 082 --verify_dataset_integrity
-srun python brats_run_all_nnformergt1.py
+
+
+
+# cd /home/lthemyr/UTransformer/UTrans/run
+# srun python brats_run_all_nnformergt1.py
