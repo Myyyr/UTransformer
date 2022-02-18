@@ -11,7 +11,7 @@ export RESULTS_FOLDER="/scratch/lthemyr/nnUNetData/nnUNet_trained_models"
 source /opt/server-env.sh
 source /home/lthemyr/cotr/bin/activate
 
-cd /home/lthemyr/nnUNet/nnunet/dataset_conversion
+cd /home/lthemyr/UTransformer/UTrans/run
 
 # srun python Task082_BraTS_2020.py
 # srun nnUNet_plan_and_preprocess -t 082 --verify_dataset_integrity
