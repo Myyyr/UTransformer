@@ -69,7 +69,9 @@ class nnUNetTrainerV2_CoTR_agno(nnUNetTrainer):
 
             if force_load_plans or (self.plans is None):
                 self.load_plans_file()
-                self.plans['plans_per_stage'][1]['patch_size'] = [64,128,128]
+                self.plans['plans_per_stage'][1]['patch_size'] = [48,192,192]
+                # self.plans['plans_per_stage'][1]['patch_size'] = [64,128,128]
+                
                 print("Patch size is %s" % self.plans['plans_per_stage'][1]['patch_size'])
                 # exit(0)
                 if self.norm_cfg=='BN':
