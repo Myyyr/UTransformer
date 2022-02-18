@@ -76,7 +76,7 @@ class brats_nnUNetTrainerV2_nnFormerGT1gv2(nnUNetTrainer):
                     self.plans['plans_per_stage'][1]['batch_size'] = 8
 
                 # self.plans['plans_per_stage'][1]['batch_size'] = 1   #Debug
-                print("Batch size is %s" % self.plans['plans_per_stage'][1]['batch_size'])
+                # print("Batch size is %s" % self.plans['plans_per_stage'][1]['batch_size'])
 
             self.process_plans(self.plans)
 
