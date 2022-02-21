@@ -1125,7 +1125,7 @@ class final_patch_expanding(nn.Module):
                                          
 class swintransformer(SegmentationNetwork):
 
-    def __init__(self, input_channels, base_num_features, num_classes, num_pool, num_conv_per_stage=2,
+    def __init__(self, , input_channels=1, base_num_features=64, num_classes=14, num_pool=4, num_conv_per_stage=2,
                  feat_map_mul_on_downscale=2, conv_op=nn.Conv2d,
                  norm_op=nn.BatchNorm2d, norm_op_kwargs=None,
                  dropout_op=nn.Dropout2d, dropout_op_kwargs=None,
@@ -1165,13 +1165,13 @@ class swintransformer(SegmentationNetwork):
         depths=[2, 2, 2, 2]
         num_heads=[6, 12, 24, 48]
         patch_size=[2,4,4]
-        self.model_down=SwinTransformer(pretrain_img_size=self.imsize,window_size=4,embed_dim=embed_dim,patch_size=patch_size,depths=depths,num_heads=num_heads,in_chans=1, gt_num=gt_num, vt_map=self.vt_map)
+        self.model_down=SwinTransformer(pretrain_img_size=self.imsize,window_size=4,embed_dim=embed_dim,patch_size=patch_size,depths=depths,num_heads=num_heads,in_chans=input_channels, gt_num=gt_num, vt_map=self.vt_map)
         self.encoder=encoder(pretrain_img_size=self.imsize,embed_dim=embed_dim,window_size=4,patch_size=patch_size,num_heads=[24,12,6],depths=[2,2,2], gt_num=gt_num, vt_map=self.vt_map)
    
         self.final=[]
-        self.final.append(final_patch_expanding(embed_dim*2**0,14,patch_size=(2,4,4)))
+        self.final.append(final_patch_expanding(embed_dim*2**0,num_classes,patch_size=(2,4,4)))
         for i in range(1,len(depths)-1):
-            self.final.append(final_patch_expanding(embed_dim*2**i,14,patch_size=(4,4,4)))
+            self.final.append(final_patch_expanding(embed_dim*2**i,num_classes,patch_size=(4,4,4)))
         self.final=nn.ModuleList(self.final)
 
         self.vt_check = torch.nn.Parameter(torch.zeros(vt_map[1]*vt_map[2],1))
