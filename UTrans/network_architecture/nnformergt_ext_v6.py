@@ -1125,7 +1125,7 @@ class final_patch_expanding(nn.Module):
                                          
 class swintransformer(SegmentationNetwork):
 
-    def __init__(self, , input_channels=1, base_num_features=64, num_classes=14, num_pool=4, num_conv_per_stage=2,
+    def __init__(self, input_channels=1, base_num_features=64, num_classes=14, num_pool=4, num_conv_per_stage=2,
                  feat_map_mul_on_downscale=2, conv_op=nn.Conv2d,
                  norm_op=nn.BatchNorm2d, norm_op_kwargs=None,
                  dropout_op=nn.Dropout2d, dropout_op_kwargs=None,
