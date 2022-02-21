@@ -1,9 +1,11 @@
 #!/bin/bash
 #SBATCH -p public
 #SBATCH --gpus=1
-#SBATCH --time=24:00:00 
+#SBATCH --partition=long
+#SBATCH --time=100:00:00 
 #SBATCH --output=finebraintumor.out # output file name
 #SBATCH --error=finebraintumor.err  # error file name
+
 
 export nnUNet_raw_data_base="/scratch/lthemyr/nnUNetData/nnUNet_raw"
 export nnUNet_preprocessed="/scratch/lthemyr/nnUNetData/nnUNet_preprocessed"

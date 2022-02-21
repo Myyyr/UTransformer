@@ -589,7 +589,10 @@ class BasicLayer(nn.Module):
                 drop_path=drop_path[i] if isinstance(drop_path, list) else drop_path, norm_layer=norm_layer,gt_num=gt_num)
             for i in range(depth)])
 
-        ws_pe = (8*gt_num//2**id_layer, 8*gt_num//2**id_layer, 8*gt_num//2**id_layer)
+        if self.vt_map==(3,5,5):
+            ws_pe = (8*gt_num//2**id_layer, 8*gt_num//2**id_layer, 8*gt_num//2**id_layer)
+        else:
+            ws_pe = (16*gt_num//2**id_layer, 8*gt_num//2**id_layer, 8*gt_num//2**id_layer)
         self.pe = nn.Parameter(torch.zeros(ws_pe[0]*ws_pe[1]*ws_pe[2], dim))
         trunc_normal_(self.pe, std=.02)
 
@@ -718,7 +721,10 @@ class BasicLayer_up(nn.Module):
                 drop_path=drop_path[i] if isinstance(drop_path, list) else drop_path, norm_layer=norm_layer, gt_num=gt_num)
             for i in range(depth)])
 
-        ws_pe = (8*gt_num//2**id_layer, 8*gt_num//2**id_layer, 8*gt_num//2**id_layer)
+        if self.vt_map==(3,5,5):
+            ws_pe = (8*gt_num//2**id_layer, 8*gt_num//2**id_layer, 8*gt_num//2**id_layer)
+        else:
+            ws_pe = (16*gt_num//2**id_layer, 8*gt_num//2**id_layer, 8*gt_num//2**id_layer)
         self.pe = nn.Parameter(torch.zeros(ws_pe[0]*ws_pe[1]*ws_pe[2], dim))
         trunc_normal_(self.pe, std=.02)
 
