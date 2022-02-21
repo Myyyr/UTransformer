@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH -p public
 #SBATCH --gpus=0
-#SBATCH --time=50:00:00 
+#SBATCH --time=24:00:00 
 #SBATCH --output=nnfbrats.out # output file name
 #SBATCH --error=nnfbrats.err  # error file name
 
