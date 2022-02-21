@@ -18,13 +18,24 @@ from einops import repeat
 
 # V5 + multiple vts by intersec
 
+# SYNAPSE
 #MAX : 660 660 \218
 #AVG : 529 529 \150
 #MIN : 401 401 \93
+SYNAPSE_MAX=[218,660,660]
 
 #CROP : 128 128 \64
-
 #MAX NCROP : 5 5 \3
+
+
+
+# BRAIN TUMOR SEG
+#MAX : 187 160 \149
+#MIN : 144 122 \119
+#AVG : 168 138 \137
+#CROP : 128 128 \128
+#MAX NCROP : 2 2 \2
+BRAIN_TUMOR_MAX=[149,187,160]
 
 class Mlp(nn.Module):
     """ Multilayer perceptron."""
@@ -1123,16 +1134,25 @@ class swintransformer(SegmentationNetwork):
                  conv_kernel_sizes=None,
                  upscale_logits=False, convolutional_pooling=False, convolutional_upsampling=False,
                  max_num_features=None, basic_block=None,
-                 seg_output_use_bias=False, gt_num=1, vt_map=(3,5,5)):
+                 seg_output_use_bias=False, gt_num=1, vt_map=(3,5,5), imsize=[64,128,128], dataset='SYNAPSE'):
     
         super(swintransformer, self).__init__()
+
+        if dataset=="SYNAPSE":
+            self.imsize=[64,128,128]
+            self.vt_map=(3,5,5)
+            self.max_imsize=SYNAPSE_MAX
+        elif dataset=="BRAIN_TUMOR":
+            self.imsize=[128,128,128]
+            self.vt_map=(2,2,2)
+            self.max_imsize=BRAIN_TUMOR_MAX
         
         
         self._deep_supervision = deep_supervision
         self.do_ds = deep_supervision
         self.num_classes=num_classes
         self.conv_op=conv_op
-        self.vt_map = vt_map
+        # self.vt_map = vt_map
        
         
         self.upscale_logits_ops = []
@@ -1145,8 +1165,8 @@ class swintransformer(SegmentationNetwork):
         depths=[2, 2, 2, 2]
         num_heads=[6, 12, 24, 48]
         patch_size=[2,4,4]
-        self.model_down=SwinTransformer(pretrain_img_size=[64,128,128],window_size=4,embed_dim=embed_dim,patch_size=patch_size,depths=depths,num_heads=num_heads,in_chans=1, gt_num=gt_num, vt_map=vt_map)
-        self.encoder=encoder(pretrain_img_size=[64,128,128],embed_dim=embed_dim,window_size=4,patch_size=patch_size,num_heads=[24,12,6],depths=[2,2,2], gt_num=gt_num, vt_map=vt_map)
+        self.model_down=SwinTransformer(pretrain_img_size=self.imsize,window_size=4,embed_dim=embed_dim,patch_size=patch_size,depths=depths,num_heads=num_heads,in_chans=1, gt_num=gt_num, vt_map=self.vt_map)
+        self.encoder=encoder(pretrain_img_size=self.imsize,embed_dim=embed_dim,window_size=4,patch_size=patch_size,num_heads=[24,12,6],depths=[2,2,2], gt_num=gt_num, vt_map=self.vt_map)
    
         self.final=[]
         self.final.append(final_patch_expanding(embed_dim*2**0,14,patch_size=(2,4,4)))
@@ -1159,8 +1179,10 @@ class swintransformer(SegmentationNetwork):
         self.iter = 0
 
     def pos2vtpos(self, pos):
-        dim = [64,128,128]
-        max_dim = [218,660,660]
+        # dim = [64,128,128]
+        # max_dim = [218,660,660]
+        dim=self.imsize
+        max_dim=self.max_imsize
 
         # Myr : We put the crop in the bigger image referential
         rc_pos = [[p[i] + max_dim[i]//2 for i in range(3)] for p in pos]
