@@ -2,8 +2,8 @@
 #SBATCH -p public
 #SBATCH --gpus=0
 #SBATCH --time=24:00:00 
-#SBATCH --output=nnfbrats.out # output file name
-#SBATCH --error=nnfbrats.err  # error file name
+#SBATCH --output=process.out # output file name
+#SBATCH --error=process.err  # error file name
 
 export nnUNet_raw_data_base="/scratch/lthemyr/nnUNetData/nnUNet_raw"
 export nnUNet_preprocessed="/scratch/lthemyr/nnUNetData/nnUNet_preprocessed"
