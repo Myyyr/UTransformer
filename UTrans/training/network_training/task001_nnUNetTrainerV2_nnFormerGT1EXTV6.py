@@ -241,9 +241,11 @@ class task001_nnUNetTrainerV2_nnFormerGT1EXTV6(nnUNetTrainer):
         :param run_online_evaluation:
         :return:
         """
+        # print("--------------------------------------DBG--------------------------------------")
         data_dict = next(data_generator)
         data = data_dict['data']
         target = data_dict['target']
+        pos = data_dict['pos']
 
         data = maybe_to_torch(data)
         target = maybe_to_torch(target)
@@ -256,9 +258,7 @@ class task001_nnUNetTrainerV2_nnFormerGT1EXTV6(nnUNetTrainer):
 
         if self.fp16:
             with autocast():
-                # print(type(self.network))
-                # exit(0)
-                output = self.network(data)
+                output = self.network(data, pos)
                 del data
                 l = self.loss(output, target)
 
@@ -269,9 +269,7 @@ class task001_nnUNetTrainerV2_nnFormerGT1EXTV6(nnUNetTrainer):
                 self.amp_grad_scaler.step(self.optimizer)
                 self.amp_grad_scaler.update()
         else:
-            # print(type(self.network))
-            # exit(0)
-            output = self.network(data)
+            output = self.network(data, pos)
             del data
             l = self.loss(output, target)
 
@@ -280,6 +278,8 @@ class task001_nnUNetTrainerV2_nnFormerGT1EXTV6(nnUNetTrainer):
                 torch.nn.utils.clip_grad_norm_(self.network.parameters(), 12)
                 self.optimizer.step()
 
+        # print("-------------------------------------------------------------------------------")
+        # exit(0)
         if run_online_evaluation:
             self.run_online_evaluation(output, target)
 
