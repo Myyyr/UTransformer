@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH -p public
-#SBATCH --gpus=0
+#SBATCH --gpus=1
 #SBATCH --time=24:00:00 
 #SBATCH --output=finebraintumor.out # output file name
 #SBATCH --error=finebraintumor.err  # error file name
