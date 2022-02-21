@@ -9,7 +9,7 @@ from nnunet.training.loss_functions.deep_supervision import MultipleOutputLoss2
 from nnunet.utilities.to_torch import maybe_to_torch, to_cuda
 from nnunet.network_architecture.generic_UNet import Generic_UNet
 from nnunet.network_architecture.initialization import InitWeights_He
-from nnunet.network_architecture.neural_network import SegmentationNetwork
+from UTrans.network_architecture.neural_network import SegmentationNetwork
 from nnunet.training.data_augmentation.default_data_augmentation import default_2D_augmentation_params, \
     get_patch_size, default_3D_augmentation_params
 from nnunet.training.dataloading.dataset_loading import unpack_dataset
@@ -130,7 +130,7 @@ class task001_nnUNetTrainerV2_nnFormerGT1EXTV6(nnUNetTrainer):
             self.initialize_network()
             self.initialize_optimizer_and_scheduler()
             print(type(self.network))
-            assert isinstance(self.network, (SegmentationNetwork, nn.DataParallel))
+            # assert isinstance(self.network, (SegmentationNetwork, nn.DataParallel))
         else:
             self.print_to_log_file('self.was_initialized is True, not running self.initialize again')
         self.was_initialized = True
