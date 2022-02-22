@@ -1169,7 +1169,7 @@ class swintransformer(SegmentationNetwork):
     def pos2vtpos(self, pos):
         dim = [64,128,128]
         max_dim = [218,660,660]
-        print(pos)
+        # print(pos)
 
         # Myr : We put the crop in the bigger image referential
         rc_pos = [[p[i] + max_dim[i]//2 for i in range(3)] for p in pos]
@@ -1208,25 +1208,25 @@ class swintransformer(SegmentationNetwork):
 
             # 2) up right corner
             if end_right:
-                p2 = (vt[1]-1)*self.vt_map[2] + vt[2]
+                p2 = vt[1]*self.vt_map[2] + vt[2]-1
             else:
-                p2 = (vt[1]+1)*self.vt_map[2] + vt[2]
+                p2 = vt[1]*self.vt_map[2] + vt[2]+1
             ret.append(p2)
 
             # 3) botom left
             if end_botom:
-                p3 = vt[1]*self.vt_map[2] + vt[2]-1
+                p3 = (vt[1]-1)*self.vt_map[2] + vt[2]
             else:
-                p3 = vt[1]*self.vt_map[2] + vt[2]+1
+                p3 = (vt[1]+1)*self.vt_map[2] + vt[2]
             ret.append(p3)
 
 
             # 4) 
             if end_right and end_botom:
                 p4 = (vt[1]-1)*self.vt_map[2] + vt[2]-1
-            elif end_right:
-                p4 = (vt[1]-1)*self.vt_map[2] + vt[2]+1
             elif end_botom:
+                p4 = (vt[1]-1)*self.vt_map[2] + vt[2]+1
+            elif end_right:
                 p4 = (vt[1]+1)*self.vt_map[2] + vt[2]-1
             else:
                 p4 = (vt[1]+1)*self.vt_map[2] + vt[2]+1
@@ -1235,11 +1235,11 @@ class swintransformer(SegmentationNetwork):
             # Now we add the positions of the overlaped tokens. As their grid is bigger, there is no need 
             # to check borders. But we have to start the position at the right index.
             for o in range(self.over - 1):
-                strt = self.vt_map[1]*self.vt_map[2] + (self.over-1)*(self.vt_map[1]+1)*(self.vt_map[2]+1)
+                strt = self.vt_map[1]*self.vt_map[2] + o*(self.vt_map[1]+1)*(self.vt_map[2]+1)
                 ret.append(strt + vt[1]*self.vt_map[2] + vt[2])
-                ret.append((vt[1]+1)*self.vt_map[2] + vt[2])
-                ret.append(vt[1]*self.vt_map[2] + vt[2]+1)
-                ret.append((vt[1]+1)*self.vt_map[2] + vt[2]+1)
+                ret.append(strt + vt[1]*self.vt_map[2] + vt[2]+1)
+                ret.append(strt + (vt[1]+1)*self.vt_map[2] + vt[2])
+                ret.append(strt + (vt[1]+1)*self.vt_map[2] + vt[2]+1)
                 # print(self.over)
                 # exit(0)
 
