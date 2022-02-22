@@ -26,4 +26,4 @@ source /home/lthemyr/cotr/bin/activate
 cd /home/lthemyr/UTransformer/UTrans/run
 # srun python brats_run_all_nnformergt1.py
 # srun python task001_run_all_fine.py
-srun python task001_run_all_nnformers.py
+srun python task001_run_all_nnformer.py
