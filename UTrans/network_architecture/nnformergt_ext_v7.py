@@ -562,8 +562,10 @@ class BasicLayer(nn.Module):
         # self.volume_token = torch.nn.Parameter(torch.randn(vt_map[0]*vt_map[1]*vt_map[2],dim))
         over = vt_map[-1]
         n_vts=over*4
-        pad_grid = (over*vt_map[1] + over*vt_map[2] + over)
-        self.volume_token = torch.nn.Parameter(torch.randn(vt_map[1]*vt_map[2] + pad_grid,dim))
+        # pad_grid = (over*vt_map[1] + over*vt_map[2] + over)
+        # self.volume_token = torch.nn.Parameter(torch.randn(vt_map[1]*vt_map[2] + pad_grid,dim))
+        over_map = (vt_map[1]+1)*(vt_map[2]+1)*(over-1)
+        self.volume_token = torch.nn.Parameter(torch.randn(vt_map[1]*vt_map[2] + over_map,dim))
         self.volume_token.requires_grad = True
 
 
@@ -691,8 +693,11 @@ class BasicLayer_up(nn.Module):
         # self.volume_token = torch.nn.Parameter(torch.randn(vt_map[0]*vt_map[1]*vt_map[2],dim))
         over = vt_map[-1]
         n_vts=over*4
-        pad_grid = (over*vt_map[1] + over*vt_map[2] + over)
-        self.volume_token = torch.nn.Parameter(torch.randn(vt_map[1]*vt_map[2] + pad_grid,dim))
+        # pad_grid = (over*vt_map[1] + over*vt_map[2] + over)
+        # self.volume_token = torch.nn.Parameter(torch.randn(vt_map[1]*vt_map[2] + pad_grid,dim))
+        over_map = (vt_map[1]+1)*(vt_map[2]+1)*(over-1)
+        self.volume_token = torch.nn.Parameter(torch.randn(vt_map[1]*vt_map[2] + over_map,dim))
+
         self.volume_token.requires_grad = True
 
 
