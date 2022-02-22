@@ -375,8 +375,6 @@ class SwinTransformerBlock(nn.Module):
         # W-MSA/SW-MSA
         attn_windows, gt = self.attn(x_windows, mask=attn_mask, gt=gt)  
 
-        print("----------------Block----------------")
-        print("vts.shape", vts.shape)
         self.nc = vts.shape[0]//B
         if len(vts.shape) != 3:
             self.nc = vts.shape[0]
@@ -384,14 +382,10 @@ class SwinTransformerBlock(nn.Module):
 
         # vt_pos_ = [i*vts.shape[1] + vt_pos[i] for i in range(B)]
         vt_pos_ = vt_pos.copy()
-        print("len(vt_pos_)" ,len(vt_pos_))
-        print("self.n_vts", self.n_vts)
-        print("self.nc", self.nc)
 
         if B==2:
             vt_pos_[self.n_vts:] = [self.nc+vt_pos_[self.n_vts + i] for i in range(self.n_vts)]
 
-        print(vt_pos_)
         vts = rearrange(vts, "b n c -> (b n) c")
         vt  = vts[vt_pos_]
         vt  = rearrange(vt, "(b n) c -> b n c", b=B)
