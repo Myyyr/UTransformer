@@ -3,8 +3,8 @@
 #SBATCH --gpus=1
 #SBATCH --partition=long
 #SBATCH --time=100:00:00 
-#SBATCH --output=nnfbraintumor.out # output file name
-#SBATCH --error=nnfbraintumor.err  # error file name
+#SBATCH --output=logs/nnfbraintumor.out # output file name
+#SBATCH --error=logs/nnfbraintumor.err  # error file name
 
 
 export nnUNet_raw_data_base="/scratch/lthemyr/nnUNetData/nnUNet_raw"
