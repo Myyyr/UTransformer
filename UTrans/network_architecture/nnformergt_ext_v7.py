@@ -1180,13 +1180,11 @@ class swintransformer(SegmentationNetwork):
         pad = [(max_dim[i]-dim[i]*self.vt_map[i])//2 + 0**((max_dim[i]-dim[i]*self.vt_map[i])%2 == 0) for i in range(3)]
 
         # get de vt pos
-        # vt_pos = [[(rc[i]-pad[i])//dim[i] for i in range(3)] for rc in rc_pos]
-        vt_pos = [[(rc[i]-pad[i] - dim[i]//2)//dim[i] for i in range(3)] for rc in rc_pos]
-
+        # vt_pos = [[(rc[i]-pad[i] - dim[i]//2)//dim[i] for i in range(3)] for rc in rc_pos]
 
         # deal with borders
-        vt_pos = [[vt[i]*(0**(vt[i]<0)) for i in range(3)] for vt in vt_pos]
-        vt_pos = [[vt_pos[j][i]*(0**((rc_pos[j][i] - pad[i])>=(self.vt_map[i]*dim[i]))) for i in range(3)] for j in range(len(vt_pos))]
+        # vt_pos = [[vt[i]*(0**(vt[i]<0)) for i in range(3)] for vt in vt_pos]
+        # vt_pos = [[vt_pos[j][i]*(0**((rc_pos[j][i] - pad[i])>=(self.vt_map[i]*dim[i]))) for i in range(3)] for j in range(len(vt_pos))]
 
         # int it
         vt_pos = [[int(i) for i in j] for j in vt_pos]
@@ -1194,8 +1192,14 @@ class swintransformer(SegmentationNetwork):
         # vt_pos = [vt[0]*self.vt_map[1]*self.vt_map[2] + vt[1]*self.vt_map[2] + vt[2] for vt in vt_pos]
         # vt_pos = [vt[1]*self.vt_map[2] + vt[2] for vt in vt_pos]
         ret = []
-        for vt in vt_pos:
-            ##### --> not good find an other way ;)
+        # for vt in vt_pos:
+        for rc in rc_pos:
+            vt = [(rc[i]-pad[i] - dim[i]//2)//dim[i] for i in range(3)]
+            vt = [vt[i]*(0**(vt[i]<0)) for i in range(3)]
+            vt = [vt[i]*(0**((rc[i] - pad[i])>=(self.vt_map[i]*dim[i]))) for i in range(3)]
+            vt = [int(i) for i in vt]
+
+
             # deal with borders
             end_right = False
             end_botom = False
@@ -1238,6 +1242,11 @@ class swintransformer(SegmentationNetwork):
             # Now we add the positions of the overlaped tokens. As their grid is bigger, there is no need 
             # to check borders. But we have to start the position at the right index.
             for o in range(self.over - 1):
+                vt = [(rc[i]-pad[i])//dim[i] for i in range(3)]
+                vt = [vt[i]*(0**(vt[i]<0)) for i in range(3)]
+                vt = [vt[i]*(0**((rc[i] - pad[i])>=(self.vt_map[i]*dim[i]))) for i in range(3)]
+                vt = [int(i) for i in vt]
+
                 strt = self.vt_map[1]*self.vt_map[2] + o*(self.vt_map[1]+1)*(self.vt_map[2]+1)
                 ret.append(strt + vt[1]*self.vt_map[2] + vt[2])
                 ret.append(strt + vt[1]*self.vt_map[2] + vt[2]+1)
