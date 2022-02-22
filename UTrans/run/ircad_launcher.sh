@@ -3,8 +3,8 @@
 #SBATCH --gpus=1
 #SBATCH --partition=long
 #SBATCH --time=100:00:00 
-#SBATCH --output=finebraintumor.out # output file name
-#SBATCH --error=finebraintumor.err  # error file name
+#SBATCH --output=nnfbraintumor.out # output file name
+#SBATCH --error=nnfbraintumor.err  # error file name
 
 
 export nnUNet_raw_data_base="/scratch/lthemyr/nnUNetData/nnUNet_raw"
@@ -25,4 +25,5 @@ source /home/lthemyr/cotr/bin/activate
 ## Train nnf brats 
 cd /home/lthemyr/UTransformer/UTrans/run
 # srun python brats_run_all_nnformergt1.py
-srun python task001_run_all_fine.py
+# srun python task001_run_all_fine.py
+srun python task001_run_all_nnformers.py
