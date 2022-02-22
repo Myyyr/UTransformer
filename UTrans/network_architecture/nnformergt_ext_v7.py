@@ -1169,6 +1169,7 @@ class swintransformer(SegmentationNetwork):
     def pos2vtpos(self, pos):
         dim = [64,128,128]
         max_dim = [218,660,660]
+        print(pos)
 
         # Myr : We put the crop in the bigger image referential
         rc_pos = [[p[i] + max_dim[i]//2 for i in range(3)] for p in pos]
@@ -1248,7 +1249,7 @@ class swintransformer(SegmentationNetwork):
         print(self.vt_check.shape)
         print(ret)
 
-        # exit(0)
+        exit(0)
 
         return ret
     
