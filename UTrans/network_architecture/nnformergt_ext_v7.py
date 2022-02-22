@@ -1187,7 +1187,7 @@ class swintransformer(SegmentationNetwork):
         # vt_pos = [[vt_pos[j][i]*(0**((rc_pos[j][i] - pad[i])>=(self.vt_map[i]*dim[i]))) for i in range(3)] for j in range(len(vt_pos))]
 
         # int it
-        vt_pos = [[int(i) for i in j] for j in vt_pos]
+        # vt_pos = [[int(i) for i in j] for j in vt_pos]
 
         # vt_pos = [vt[0]*self.vt_map[1]*self.vt_map[2] + vt[1]*self.vt_map[2] + vt[2] for vt in vt_pos]
         # vt_pos = [vt[1]*self.vt_map[2] + vt[2] for vt in vt_pos]
