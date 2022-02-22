@@ -1246,8 +1246,8 @@ class swintransformer(SegmentationNetwork):
 
             # vt_pos = [vt[1]*self.vt_map[2] + vt[2] for vt in vt_pos]
 
-        # print(self.vt_check.shape)
-        # print(ret)
+        print(self.vt_check.shape)
+        print(ret)
 
         # exit(0)
 
