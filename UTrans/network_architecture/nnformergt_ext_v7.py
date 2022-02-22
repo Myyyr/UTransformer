@@ -560,6 +560,7 @@ class BasicLayer(nn.Module):
 
         # self.volume_token = torch.nn.Parameter(torch.randn(vt_map[0]*vt_map[1]*vt_map[2],dim))
         over = vt_map[-1]
+        n_vts=over*4
         pad_grid = (over*vt_map[1] + over*vt_map[2] + over)
         self.volume_token = torch.nn.Parameter(torch.randn(vt_map[1]*vt_map[2] + pad_grid,dim))
         self.volume_token.requires_grad = True
@@ -578,7 +579,7 @@ class BasicLayer(nn.Module):
                 qk_scale=qk_scale,
                 drop=drop,
                 attn_drop=attn_drop,
-                drop_path=drop_path[i] if isinstance(drop_path, list) else drop_path, norm_layer=norm_layer,gt_num=gt_num)
+                drop_path=drop_path[i] if isinstance(drop_path, list) else drop_path, norm_layer=norm_layer,gt_num=gt_num, n_vts=n_vts)
             for i in range(depth)])
 
         ws_pe = (8*gt_num//2**id_layer, 8*gt_num//2**id_layer, 8*gt_num//2**id_layer)
@@ -688,6 +689,7 @@ class BasicLayer_up(nn.Module):
 
         # self.volume_token = torch.nn.Parameter(torch.randn(vt_map[0]*vt_map[1]*vt_map[2],dim))
         over = vt_map[-1]
+        n_vts=over*4
         pad_grid = (over*vt_map[1] + over*vt_map[2] + over)
         self.volume_token = torch.nn.Parameter(torch.randn(vt_map[1]*vt_map[2] + pad_grid,dim))
         self.volume_token.requires_grad = True
@@ -709,7 +711,7 @@ class BasicLayer_up(nn.Module):
                 qk_scale=qk_scale,
                 drop=drop,
                 attn_drop=attn_drop,
-                drop_path=drop_path[i] if isinstance(drop_path, list) else drop_path, norm_layer=norm_layer, gt_num=gt_num)
+                drop_path=drop_path[i] if isinstance(drop_path, list) else drop_path, norm_layer=norm_layer, gt_num=gt_num, n_vts=n_vts)
             for i in range(depth)])
 
         ws_pe = (8*gt_num//2**id_layer, 8*gt_num//2**id_layer, 8*gt_num//2**id_layer)
