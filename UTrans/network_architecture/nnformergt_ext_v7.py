@@ -1248,7 +1248,7 @@ class swintransformer(SegmentationNetwork):
         print(self.vt_check.shape)
         print(ret)
 
-        exit(0)
+        # exit(0)
 
         return ret
     
