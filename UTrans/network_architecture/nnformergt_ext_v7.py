@@ -386,14 +386,7 @@ class SwinTransformerBlock(nn.Module):
         if B==2:
             vt_pos_[self.n_vts:] = [self.nc+vt_pos_[self.n_vts + i] for i in range(self.n_vts)]
 
-        print("-----------------DBG-----------------")
-        print("nc", self.nc)
-        print("vt_pos", vt_pos)
-        print("vt_pos_", vt_pos_)
-        print("self.n_vts", self.n_vts)
         vts = rearrange(vts, "b n c -> (b n) c")
-        print("vts.shape", vts.shape)
-        print("-------------------------------------")
         vt  = vts[vt_pos_]
         vt  = rearrange(vt, "(b n) c -> b n c", b=B)
         # vts = rearrange(vts, "(b n) c -> b n c", b=B)
