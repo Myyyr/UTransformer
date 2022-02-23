@@ -375,7 +375,7 @@ class SwinTransformerBlock(nn.Module):
         # W-MSA/SW-MSA
         attn_windows, gt = self.attn(x_windows, mask=attn_mask, gt=gt)  
 
-        self.nc = vts.shape[1]//B
+        self.nc = vts.shape[1]
         if len(vts.shape) != 3:
             self.nc = vts.shape[0]
             vts = repeat(vts, "g c -> b g c", b=B)# shape of (num_windows*B, G, C)
