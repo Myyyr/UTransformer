@@ -387,6 +387,7 @@ class SwinTransformerBlock(nn.Module):
             vt_pos_[self.n_vts:] = [self.nc+vt_pos_[self.n_vts + i] for i in range(self.n_vts)]
 
         print("-----------------DBG-----------------")
+        print("nc", self.nc)
         print("vt_pos", vt_pos)
         print("vt_pos_", vt_pos_)
         print("vts.shape", vts.shape)
