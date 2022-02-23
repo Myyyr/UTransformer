@@ -1243,8 +1243,8 @@ class swintransformer(SegmentationNetwork):
             # to check borders. But we have to start the position at the right index.
             for o in range(self.over - 1):
                 vt = [(rc[i]-pad[i])//dim[i] for i in range(3)]
-                vt = [vt[i]*(0**(vt[i]<0)) for i in range(3)]
-                vt = [vt[i]*(0**((rc[i] - pad[i])>=(self.vt_map[i]*dim[i]))) for i in range(3)]
+                # vt = [vt[i]*(0**(vt[i]<0)) for i in range(3)]
+                # vt = [vt[i]*(0**((rc[i] - pad[i])>=(self.vt_map[i]*dim[i]))) for i in range(3)]
                 vt = [int(i) for i in vt]
 
                 strt = self.vt_map[1]*self.vt_map[2] + o*(self.vt_map[1]+1)*(self.vt_map[2]+1)
