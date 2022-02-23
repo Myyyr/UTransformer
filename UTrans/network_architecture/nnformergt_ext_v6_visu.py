@@ -16,15 +16,26 @@ from timm.models.layers import DropPath, to_3tuple, trunc_normal_
 
 from einops import repeat
 
-# V6 + overlapping
+# V5 + multiple vts by intersec
 
+# SYNAPSE
 #MAX : 660 660 \218
 #AVG : 529 529 \150
 #MIN : 401 401 \93
+SYNAPSE_MAX=[218,660,660]
 
 #CROP : 128 128 \64
-
 #MAX NCROP : 5 5 \3
+
+
+
+# BRAIN TUMOR SEG
+#MAX : 187 160 \149
+#MIN : 144 122 \119
+#AVG : 168 138 \137
+#CROP : 128 128 \128
+#MAX NCROP : 2 2 \2
+BRAIN_TUMOR_MAX=[149,187,160]
 
 class Mlp(nn.Module):
     """ Multilayer perceptron."""
@@ -326,7 +337,7 @@ class SwinTransformerBlock(nn.Module):
                                             qkv_bias=qkv_bias, qk_scale=qk_scale, attn_drop=attn_drop, 
                                             proj_drop=drop)
 
-    def forward(self, x, mask_matrix, gt, pe, vts, vt_pos, check):
+    def forward(self, x, mask_matrix, gt, pe, vts, vt_pos, check, imidx=None, save=False):
         """ Forward function.
 
         Args:
@@ -373,29 +384,26 @@ class SwinTransformerBlock(nn.Module):
 
         skip_gt = gt
         # W-MSA/SW-MSA
-        attn_windows, gt = self.attn(x_windows, mask=attn_mask, gt=gt)  
+        attn_windows, gt = self.attn(x_windows, mask=attn_mask, gt=gt, imidx=imidx, save=save)  
 
-        self.nc = vts.shape[1]
+        
+        self.nc = vts.shape[0]//B
         if len(vts.shape) != 3:
             self.nc = vts.shape[0]
             vts = repeat(vts, "g c -> b g c", b=B)# shape of (num_windows*B, G, C)
 
         # vt_pos_ = [i*vts.shape[1] + vt_pos[i] for i in range(B)]
         vt_pos_ = vt_pos.copy()
+        # print("len(vt_pos_)" ,len(vt_pos_))
+        # print("self.n_vts", self.n_vts)
+        # print("self.nc", self.nc)
 
         if B==2:
             vt_pos_[self.n_vts:] = [self.nc+vt_pos_[self.n_vts + i] for i in range(self.n_vts)]
 
-        print("-----------------DBG-----------------")
-        print("nc", self.nc)
-        print("vt_pos", vt_pos)
-        print("vt_pos_", vt_pos_)
-        print("self.n_vts", self.n_vts)
         vts = rearrange(vts, "b n c -> (b n) c")
-        print("vts.shape", vts.shape)
-        print("-------------------------------------")
-        vt  = vts[vt_pos_]
-        vt  = rearrange(vt, "(b n) c -> b n c", b=B)
+        vt = vts[vt_pos_]
+        vt = rearrange(vt, "(b n) c -> b n c", b=B)
         # vts = rearrange(vts, "(b n) c -> b n c", b=B)
 
 
@@ -409,7 +417,7 @@ class SwinTransformerBlock(nn.Module):
         gt = rearrange(gt, "(b n) g c -> b (n g) c", b=B)
         # gt = torch.cat([vt[:,None,:], gt], dim=1)
         gt = torch.cat([vt, gt], dim=1)
-        gt = self.gt_attn(gt, pe)
+        gt = self.gt_attn(gt, pe, imidx=imidx, save=save)
         vt = gt[:,:self.n_vts,:]
         gt = gt[:,self.n_vts:,:]
         gt = rearrange(gt, "b (n g) c -> (b n) g c",g=ngt, c=C)
@@ -432,7 +440,7 @@ class SwinTransformerBlock(nn.Module):
         vt_mask = torch.zeros((vts.shape[1], vts.shape[1]), dtype=vts.dtype, device=vts.device)-1000
         vt_mask[:, check_pos] = 0
         vt_mask = repeat(vt_mask, "n c -> b n c", b=B)
-        vts = self.vt_attn(vts, None,vt_mask)
+        vts = self.vt_attn(vts, None,vt_mask, imidx=imidx, save=save)
 
         # merge windows
         attn_windows = attn_windows.view(-1, self.window_size, self.window_size, self.window_size, C)
@@ -549,7 +557,7 @@ class BasicLayer(nn.Module):
                  drop_path=0.,
                  norm_layer=nn.LayerNorm,
                  downsample=True,  
-                 use_checkpoint=False, gt_num=1, id_layer=0, vt_map=(3,5,5, 1)):
+                 use_checkpoint=False, gt_num=1, id_layer=0, vt_map=(3,5,5)):
         super().__init__()
         self.window_size = window_size
         self.shift_size = window_size // 2
@@ -561,12 +569,7 @@ class BasicLayer(nn.Module):
         self.global_token.requires_grad = True
 
         # self.volume_token = torch.nn.Parameter(torch.randn(vt_map[0]*vt_map[1]*vt_map[2],dim))
-        over = vt_map[-1]
-        n_vts=over*4
-        # pad_grid = (over*vt_map[1] + over*vt_map[2] + over)
-        # self.volume_token = torch.nn.Parameter(torch.randn(vt_map[1]*vt_map[2] + pad_grid,dim))
-        over_map = (vt_map[1]+1)*(vt_map[2]+1)*(over-1)
-        self.volume_token = torch.nn.Parameter(torch.randn(vt_map[1]*vt_map[2] + over_map,dim))
+        self.volume_token = torch.nn.Parameter(torch.randn(vt_map[1]*vt_map[2],dim))
         self.volume_token.requires_grad = True
 
 
@@ -583,10 +586,13 @@ class BasicLayer(nn.Module):
                 qk_scale=qk_scale,
                 drop=drop,
                 attn_drop=attn_drop,
-                drop_path=drop_path[i] if isinstance(drop_path, list) else drop_path, norm_layer=norm_layer,gt_num=gt_num, n_vts=n_vts)
+                drop_path=drop_path[i] if isinstance(drop_path, list) else drop_path, norm_layer=norm_layer,gt_num=gt_num)
             for i in range(depth)])
 
-        ws_pe = (8*gt_num//2**id_layer, 8*gt_num//2**id_layer, 8*gt_num//2**id_layer)
+        if self.vt_map==(3,5,5):
+            ws_pe = (8*gt_num//2**id_layer, 8*gt_num//2**id_layer, 8*gt_num//2**id_layer)
+        else:
+            ws_pe = (16*gt_num//2**id_layer, 8*gt_num//2**id_layer, 8*gt_num//2**id_layer)
         self.pe = nn.Parameter(torch.zeros(ws_pe[0]*ws_pe[1]*ws_pe[2], dim))
         trunc_normal_(self.pe, std=.02)
 
@@ -596,7 +602,7 @@ class BasicLayer(nn.Module):
         else:
             self.downsample = None
 
-    def forward(self, x, S, H, W, vt_pos, check):
+    def forward(self, x, S, H, W, vt_pos, check, imidx):
         """ Forward function.
 
         Args:
@@ -633,6 +639,7 @@ class BasicLayer(nn.Module):
 
         gt = self.global_token
         vts = self.volume_token
+        k=0
         # self.vt_check[vt_pos] += 1
         for blk in self.blocks:
             blk.H, blk.W = H, W
@@ -640,7 +647,8 @@ class BasicLayer(nn.Module):
                 x = checkpoint.checkpoint(blk, x, attn_mask)
             else:
                 # check = (self.vt_check.sum() >= self.vt_map[0]*self.vt_map[1]*self.vt_map[2])
-                x, gt, vts = blk(x, attn_mask, gt, self.pe, vts, vt_pos, check)
+                x, gt, vts = blk(x, attn_mask, gt, self.pe, vts, vt_pos, check, imidx, k==0)
+                k+=1
         if self.downsample is not None:
             x_down = self.downsample(x, S, H, W)
             Ws, Wh, Ww = (S + 1) // 2, (H + 1) // 2, (W + 1) // 2
@@ -680,7 +688,7 @@ class BasicLayer_up(nn.Module):
                  attn_drop=0.,
                  drop_path=0.,
                  norm_layer=nn.LayerNorm,
-                 upsample=True, gt_num=1,id_layer=0, vt_map=(3,5,5, 1)
+                 upsample=True, gt_num=1,id_layer=0, vt_map=(3,5,5)
                 ):
         super().__init__()
         self.window_size = window_size
@@ -692,13 +700,7 @@ class BasicLayer_up(nn.Module):
         self.global_token.requires_grad = True
 
         # self.volume_token = torch.nn.Parameter(torch.randn(vt_map[0]*vt_map[1]*vt_map[2],dim))
-        over = vt_map[-1]
-        n_vts=over*4
-        # pad_grid = (over*vt_map[1] + over*vt_map[2] + over)
-        # self.volume_token = torch.nn.Parameter(torch.randn(vt_map[1]*vt_map[2] + pad_grid,dim))
-        over_map = (vt_map[1]+1)*(vt_map[2]+1)*(over-1)
-        self.volume_token = torch.nn.Parameter(torch.randn(vt_map[1]*vt_map[2] + over_map,dim))
-
+        self.volume_token = torch.nn.Parameter(torch.randn(vt_map[1]*vt_map[2],dim))
         self.volume_token.requires_grad = True
 
 
@@ -718,10 +720,13 @@ class BasicLayer_up(nn.Module):
                 qk_scale=qk_scale,
                 drop=drop,
                 attn_drop=attn_drop,
-                drop_path=drop_path[i] if isinstance(drop_path, list) else drop_path, norm_layer=norm_layer, gt_num=gt_num, n_vts=n_vts)
+                drop_path=drop_path[i] if isinstance(drop_path, list) else drop_path, norm_layer=norm_layer, gt_num=gt_num)
             for i in range(depth)])
 
-        ws_pe = (8*gt_num//2**id_layer, 8*gt_num//2**id_layer, 8*gt_num//2**id_layer)
+        if self.vt_map==(3,5,5):
+            ws_pe = (8*gt_num//2**id_layer, 8*gt_num//2**id_layer, 8*gt_num//2**id_layer)
+        else:
+            ws_pe = (16*gt_num//2**id_layer, 8*gt_num//2**id_layer, 8*gt_num//2**id_layer)
         self.pe = nn.Parameter(torch.zeros(ws_pe[0]*ws_pe[1]*ws_pe[2], dim))
         trunc_normal_(self.pe, std=.02)
 
@@ -908,7 +913,7 @@ class SwinTransformer(nn.Module):
                  patch_norm=True,
                  out_indices=(0, 1, 2, 3),
                  frozen_stages=-1,
-                 use_checkpoint=False, gt_num=1, vt_map=(3,5,5, 1)):
+                 use_checkpoint=False, gt_num=1, vt_map=(3,5,5)):
         super().__init__()
 
         self.pretrain_img_size = pretrain_img_size
@@ -998,7 +1003,7 @@ class SwinTransformer(nn.Module):
 
     
 
-    def forward(self, x, vt_pos, check):
+    def forward(self, x, vt_pos, check, imidx):
         """Forward function."""
         
         x = self.patch_embed(x)
@@ -1017,7 +1022,7 @@ class SwinTransformer(nn.Module):
       
         for i in range(self.num_layers):
             layer = self.layers[i]
-            x_out, S, H, W, x, Ws, Wh, Ww = layer(x, Ws, Wh, Ww, vt_pos, check)
+            x_out, S, H, W, x, Ws, Wh, Ww = layer(x, Ws, Wh, Ww, vt_pos, check, imidx)
             if i in self.out_indices:
                 norm_layer = getattr(self, f'norm{i}')
                 x_out = norm_layer(x_out)
@@ -1046,7 +1051,7 @@ class encoder(nn.Module):
                  drop_rate=0.,
                  attn_drop_rate=0.,
                  drop_path_rate=0.2,
-                 norm_layer=nn.LayerNorm, gt_num=1, vt_map=(3,5,5, 1)
+                 norm_layer=nn.LayerNorm, gt_num=1, vt_map=(3,5,5)
                  ):
         super().__init__()
         
@@ -1128,7 +1133,7 @@ class final_patch_expanding(nn.Module):
                                          
 class swintransformer(SegmentationNetwork):
 
-    def __init__(self, input_channels, base_num_features, num_classes, num_pool, num_conv_per_stage=2,
+    def __init__(self, input_channels=1, base_num_features=64, num_classes=14, num_pool=4, num_conv_per_stage=2,
                  feat_map_mul_on_downscale=2, conv_op=nn.Conv2d,
                  norm_op=nn.BatchNorm2d, norm_op_kwargs=None,
                  dropout_op=nn.Dropout2d, dropout_op_kwargs=None,
@@ -1137,19 +1142,25 @@ class swintransformer(SegmentationNetwork):
                  conv_kernel_sizes=None,
                  upscale_logits=False, convolutional_pooling=False, convolutional_upsampling=False,
                  max_num_features=None, basic_block=None,
-                 seg_output_use_bias=False, gt_num=1, vt_map=(3,5,5,1)):
+                 seg_output_use_bias=False, gt_num=1, vt_map=(3,5,5), imsize=[64,128,128], dataset='SYNAPSE'):
     
         super(swintransformer, self).__init__()
-        # print(vt_map)
-        # exit(0)
+
+        if dataset=="SYNAPSE":
+            self.imsize=[64,128,128]
+            self.vt_map=(3,5,5)
+            self.max_imsize=SYNAPSE_MAX
+        elif dataset=="BRAIN_TUMOR":
+            self.imsize=[128,128,128]
+            self.vt_map=(2,2,2)
+            self.max_imsize=BRAIN_TUMOR_MAX
         
-        self.over, over = vt_map[-1], vt_map[-1]
+        
         self._deep_supervision = deep_supervision
         self.do_ds = deep_supervision
         self.num_classes=num_classes
         self.conv_op=conv_op
-
-        self.vt_map = vt_map#(vt_map[0]*over+1,vt_map[1]*over+1,vt_map[2]*over+1)
+        # self.vt_map = vt_map
        
         
         self.upscale_logits_ops = []
@@ -1162,24 +1173,26 @@ class swintransformer(SegmentationNetwork):
         depths=[2, 2, 2, 2]
         num_heads=[6, 12, 24, 48]
         patch_size=[2,4,4]
-        self.model_down=SwinTransformer(pretrain_img_size=[64,128,128],window_size=4,embed_dim=embed_dim,patch_size=patch_size,depths=depths,num_heads=num_heads,in_chans=1, gt_num=gt_num, vt_map=vt_map)
-        self.encoder=encoder(pretrain_img_size=[64,128,128],embed_dim=embed_dim,window_size=4,patch_size=patch_size,num_heads=[24,12,6],depths=[2,2,2], gt_num=gt_num, vt_map=vt_map)
+        self.model_down=SwinTransformer(pretrain_img_size=self.imsize,window_size=4,embed_dim=embed_dim,patch_size=patch_size,depths=depths,num_heads=num_heads,in_chans=input_channels, gt_num=gt_num, vt_map=self.vt_map)
+        self.encoder=encoder(pretrain_img_size=self.imsize,embed_dim=embed_dim,window_size=4,patch_size=patch_size,num_heads=[24,12,6],depths=[2,2,2], gt_num=gt_num, vt_map=self.vt_map)
    
         self.final=[]
-        self.final.append(final_patch_expanding(embed_dim*2**0,14,patch_size=(2,4,4)))
+        self.final.append(final_patch_expanding(embed_dim*2**0,num_classes,patch_size=(2,4,4)))
         for i in range(1,len(depths)-1):
-            self.final.append(final_patch_expanding(embed_dim*2**i,14,patch_size=(4,4,4)))
+            self.final.append(final_patch_expanding(embed_dim*2**i,num_classes,patch_size=(4,4,4)))
         self.final=nn.ModuleList(self.final)
 
-        pad_grid = (over*vt_map[1] + over*vt_map[2] + over)
-        self.vt_check = torch.nn.Parameter(torch.zeros(vt_map[1]*vt_map[2]*over + pad_grid,1))
+        self.vt_check = torch.nn.Parameter(torch.zeros(vt_map[1]*vt_map[2],1))
         self.vt_check.requires_grad = False
         self.iter = 0
 
+        self.imidx = 0
+
     def pos2vtpos(self, pos):
-        dim = [64,128,128]
-        max_dim = [218,660,660]
-        # print(pos)
+        # dim = [64,128,128]
+        # max_dim = [218,660,660]
+        dim=self.imsize
+        max_dim=self.max_imsize
 
         # Myr : We put the crop in the bigger image referential
         rc_pos = [[p[i] + max_dim[i]//2 for i in range(3)] for p in pos]
@@ -1187,33 +1200,29 @@ class swintransformer(SegmentationNetwork):
         pad = [(max_dim[i]-dim[i]*self.vt_map[i])//2 + 0**((max_dim[i]-dim[i]*self.vt_map[i])%2 == 0) for i in range(3)]
 
         # get de vt pos
-        # vt_pos = [[(rc[i]-pad[i] - dim[i]//2)//dim[i] for i in range(3)] for rc in rc_pos]
+        # vt_pos = [[(rc[i]-pad[i])//dim[i] for i in range(3)] for rc in rc_pos]
+        vt_pos = [[(rc[i]-pad[i] - dim[i]//2)//dim[i] for i in range(3)] for rc in rc_pos]
+
 
         # deal with borders
-        # vt_pos = [[vt[i]*(0**(vt[i]<0)) for i in range(3)] for vt in vt_pos]
-        # vt_pos = [[vt_pos[j][i]*(0**((rc_pos[j][i] - pad[i])>=(self.vt_map[i]*dim[i]))) for i in range(3)] for j in range(len(vt_pos))]
+        vt_pos = [[vt[i]*(0**(vt[i]<0)) for i in range(3)] for vt in vt_pos]
+        vt_pos = [[vt_pos[j][i]*(0**((rc_pos[j][i] - pad[i])>=(self.vt_map[i]*dim[i]))) for i in range(3)] for j in range(len(vt_pos))]
 
         # int it
-        # vt_pos = [[int(i) for i in j] for j in vt_pos]
+        vt_pos = [[int(i) for i in j] for j in vt_pos]
 
         # vt_pos = [vt[0]*self.vt_map[1]*self.vt_map[2] + vt[1]*self.vt_map[2] + vt[2] for vt in vt_pos]
         # vt_pos = [vt[1]*self.vt_map[2] + vt[2] for vt in vt_pos]
         ret = []
-        # for vt in vt_pos:
-        for rc in rc_pos:
-            vt = [(rc[i]-pad[i] - dim[i]//2)//dim[i] for i in range(3)]
-            vt = [vt[i]*(0**(vt[i]<0)) for i in range(3)]
-            vt = [vt[i]*(0**((rc[i] - pad[i])>=(self.vt_map[i]*dim[i]))) for i in range(3)]
-            vt = [int(i) for i in vt]
-
-
+        for vt in vt_pos:
+            ##### --> not good find an other way ;)
             # deal with borders
-            end_x = False
-            end_y = False
+            end_right = False
+            end_botom = False
             if vt[1] == self.vt_map[1]-1:
-                end_x = True
+                end_right = True
             if vt[2] == self.vt_map[2]-1:
-                end_y = True
+                end_botom = True
 
 
             # 1) add nearest token pos (left )
@@ -1221,54 +1230,34 @@ class swintransformer(SegmentationNetwork):
             ret.append(p1)
 
             # 2) up right corner
-            if end_y:
-                p2 = vt[1]*self.vt_map[2] + vt[2]-1
+            if end_right:
+                p2 = (vt[1]-1)*self.vt_map[2] + vt[2]
             else:
-                p2 = vt[1]*self.vt_map[2] + vt[2]+1
+                p2 = (vt[1]+1)*self.vt_map[2] + vt[2]
             ret.append(p2)
 
             # 3) botom left
-            if end_x:
-                p3 = (vt[1]-1)*self.vt_map[2] + vt[2]
+            if end_botom:
+                p3 = vt[1]*self.vt_map[2] + vt[2]-1
             else:
-                p3 = (vt[1]+1)*self.vt_map[2] + vt[2]
+                p3 = vt[1]*self.vt_map[2] + vt[2]+1
             ret.append(p3)
 
 
             # 4) 
-            if end_x and end_y:
+            if end_right and end_botom:
                 p4 = (vt[1]-1)*self.vt_map[2] + vt[2]-1
-            elif end_y:
-                p4 = (vt[1]+1)*self.vt_map[2] + vt[2]-1
-            elif end_x:
+            elif end_right:
                 p4 = (vt[1]-1)*self.vt_map[2] + vt[2]+1
+            elif end_botom:
+                p4 = (vt[1]+1)*self.vt_map[2] + vt[2]-1
             else:
                 p4 = (vt[1]+1)*self.vt_map[2] + vt[2]+1
             ret.append(p4)
 
-            # Now we add the positions of the overlaped tokens. As their grid is bigger, there is no need 
-            # to check borders. But we have to start the position at the right index.
-            for o in range(self.over - 1):
-                vt = [(rc[i]-pad[i])//dim[i] for i in range(3)]
-                # vt = [vt[i]*(0**(vt[i]<0)) for i in range(3)]
-                # vt = [vt[i]*(0**((rc[i] - pad[i])>=(self.vt_map[i]*dim[i]))) for i in range(3)]
-                vt = [int(i) for i in vt]
-
-                strt = self.vt_map[1]*self.vt_map[2] + o*(self.vt_map[1]+1)*(self.vt_map[2]+1)
-                ret.append(strt + vt[1]*self.vt_map[2] + vt[2])
-                ret.append(strt + vt[1]*self.vt_map[2] + vt[2]+1)
-                ret.append(strt + (vt[1]+1)*self.vt_map[2] + vt[2])
-                ret.append(strt + (vt[1]+1)*self.vt_map[2] + vt[2]+1)
-                # print(self.over)
-                # exit(0)
-
 
             # vt_pos = [vt[1]*self.vt_map[2] + vt[2] for vt in vt_pos]
 
-        # print(self.vt_check.shape)
-        # print(ret)
-
-        # exit(0)
 
         return ret
     
@@ -1284,26 +1273,25 @@ class swintransformer(SegmentationNetwork):
             torch.save(self.vt_check, "./log_chech_iter_"+str(self.iter)+".pt")
         self.iter += 1
 
-        # print('|      Stats :')
-        # print('| check', check.item())
-        # print('| mean', self.vt_check.mean().item())
-        # print('| min', self.vt_check.min().item())
-        # print('| max', self.vt_check.max().item())
-        # print('| n 0', (self.vt_check == 0).sum().item())
-
-
-            # print(self.vt_check)
+        
 
         
             
         seg_outputs=[]
-        skips = self.model_down(x, vt_pos, self.vt_check >= 1)
+        skips = self.model_down(x, vt_pos, self.vt_check >= 1, self.imidx)
         neck=skips[-1]
        
         out=self.encoder(neck,skips,vt_pos, self.vt_check >= 1)
         
         for i in range(len(out)):  
             seg_outputs.append(self.final[-(i+1)](out[i]))
+
+        if self.imidx%4 == 0:
+            torch.save(x, "/share/DEEPLEARNING/themyr_l/medvisu/keepcrop/"+str(self.imidx)+"x.pt")
+            torch.save(seg_outputs[-1], "/share/DEEPLEARNING/themyr_l/medvisu/keepcrop/"+str(self.imidx)+"p.pt")
+        
+
+        self.imidx+=1
 
         if self._deep_supervision and self.do_ds:
             return tuple([seg_outputs[-1]] + [i(j) for i, j in
