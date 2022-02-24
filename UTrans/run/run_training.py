@@ -15,7 +15,7 @@ import os
 import UTrans
 import telegram_send as ts
 # os.environ['nnUNet_raw_data_base'] = '/local/DEEPLEARNING/MULTI_ATLAS/MULTI_ATLAS/Task017_BCV/'
-def main(gpu, network, network_trainer, task, fold, outpath, val, npz, c=False, ep=1000, lr=1e-2, pretrained_weights=None, na=False, vt_map=(3,5,5,1), dbg=False):
+def main(gpu, network, network_trainer, task, fold, outpath, val, npz, c=False, ep=1000, lr=1e-2, pretrained_weights=None, na=False, vt_map=(3,5,5,1), dbg=False, visu=False, idx=None):
     if not dbg:
         ts.send(messages=[network_trainer+" "+task +" "+ str(fold) +" "+ outpath +" val="+ str(val)+" ..."])
 
@@ -172,7 +172,10 @@ def main(gpu, network, network_trainer, task, fold, outpath, val, npz, c=False, 
         trainer.network.eval()
 
         # predict validation
-        trainer.validate(save_softmax=args.npz, validation_folder_name=val_folder)
+        if visu:
+            trainer.validate(idx=idx, save_softmax=args.npz, validation_folder_name=val_folder)
+        else:
+            trainer.validate(save_softmax=args.npz, validation_folder_name=val_folder)
 
         if network == '3d_lowres':
             print("predicting segmentations for the next stage of the cascade")
