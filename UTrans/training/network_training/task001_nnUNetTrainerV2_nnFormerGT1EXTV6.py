@@ -454,7 +454,7 @@ class task001_nnUNetTrainerV2_nnFormerGT1EXTV6(nnUNetTrainer):
         :return:
         """
 
-        self.downsampe_scales = [[1, 2, 2], [2, 2, 2], [2, 2, 2], [2, 2, 2]]
+        # self.downsampe_scales = [[1, 2, 2], [2, 2, 2], [2, 2, 2], [2, 2, 2]]
         self.deep_supervision_scales = [[1, 1, 1]] + list(list(i) for i in 1 / np.cumprod(
             np.vstack(self.downsampe_scales), axis=0))[:-1]
             

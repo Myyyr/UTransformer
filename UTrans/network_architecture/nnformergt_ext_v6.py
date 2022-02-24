@@ -589,10 +589,11 @@ class BasicLayer(nn.Module):
                 drop_path=drop_path[i] if isinstance(drop_path, list) else drop_path, norm_layer=norm_layer,gt_num=gt_num)
             for i in range(depth)])
 
-        if self.vt_map==(3,5,5):
-            ws_pe = (8*gt_num//2**id_layer, 8*gt_num//2**id_layer, 8*gt_num//2**id_layer)
-        else:
-            ws_pe = (16*gt_num//2**id_layer, 8*gt_num//2**id_layer, 8*gt_num//2**id_layer)
+        # if self.vt_map==(3,5,5):
+        #     ws_pe = (8*gt_num//2**id_layer, 8*gt_num//2**id_layer, 8*gt_num//2**id_layer)
+        # else:
+        #     ws_pe = (16*gt_num//2**id_layer, 8*gt_num//2**id_layer, 8*gt_num//2**id_layer)
+        ws_pe = ((32//window_size)*gt_num//2**id_layer, (32//window_size)*gt_num//2**id_layer, (32//window_size)*gt_num//2**id_layer)
         self.pe = nn.Parameter(torch.zeros(ws_pe[0]*ws_pe[1]*ws_pe[2], dim))
         trunc_normal_(self.pe, std=.02)
 
@@ -721,10 +722,10 @@ class BasicLayer_up(nn.Module):
                 drop_path=drop_path[i] if isinstance(drop_path, list) else drop_path, norm_layer=norm_layer, gt_num=gt_num)
             for i in range(depth)])
 
-        if self.vt_map==(3,5,5):
-            ws_pe = (8*gt_num//2**id_layer, 8*gt_num//2**id_layer, 8*gt_num//2**id_layer)
-        else:
-            ws_pe = (16*gt_num//2**id_layer, 8*gt_num//2**id_layer, 8*gt_num//2**id_layer)
+        # if self.vt_map==(3,5,5):
+        #     ws_pe = (8*gt_num//2**id_layer, 8*gt_num//2**id_layer, 8*gt_num//2**id_layer)
+        # else:
+        ws_pe = ((32//window_size)*gt_num//2**id_layer, (32//window_size)*gt_num//2**id_layer, (32//window_size)*gt_num//2**id_layer)
         self.pe = nn.Parameter(torch.zeros(ws_pe[0]*ws_pe[1]*ws_pe[2], dim))
         trunc_normal_(self.pe, std=.02)
 
@@ -955,7 +956,7 @@ class SwinTransformer(nn.Module):
                     pretrain_img_size[2] // patch_size[2] // 2 ** i_layer),
                 depth=depths[i_layer],
                 num_heads=num_heads[i_layer],
-                window_size=window_size,
+                window_size=window_size[i_layer],
                 mlp_ratio=mlp_ratio,
                 qkv_bias=qkv_bias,
                 qk_scale=qk_scale,
@@ -1071,7 +1072,7 @@ class encoder(nn.Module):
                     pretrain_img_size[2] // patch_size[2] // 2 ** (len(depths)-i_layer-1)),
                 depth=depths[i_layer],
                 num_heads=num_heads[i_layer],
-                window_size=window_size,
+                window_size=window_size[i_layer],
                 mlp_ratio=mlp_ratio,
                 qkv_bias=qkv_bias,
                 qk_scale=qk_scale,
@@ -1148,10 +1149,20 @@ class swintransformer(SegmentationNetwork):
             self.imsize=[64,128,128]
             self.vt_map=(3,5,5)
             self.max_imsize=SYNAPSE_MAX
+            embed_dim=192
+            depths=[2, 2, 2, 2]
+            num_heads=[6, 12, 24, 48]
+            patch_size=[2,4,4]
+            window_size=[4,4,4,4]
         elif dataset=="BRAIN_TUMOR":
             self.imsize=[128,128,128]
             self.vt_map=(2,2,2)
             self.max_imsize=BRAIN_TUMOR_MAX
+            embed_dim=192
+            depths=[2, 2, 2, 2]
+            num_heads=[6, 12, 24, 48]
+            patch_size=[4,4,4]
+            window_size=[4,4,8,4]
         
         
         self._deep_supervision = deep_supervision
@@ -1167,15 +1178,15 @@ class swintransformer(SegmentationNetwork):
         self.upscale_logits_ops.append(lambda x: x)
         
         # n_windows = (64x128x128) / (2x4x4)x(4x4x4) = 512
-        embed_dim=192
-        depths=[2, 2, 2, 2]
-        num_heads=[6, 12, 24, 48]
-        patch_size=[2,4,4]
-        self.model_down=SwinTransformer(pretrain_img_size=self.imsize,window_size=4,embed_dim=embed_dim,patch_size=patch_size,depths=depths,num_heads=num_heads,in_chans=input_channels, gt_num=gt_num, vt_map=self.vt_map)
-        self.encoder=encoder(pretrain_img_size=self.imsize,embed_dim=embed_dim,window_size=4,patch_size=patch_size,num_heads=[24,12,6],depths=[2,2,2], gt_num=gt_num, vt_map=self.vt_map)
+        # embed_dim=192
+        # depths=[2, 2, 2, 2]
+        # num_heads=[6, 12, 24, 48]
+        # patch_size=[2,4,4]
+        self.model_down=SwinTransformer(pretrain_img_size=self.imsize,window_size=window_size,embed_dim=embed_dim,patch_size=patch_size,depths=depths,num_heads=num_heads,in_chans=input_channels, gt_num=gt_num, vt_map=self.vt_map)
+        self.encoder=encoder(pretrain_img_size=self.imsize,embed_dim=embed_dim,window_size=window_size[::-1][1:],patch_size=patch_size,num_heads=[24,12,6],depths=[2,2,2], gt_num=gt_num, vt_map=self.vt_map)
    
         self.final=[]
-        self.final.append(final_patch_expanding(embed_dim*2**0,num_classes,patch_size=(2,4,4)))
+        self.final.append(final_patch_expanding(embed_dim*2**0,num_classes,patch_size=patch_size))
         for i in range(1,len(depths)-1):
             self.final.append(final_patch_expanding(embed_dim*2**i,num_classes,patch_size=(4,4,4)))
         self.final=nn.ModuleList(self.final)
