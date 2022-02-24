@@ -1162,7 +1162,7 @@ class swintransformer(SegmentationNetwork):
             depths=[2, 2, 2, 2]
             num_heads=[6, 12, 24, 48]
             patch_size=[4,4,4]
-            window_size=[4,4,8,4]
+            window_size=[4,4,4,4]
         
         
         self._deep_supervision = deep_supervision
