@@ -41,6 +41,7 @@ class nnUNetTrainerV2_CoTR_agno(nnUNetTrainer):
 
         # print("!!! OK !!!")
         # exit(0)
+        self.fold=fold
         self.max_num_epochs = 1000
         self.initial_lr = 1e-2
         self.deep_supervision_scales = None
@@ -286,8 +287,8 @@ class nnUNetTrainerV2_CoTR_agno(nnUNetTrainer):
         splits_file = join(self.dataset_directory, "splits_final.pkl")
         splits = load_pickle(splits_file)
 
-        tr_keys = splits[0]['train']
-        val_keys = splits[0]['val']
+        tr_keys = splits[self.fold]['train']
+        val_keys = splits[self.fold]['val']
 
         tr_keys.sort()
         val_keys.sort()

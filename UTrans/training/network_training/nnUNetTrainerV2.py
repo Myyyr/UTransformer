@@ -58,6 +58,7 @@ class nnUNetTrainerV2(nnUNetTrainer):
         self.ds_loss_weights = None
 
         self.pin_memory = True
+        self.fold=fold
 
     def initialize(self, training=True, force_load_plans=False):
         """
