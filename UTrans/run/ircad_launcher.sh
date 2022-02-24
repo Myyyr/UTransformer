@@ -1,6 +1,5 @@
 #!/bin/bash
 #SBATCH -p public
-#SBATCH --name=fine
 #SBATCH --gpus=0
 #SBATCH --partition=long
 #SBATCH --time=01:00:00 
