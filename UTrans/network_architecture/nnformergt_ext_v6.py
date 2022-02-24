@@ -348,11 +348,7 @@ class SwinTransformerBlock(nn.Module):
         B, L, C = x.shape
         S, H, W = self.input_resolution
 
-        print('-------------DBG-------------')
-        print("B, L, C", B, L, C)
-        print("S, H, W", S, H, W)
-        print("S * H * W", S * H * W)
-        print('-----------------------------')
+        # 
         
         assert L == S * H * W, "input feature has wrong size"
         
@@ -838,8 +834,12 @@ class PatchEmbed(nn.Module):
         self.in_chans = in_chans
         self.embed_dim = embed_dim
 
-        stride1=[patch_size[0]//2,patch_size[1]//2,patch_size[2]//2]
-        stride2=[patch_size[0]//2,patch_size[1]//2,patch_size[2]//2]
+        if patch_size[0] == 4:
+            stride1=[patch_size[0]//2,patch_size[1]//2,patch_size[2]//2]
+            stride2=[patch_size[0]//2,patch_size[1]//2,patch_size[2]//2]
+        else:
+            stride1=[2,2,2]
+            stride2=[1,2,2]
         self.proj1 = project(in_chans,embed_dim//2,stride1,1,nn.GELU,nn.LayerNorm,False)
         self.proj2 = project(embed_dim//2,embed_dim,stride2,1,nn.GELU,nn.LayerNorm,True)
         
@@ -1016,10 +1016,7 @@ class SwinTransformer(nn.Module):
     def forward(self, x, vt_pos, check):
         """Forward function."""
         
-        print('--------------DBG0-----------')
-        print("x.shape b", x.shape)
         x = self.patch_embed(x)
-        print("x.shape a", x.shape)
         down=[]
        
         Ws, Wh, Ww = x.size(2), x.size(3), x.size(4)
