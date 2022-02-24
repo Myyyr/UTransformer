@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH -p public
-#SBATCH --gpus=0
+#SBATCH --gpus=1
 #SBATCH --partition=long
 #SBATCH --time=01:00:00 
 #SBATCH --output=logs/fine.out # output file name
