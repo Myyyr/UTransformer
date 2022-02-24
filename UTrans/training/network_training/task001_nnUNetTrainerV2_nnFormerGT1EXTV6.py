@@ -456,7 +456,8 @@ class task001_nnUNetTrainerV2_nnFormerGT1EXTV6(nnUNetTrainer):
 
         # self.downsampe_scales = [[1, 2, 2], [2, 2, 2], [2, 2, 2], [2, 2, 2]]
         self.deep_supervision_scales = [[1, 1, 1]] + list(list(i) for i in 1 / np.cumprod(
-            np.vstack(self.downsampe_scales), axis=0))[:-1]
+            np.vstack(self.net_num_pool_op_kernel_sizes), axis=0))[:-1]
+            # np.vstack(self.downsampe_scales), axis=0))[:-1]
             
         if self.threeD:
             self.data_aug_params = default_3D_augmentation_params
