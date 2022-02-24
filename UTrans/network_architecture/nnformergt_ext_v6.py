@@ -1011,7 +1011,10 @@ class SwinTransformer(nn.Module):
     def forward(self, x, vt_pos, check):
         """Forward function."""
         
+        print('--------------DBG0-----------')
+        print("x.shape b", x.shape)
         x = self.patch_embed(x)
+        print("x.shape a", x.shape)
         down=[]
        
         Ws, Wh, Ww = x.size(2), x.size(3), x.size(4)
