@@ -122,7 +122,7 @@ class ClassicAttention(nn.Module):
         self.softmax = nn.Softmax(dim=-1)
 
 
-    def forward(self, x, pe, mask=None):
+    def forward(self, x, pe, mask=None, imidx=0, save=False):
         """
         Args:
             x: input features with shape of (num_windows*B, N, C)
@@ -154,6 +154,13 @@ class ClassicAttention(nn.Module):
             attn = attn + repeat(mask, "b m n -> b h m n", h=self.num_heads)
             
         attn = self.softmax(attn)
+        pth="/share/DEEPLEARNING/themyr_l/medvisu/keepcrop/"+ str(imidx) +"/"+str(imidx)+str(self.__class__.__name__)+"_.pt"
+        if (imidx in [520 , 980 , 988 , 1036 , 1044 , 2892]) and not os.path.exists(pth):
+
+            # print("q, k, v", q.shape, k.shape, v.shape)
+            print("attn_g",str(imidx), attn.shape)
+            torch.save(attn, "/share/DEEPLEARNING/themyr_l/medvisu/keepcrop/"+ str(imidx) +"/"+str(imidx)+str(self.__class__.__name__)+"_.pt")
+
         attn = self.attn_drop(attn)
 
         x = (attn @ v).transpose(1, 2).reshape(B_, N, C)
@@ -233,7 +240,7 @@ class WindowAttention(nn.Module):
         trunc_normal_(self.relative_position_bias_table, std=.02)
         self.softmax = nn.Softmax(dim=-1)
 
-    def forward(self, x, mask=None, gt=None):
+    def forward(self, x, mask=None, gt=None, imidx=0, save=False):
         """ Forward function.
 
         Args:
@@ -273,6 +280,10 @@ class WindowAttention(nn.Module):
         else:
             attn = self.softmax(attn)
 
+        pth = "/share/DEEPLEARNING/themyr_l/medvisu/keepcrop/"+str(imidx)+"/"+str(imidx)+str(self.__class__.__name__)+"_.pt"
+        if (imidx in [520 , 980 , 988 , 1036 , 1044 , 2892]) and not os.path.exists(pth):
+            print("attn_w",str(imidx), attn.shape)
+            torch.save(attn, "/share/DEEPLEARNING/themyr_l/medvisu/keepcrop/"+str(imidx)+"/"+str(imidx)+str(self.__class__.__name__)+"_.pt")
         attn = self.attn_drop(attn)
 
         x = (attn @ v).transpose(1, 2).reshape(B_, N, C)

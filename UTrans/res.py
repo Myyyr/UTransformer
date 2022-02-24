@@ -10,6 +10,7 @@ def main():
 	parser.add_argument('-f','--fold', type=str, default='0')
 	parser.add_argument('-d','--hd', dest="hd", action='store_true', default=False)
 	parser.add_argument('-t','--task', type=str, default='017_BCV')
+	parser.add_argument('-c','--clas', type=int, default=14)
 
 	args = parser.parse_args()
 
@@ -20,7 +21,7 @@ def main():
 		data=json.load(f)['results']['mean']
 		idxs = ""
 		ress = ""
-		for i in range(1,14):
+		for i in range(1,args.clas):
 			metric = "Dice"
 			fact=100
 			if args.hd:
