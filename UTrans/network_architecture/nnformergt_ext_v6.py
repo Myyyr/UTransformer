@@ -837,9 +837,10 @@ class PatchEmbed(nn.Module):
 
         self.in_chans = in_chans
         self.embed_dim = embed_dim
-
-        self.proj1 = project(in_chans,embed_dim//2,[2,2,2],1,nn.GELU,nn.LayerNorm,False)
-        self.proj2 = project(embed_dim//2,embed_dim,[1,2,2],1,nn.GELU,nn.LayerNorm,True)
+        stride1=[patch_size[0],patch_size[1]//2,patch_size[2]//2]
+        stride2=[patch_size[0]//2,patch_size[1]//2,patch_size[2]//2]
+        self.proj1 = project(in_chans,embed_dim//2,stride1,1,nn.GELU,nn.LayerNorm,False)
+        self.proj2 = project(embed_dim//2,embed_dim,stride2,1,nn.GELU,nn.LayerNorm,True)
         if norm_layer is not None:
             self.norm = norm_layer(embed_dim)
         else:
