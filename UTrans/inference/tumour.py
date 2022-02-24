@@ -36,8 +36,8 @@ def process_label(label):
     WT=net+et+ed
     return ET,TC,WT
 
-def test(fold):
-    path=os.path.join(fold,'nnUNetData/nnUNet_trained_models/nnUNet/3d_fullres_nnUNetPlansv2.1/Task001_BrainTumour/FINEV6_IN_LeakyReLU/')
+def test(fold, model):
+    path=os.path.join(fold,'nnUNetData/nnUNet_trained_models/nnUNet/3d_fullres_nnUNetPlansv2.1/Task001_BrainTumour', model)
     # label_list=sorted(glob.glob(os.path.join(path,'nnUNetData/nnUNet_trained_models/nnUNet/3d_fullres_nnUNetPlansv2.1/Task001_BrainTumour/FINEV6_IN_LeakyReLU/gt_niftis','*nii.gz')))
     infer_list=sorted(glob.glob(os.path.join(path,'fold_0/validation_raw_postprocessed','*nii.gz')))
     print("loading success...")
@@ -107,6 +107,8 @@ def test(fold):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("fold", help="fold name")
+    parser.add_argument("model", help="model name")
     args = parser.parse_args()
     fold=args.fold
-    test(fold)
+    model=args.model
+    test(fold, model)
