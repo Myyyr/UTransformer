@@ -1164,8 +1164,9 @@ class swintransformer(SegmentationNetwork):
             self.vt_map=(3,5,5)
             self.max_imsize=SYNAPSE_MAX
             embed_dim=192
-            depths=[3, 3, 3, 3]
-            depths_dec=[3,3,3]
+            d=4
+            depths=[d, d, d, d]
+            depths_dec=[d,d,d]
             num_heads=[6, 12, 24, 48]
             patch_size=[2,4,4]
             window_size=[4,4,4,4]
