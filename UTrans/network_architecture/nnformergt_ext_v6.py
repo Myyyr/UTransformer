@@ -448,7 +448,7 @@ class SwinTransformerBlock(nn.Module):
         vts = rearrange(vts, "(b n) c -> b n c", b=B)        
 
         check_pos = check.nonzero(as_tuple=True)[0]
-        vt_mask = torch.zeros((vts.shape[0]*self.vt_num, vts.shape[1]//self.vt_num), dtype=vts.dtype, device=vts.device)-1000
+        vt_mask = torch.zeros((vts.shape[1]//self.vt_num, vts.shape[1]//self.vt_num), dtype=vts.dtype, device=vts.device)-1000
         vt_mask[:, check_pos] = 0
         vt_mask = repeat(vt_mask, "n c -> b n c", b=B)
         if self.vt_num != 1:
