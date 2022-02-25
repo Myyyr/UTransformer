@@ -2,7 +2,7 @@
 #SBATCH -p public
 #SBATCH --gpus=1
 #SBATCH --partition=long
-#SBATCH --time=01:00:00 
+#SBATCH --time=100:00:00 
 #SBATCH --output=logs/fine.out # output file name
 #SBATCH --error=logs/fine.err  # error file name
 
