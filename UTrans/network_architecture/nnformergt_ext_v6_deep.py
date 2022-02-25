@@ -1164,20 +1164,22 @@ class swintransformer(SegmentationNetwork):
             self.vt_map=(3,5,5)
             self.max_imsize=SYNAPSE_MAX
             embed_dim=192
-            depths=[2, 2, 2, 2, 2]
-            num_heads=[6, 12, 24, 48, 96]
+            depths=[3, 3, 3, 3]
+            depths_dec=[3,3,3]
+            num_heads=[6, 12, 24, 48]
             patch_size=[2,4,4]
-            window_size=[4,4,4,4,4]
+            window_size=[4,4,4,4]
         elif dataset=="BRAIN_TUMOR":
             self.imsize=[128,128,128]
             self.vt_map=(2,2,2)
             self.max_imsize=BRAIN_TUMOR_MAX
             embed_dim=192
             depths=[2, 2, 2, 2, 2, 2]
+            depths_dec=[3,3,3]
             num_heads=[6, 12, 24, 48]
             patch_size=[4,4,4]
             window_size=[4,4,4,4]
-        
+
         
         self._deep_supervision = deep_supervision
         self.do_ds = deep_supervision
@@ -1197,7 +1199,7 @@ class swintransformer(SegmentationNetwork):
         # num_heads=[6, 12, 24, 48]
         # patch_size=[2,4,4]
         self.model_down=SwinTransformer(pretrain_img_size=self.imsize,window_size=window_size,embed_dim=embed_dim,patch_size=patch_size,depths=depths,num_heads=num_heads,in_chans=input_channels, gt_num=gt_num, vt_map=self.vt_map)
-        self.encoder=encoder(pretrain_img_size=self.imsize,embed_dim=embed_dim,window_size=window_size[::-1][1:],patch_size=patch_size,num_heads=[48,24,12,6],depths=[2,2,2,2], gt_num=gt_num, vt_map=self.vt_map)
+        self.encoder=encoder(pretrain_img_size=self.imsize,embed_dim=embed_dim,window_size=window_size[::-1][1:],patch_size=patch_size,num_heads=[24,12,6],depths=depths_dec, gt_num=gt_num, vt_map=self.vt_map)
    
         self.final=[]
         self.final.append(final_patch_expanding(embed_dim*2**0,num_classes,patch_size=patch_size))
