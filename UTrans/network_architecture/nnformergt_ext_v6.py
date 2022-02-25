@@ -304,7 +304,7 @@ class SwinTransformerBlock(nn.Module):
 
     def __init__(self, dim, input_resolution, num_heads, window_size=7, shift_size=0,
                  mlp_ratio=4., qkv_bias=True, qk_scale=None, drop=0., attn_drop=0., drop_path=0.,
-                 act_layer=nn.GELU, norm_layer=nn.LayerNorm, gt_num=1, n_vts=4):
+                 act_layer=nn.GELU, norm_layer=nn.LayerNorm, gt_num=1, n_vts=4,vt_num=1):
         super().__init__()
         self.n_vts = n_vts
         self.dim = dim
@@ -314,6 +314,7 @@ class SwinTransformerBlock(nn.Module):
         self.shift_size = shift_size
         self.mlp_ratio = mlp_ratio
         self.gt_num = gt_num
+        self.vt_num=vt_num
         if min(self.input_resolution) <= self.window_size:
             # if window size is larger than input resolution, we don't partition windows
             self.shift_size = 0
@@ -417,10 +418,16 @@ class SwinTransformerBlock(nn.Module):
         tmp, ngt, c = gt.shape
         nw = tmp//B
         gt = rearrange(gt, "(b n) g c -> b (n g) c", b=B)
-        # gt = torch.cat([vt[:,None,:], gt], dim=1)
+
+        if self.vt_num != 1:
+            vt = rearrange(vt, "b n (v c) -> b (n v) c", v=self.vt_num)
+
         gt = torch.cat([vt, gt], dim=1)
         gt = self.gt_attn(gt, pe)
-        vt = gt[:,:self.n_vts,:]
+        if self.vt_num != 1:
+            vt = gt[:,:self.n_vts*self.vt_num,:]
+        else:
+            vt = gt[:,:self.n_vts,:]
         gt = gt[:,self.n_vts:,:]
         gt = rearrange(gt, "b (n g) c -> (b n) g c",g=ngt, c=C)
 
@@ -432,7 +439,9 @@ class SwinTransformerBlock(nn.Module):
         #     vts_[i, vt_pos[i]] = vt[i]
 
         # Modif the vts
-        z = torch.zeros(vts.shape, dtype=vt.dtype, device=vts.device)
+        z = torch.zeros((vt.shape[0]*vt.shape[1], vt.shape[2]), dtype=vt.dtype, device=vts.device)
+        if self.vt_num != 1:
+            vt = rearrange(vt, "b (n v) c -> b n (v c)", v=self.vt_num)
         vt = rearrange(vt, "b n c -> (b n) c")
         z[vt_pos_] = vt
         vts = vts + z
@@ -442,7 +451,12 @@ class SwinTransformerBlock(nn.Module):
         vt_mask = torch.zeros((vts.shape[1], vts.shape[1]), dtype=vts.dtype, device=vts.device)-1000
         vt_mask[:, check_pos] = 0
         vt_mask = repeat(vt_mask, "n c -> b n c", b=B)
+        if self.vt_num != 1:
+            vts = rearrange(vts, "b n (v c) -> b (n v) c", v=self.vt_num)
         vts = self.vt_attn(vts, None,vt_mask)
+        if self.vt_num != 1:
+            vts = rearrange(vts, "b (n v) c -> b n (v c)", v=self.vt_num)
+
 
         # merge windows
         attn_windows = attn_windows.view(-1, self.window_size, self.window_size, self.window_size, C)
@@ -559,7 +573,7 @@ class BasicLayer(nn.Module):
                  drop_path=0.,
                  norm_layer=nn.LayerNorm,
                  downsample=True,  
-                 use_checkpoint=False, gt_num=1, id_layer=0, vt_map=(3,5,5)):
+                 use_checkpoint=False, gt_num=1, id_layer=0, vt_map=(3,5,5),vt_num=1):
         super().__init__()
         self.window_size = window_size
         self.shift_size = window_size // 2
@@ -571,7 +585,7 @@ class BasicLayer(nn.Module):
         self.global_token.requires_grad = True
 
         # self.volume_token = torch.nn.Parameter(torch.randn(vt_map[0]*vt_map[1]*vt_map[2],dim))
-        self.volume_token = torch.nn.Parameter(torch.randn(vt_map[1]*vt_map[2],dim))
+        self.volume_token = torch.nn.Parameter(torch.randn(vt_map[1]*vt_map[2],dim*vt_num))
         self.volume_token.requires_grad = True
 
 
@@ -588,7 +602,7 @@ class BasicLayer(nn.Module):
                 qk_scale=qk_scale,
                 drop=drop,
                 attn_drop=attn_drop,
-                drop_path=drop_path[i] if isinstance(drop_path, list) else drop_path, norm_layer=norm_layer,gt_num=gt_num)
+                drop_path=drop_path[i] if isinstance(drop_path, list) else drop_path, norm_layer=norm_layer,gt_num=gt_num,vt_num=vt_num)
             for i in range(depth)])
 
         # if self.vt_map==(3,5,5):
@@ -689,7 +703,7 @@ class BasicLayer_up(nn.Module):
                  attn_drop=0.,
                  drop_path=0.,
                  norm_layer=nn.LayerNorm,
-                 upsample=True, gt_num=1,id_layer=0, vt_map=(3,5,5)
+                 upsample=True, gt_num=1,id_layer=0, vt_map=(3,5,5), vt_num=1
                 ):
         super().__init__()
         self.window_size = window_size
@@ -701,7 +715,7 @@ class BasicLayer_up(nn.Module):
         self.global_token.requires_grad = True
 
         # self.volume_token = torch.nn.Parameter(torch.randn(vt_map[0]*vt_map[1]*vt_map[2],dim))
-        self.volume_token = torch.nn.Parameter(torch.randn(vt_map[1]*vt_map[2],dim))
+        self.volume_token = torch.nn.Parameter(torch.randn(vt_map[1]*vt_map[2],dim*vt_num))
         self.volume_token.requires_grad = True
 
 
@@ -721,7 +735,7 @@ class BasicLayer_up(nn.Module):
                 qk_scale=qk_scale,
                 drop=drop,
                 attn_drop=attn_drop,
-                drop_path=drop_path[i] if isinstance(drop_path, list) else drop_path, norm_layer=norm_layer, gt_num=gt_num)
+                drop_path=drop_path[i] if isinstance(drop_path, list) else drop_path, norm_layer=norm_layer, gt_num=gt_num, vt_num=vt_num)
             for i in range(depth)])
 
         # if self.vt_map==(3,5,5):
@@ -923,7 +937,7 @@ class SwinTransformer(nn.Module):
                  patch_norm=True,
                  out_indices=(0, 1, 2, 3),
                  frozen_stages=-1,
-                 use_checkpoint=False, gt_num=1, vt_map=(3,5,5)):
+                 use_checkpoint=False, gt_num=1, vt_map=(3,5,5),vt_num=1):
         super().__init__()
 
         self.pretrain_img_size = pretrain_img_size
@@ -977,7 +991,7 @@ class SwinTransformer(nn.Module):
                     depths[:i_layer]):sum(depths[:i_layer + 1])],
                 norm_layer=norm_layer,
                 downsample=PatchMerging,
-                use_checkpoint=use_checkpoint, gt_num=gt_num, id_layer=i_layer, vt_map=vt_map)
+                use_checkpoint=use_checkpoint, gt_num=gt_num, id_layer=i_layer, vt_map=vt_map,vt_num=vt_num)
             self.layers.append(layer)
 
         num_features = [int(embed_dim * 2 ** i) for i in range(self.num_layers)]
@@ -1061,7 +1075,7 @@ class encoder(nn.Module):
                  drop_rate=0.,
                  attn_drop_rate=0.,
                  drop_path_rate=0.2,
-                 norm_layer=nn.LayerNorm, gt_num=1, vt_map=(3,5,5)
+                 norm_layer=nn.LayerNorm, gt_num=1, vt_map=(3,5,5),vt_num=1
                  ):
         super().__init__()
         
@@ -1092,7 +1106,7 @@ class encoder(nn.Module):
                 drop_path=dpr[sum(
                     depths[:i_layer]):sum(depths[:i_layer + 1])],
                 norm_layer=norm_layer,
-                upsample=Patch_Expanding, gt_num=gt_num,id_layer=len(depths)-i_layer-1, vt_map=vt_map
+                upsample=Patch_Expanding, gt_num=gt_num,id_layer=len(depths)-i_layer-1, vt_map=vt_map,vt_num=vt_num
                 )
             self.layers.append(layer)
         self.num_features = [int(embed_dim * 2 ** i) for i in range(self.num_layers)]
@@ -1152,7 +1166,7 @@ class swintransformer(SegmentationNetwork):
                  conv_kernel_sizes=None,
                  upscale_logits=False, convolutional_pooling=False, convolutional_upsampling=False,
                  max_num_features=None, basic_block=None,
-                 seg_output_use_bias=False, gt_num=1, vt_map=(3,5,5), imsize=[64,128,128], dataset='SYNAPSE'):
+                 seg_output_use_bias=False, gt_num=1, vt_map=(3,5,5), imsize=[64,128,128], dataset='SYNAPSE', vt_num=1):
     
         super(swintransformer, self).__init__()
 
@@ -1193,8 +1207,10 @@ class swintransformer(SegmentationNetwork):
         # depths=[2, 2, 2, 2]
         # num_heads=[6, 12, 24, 48]
         # patch_size=[2,4,4]
-        self.model_down=SwinTransformer(pretrain_img_size=self.imsize,window_size=window_size,embed_dim=embed_dim,patch_size=patch_size,depths=depths,num_heads=num_heads,in_chans=input_channels, gt_num=gt_num, vt_map=self.vt_map)
-        self.encoder=encoder(pretrain_img_size=self.imsize,embed_dim=embed_dim,window_size=window_size[::-1][1:],patch_size=patch_size,num_heads=[24,12,6],depths=[2,2,2], gt_num=gt_num, vt_map=self.vt_map)
+        self.model_down=SwinTransformer(pretrain_img_size=self.imsize,window_size=window_size,embed_dim=embed_dim,patch_size=patch_size,
+                                        depths=depths,num_heads=num_heads,in_chans=input_channels, gt_num=gt_num, vt_map=self.vt_map, vt_num=vt_num)
+        self.encoder=encoder(pretrain_img_size=self.imsize,embed_dim=embed_dim,window_size=window_size[::-1][1:],patch_size=patch_size,num_heads=[24,12,6],
+                            depths=[2,2,2], gt_num=gt_num, vt_map=self.vt_map, vt_num=vt_num)
    
         self.final=[]
         self.final.append(final_patch_expanding(embed_dim*2**0,num_classes,patch_size=patch_size))
