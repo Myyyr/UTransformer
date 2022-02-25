@@ -426,9 +426,10 @@ class SwinTransformerBlock(nn.Module):
         gt = self.gt_attn(gt, pe)
         if self.vt_num != 1:
             vt = gt[:,:self.n_vts*self.vt_num,:]
+            gt = gt[:,self.n_vts*self.vt_num:,:]
         else:
             vt = gt[:,:self.n_vts,:]
-        gt = gt[:,self.n_vts:,:]
+            gt = gt[:,self.n_vts:,:]
         gt = rearrange(gt, "b (n g) c -> (b n) g c",g=ngt, c=C)
 
         # New vts
