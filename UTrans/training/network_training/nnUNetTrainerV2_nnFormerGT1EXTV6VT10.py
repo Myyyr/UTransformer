@@ -161,7 +161,8 @@ class nnUNetTrainerV2_nnFormerGT1EXTV6VT10(nnUNetTrainer):
                                     self.conv_per_stage, 2, conv_op, norm_op, norm_op_kwargs, dropout_op,
                                     dropout_op_kwargs,
                                     net_nonlin, net_nonlin_kwargs, True, False, lambda x: x, InitWeights_He(1e-2),
-                                    self.net_num_pool_op_kernel_sizes, self.net_conv_kernel_sizes, False, True, True,gt_num=1,vt_num=1)
+                                    self.net_num_pool_op_kernel_sizes, self.net_conv_kernel_sizes, False, True, True,
+                                    gt_num=1,vt_num=10)
 
         total = sum([param.nelement() for param in self.network.parameters()])
         print('  + Number of Network Params: %.2f(e6)' % (total / 1e6))
