@@ -333,7 +333,7 @@ class SwinTransformerBlock(nn.Module):
 
         self.gt_attn = ClassicAttention(dim=dim, window_size=(0,0), num_heads=num_heads, 
                                             qkv_bias=qkv_bias, qk_scale=qk_scale, attn_drop=attn_drop, 
-                                            proj_drop=drop, n_vts=n_vts)
+                                            proj_drop=drop, n_vts=n_vts*vt_num)
         self.vt_attn = ClassicAttention(dim=dim, window_size=(0,0), num_heads=num_heads, 
                                             qkv_bias=qkv_bias, qk_scale=qk_scale, attn_drop=attn_drop, 
                                             proj_drop=drop)
