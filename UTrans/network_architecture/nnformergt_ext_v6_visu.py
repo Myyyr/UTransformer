@@ -1282,6 +1282,7 @@ class swintransformer(SegmentationNetwork):
         return ret
     
     def forward(self, x, pos):
+        print(self.imidx)
         vt_pos = self.pos2vtpos(pos)
 
         
