@@ -611,7 +611,7 @@ class nnUNetTrainer(NetworkTrainer):
         if idx == None:
             dts = self.dataset_val.keys()
         else:
-            dts = [self.dataset_val.keys()[idx]]
+            dts = [list(self.dataset_val.keys())[idx]]
         # for k in self.dataset_val.keys():
         for k in dts:
             properties = load_pickle(self.dataset[k]['properties_file'])
