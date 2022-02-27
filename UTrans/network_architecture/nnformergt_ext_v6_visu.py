@@ -38,7 +38,7 @@ SYNAPSE_MAX=[218,660,660]
 BRAIN_TUMOR_MAX=[149,187,160]
 
 
-PATH="/share/home/themyr_l/medvisu/"
+PATH="/share/home/themyr_l/bcv_visu/"
 
 
 class Mlp(nn.Module):
