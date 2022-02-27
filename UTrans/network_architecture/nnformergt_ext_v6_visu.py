@@ -42,7 +42,7 @@ BRAIN_TUMOR_MAX=[149,187,160]
 
 
 PATH="/share/homes/themyr_l/bcv_visu/"
-
+MOD=1
 
 class Mlp(nn.Module):
     """ Multilayer perceptron."""
@@ -162,7 +162,7 @@ class ClassicAttention(nn.Module):
             
         attn = self.softmax(attn)
         pth=PATH+"keepcrop/"+str(imidx)+str(self.__class__.__name__)+"_.pt"
-        if save and (imidx%4 == 0) and not os.path.exists(pth):
+        if save and (imidx%MOD == 0) and not os.path.exists(pth):
 
             # print("q, k, v", q.shape, k.shape, v.shape)
             # print("attn_g",str(imidx), attn.shape)
@@ -290,7 +290,7 @@ class WindowAttention(nn.Module):
         pth = PATH+"keepcrop/"+str(imidx)+str(self.__class__.__name__)+"_.pt"
         # print(imidx)
         # exit(0)
-        if save and (imidx%4 == 0) and not os.path.exists(pth):
+        if save and (imidx%MOD == 0) and not os.path.exists(pth):
             # print("attn_w",str(imidx), attn.shape)
             torch.save(attn, PATH+"keepcrop/"+str(imidx)+str(self.__class__.__name__)+"_.pt")
         attn = self.attn_drop(attn)
@@ -1306,7 +1306,7 @@ class swintransformer(SegmentationNetwork):
         for i in range(len(out)):  
             seg_outputs.append(self.final[-(i+1)](out[i]))
 
-        if self.imidx%4 == 0:
+        if self.imidx%MOD == 0:
             torch.save(x, PATH+"keepcrop/"+str(self.imidx)+"x.pt")
             torch.save(seg_outputs[-1], PATH+"keepcrop/"+str(self.imidx)+"p.pt")
         
