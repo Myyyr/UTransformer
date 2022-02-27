@@ -289,8 +289,8 @@ class WindowAttention(nn.Module):
 
         pth = PATH+"keepcrop/"+str(imidx)+str(self.__class__.__name__)+"_.pt"
         print(imidx)
-        exit(0)
-        if (int(imidx)%4 == 0) and not os.path.exists(pth):
+        # exit(0)
+        if (imidx%4 == 0) and not os.path.exists(pth):
             print("attn_w",str(imidx), attn.shape)
             torch.save(attn, PATH+"keepcrop/"+str(imidx)+str(self.__class__.__name__)+"_.pt")
         attn = self.attn_drop(attn)
