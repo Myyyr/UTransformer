@@ -165,7 +165,7 @@ class ClassicAttention(nn.Module):
         if save and (imidx%4 == 0) and not os.path.exists(pth):
 
             # print("q, k, v", q.shape, k.shape, v.shape)
-            print("attn_g",str(imidx), attn.shape)
+            # print("attn_g",str(imidx), attn.shape)
             torch.save(attn, PATH+"keepcrop/"+str(imidx)+str(self.__class__.__name__)+"_.pt")
 
         attn = self.attn_drop(attn)
@@ -291,7 +291,7 @@ class WindowAttention(nn.Module):
         # print(imidx)
         # exit(0)
         if save and (imidx%4 == 0) and not os.path.exists(pth):
-            print("attn_w",str(imidx), attn.shape)
+            # print("attn_w",str(imidx), attn.shape)
             torch.save(attn, PATH+"keepcrop/"+str(imidx)+str(self.__class__.__name__)+"_.pt")
         attn = self.attn_drop(attn)
 
