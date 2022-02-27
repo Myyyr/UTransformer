@@ -157,16 +157,18 @@ class ClassicAttention(nn.Module):
         # exit(0)
         # attn = attn
 
+        memsave = ""
         if mask != None:
+            memsave="_mt_"
             attn = attn + repeat(mask, "b m n -> b h m n", h=self.num_heads)
             
         attn = self.softmax(attn)
-        pth=PATH+"keepcrop/"+str(imidx)+str(self.__class__.__name__)+"_.pt"
+        pth=PATH+"keepcrop/"+str(imidx)+str(self.__class__.__name__)+memsave+"_.pt"
         if save and (imidx%MOD == 0) and not os.path.exists(pth):
 
             # print("q, k, v", q.shape, k.shape, v.shape)
             # print("attn_g",str(imidx), attn.shape)
-            torch.save(attn, PATH+"keepcrop/"+str(imidx)+str(self.__class__.__name__)+"_.pt")
+            torch.save(attn, pth)
 
         attn = self.attn_drop(attn)
 
