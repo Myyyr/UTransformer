@@ -162,7 +162,7 @@ class ClassicAttention(nn.Module):
             
         attn = self.softmax(attn)
         pth=PATH+"keepcrop/"+str(imidx)+str(self.__class__.__name__)+"_.pt"
-        if (imidx%4 == 0) and not os.path.exists(pth):
+        if (int(imidx)%4 == 0) and not os.path.exists(pth):
 
             # print("q, k, v", q.shape, k.shape, v.shape)
             print("attn_g",str(imidx), attn.shape)
@@ -288,7 +288,7 @@ class WindowAttention(nn.Module):
             attn = self.softmax(attn)
 
         pth = PATH+"keepcrop/"+str(imidx)+str(self.__class__.__name__)+"_.pt"
-        if (imidx%4 == 0) and not os.path.exists(pth):
+        if (int(imidx)%4 == 0) and not os.path.exists(pth):
             print("attn_w",str(imidx), attn.shape)
             torch.save(attn, PATH+"keepcrop/"+str(imidx)+str(self.__class__.__name__)+"_.pt")
         attn = self.attn_drop(attn)
