@@ -542,7 +542,7 @@ class nnUNetTrainer(NetworkTrainer):
         current_mode = self.network.training
         self.network.eval()
         ret = self.network.predict_3D(data, do_mirroring=False, mirror_axes=mirror_axes,
-                                      use_sliding_window=False, step_size=1,
+                                      use_sliding_window=use_sliding_window, step_size=1,
                                       patch_size=self.patch_size, regions_class_order=self.regions_class_order,
                                       use_gaussian=use_gaussian, pad_border_mode=pad_border_mode,
                                       pad_kwargs=pad_kwargs, all_in_gpu=all_in_gpu, verbose=verbose,
