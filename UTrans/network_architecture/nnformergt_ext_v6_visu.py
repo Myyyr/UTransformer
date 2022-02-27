@@ -16,6 +16,9 @@ from timm.models.layers import DropPath, to_3tuple, trunc_normal_
 
 from einops import repeat
 
+import os
+
+
 # V5 + multiple vts by intersec
 
 # SYNAPSE
@@ -159,7 +162,7 @@ class ClassicAttention(nn.Module):
             
         attn = self.softmax(attn)
         pth=PATH+"keepcrop/"+ str(imidx) +"/"+str(imidx)+str(self.__class__.__name__)+"_.pt"
-        if (imidx in [520 , 980 , 988 , 1036 , 1044 , 2892]) and not os.path.exists(pth):
+        if (self.imidx%4 == 0:) and not os.path.exists(pth):
 
             # print("q, k, v", q.shape, k.shape, v.shape)
             print("attn_g",str(imidx), attn.shape)
@@ -285,7 +288,7 @@ class WindowAttention(nn.Module):
             attn = self.softmax(attn)
 
         pth = PATH+"keepcrop/"+str(imidx)+"/"+str(imidx)+str(self.__class__.__name__)+"_.pt"
-        if (imidx in [520 , 980 , 988 , 1036 , 1044 , 2892]) and not os.path.exists(pth):
+        if (self.imidx%4 == 0:) and not os.path.exists(pth):
             print("attn_w",str(imidx), attn.shape)
             torch.save(attn, PATH+"keepcrop/"+str(imidx)+"/"+str(imidx)+str(self.__class__.__name__)+"_.pt")
         attn = self.attn_drop(attn)
