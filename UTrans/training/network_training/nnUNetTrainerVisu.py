@@ -614,6 +614,8 @@ class nnUNetTrainer(NetworkTrainer):
             dts = [list(self.dataset_val.keys())[idx]]
         # for k in self.dataset_val.keys():
         for k in dts:
+            print(k)
+            exit(0)
             properties = load_pickle(self.dataset[k]['properties_file'])
             fname = properties['list_of_data_files'][0].split("/")[-1][:-12]
             if overwrite or (not isfile(join(output_folder, fname + ".nii.gz"))) or \
