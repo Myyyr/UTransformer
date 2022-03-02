@@ -53,6 +53,8 @@ class nnUNetTrainerV2_nnFormerGT1EXTV6(nnUNetTrainer):
 
         self.save_best_checkpoint = True
 
+        self.fold=fold
+
 
     def initialize(self, training=True, force_load_plans=False):
         """
@@ -298,8 +300,8 @@ class nnUNetTrainerV2_nnFormerGT1EXTV6(nnUNetTrainer):
         splits_file = join(self.dataset_directory, "splits_final.pkl")
         splits = load_pickle(splits_file)
 
-        tr_keys = splits[0]['train']
-        val_keys = splits[0]['val']
+        tr_keys = splits[self.fold]['train']
+        val_keys = splits[self.fold]['val']
 
         tr_keys.sort()
         val_keys.sort()
