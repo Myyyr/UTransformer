@@ -38,8 +38,8 @@ source /home/lthemyr/cotr/bin/activate
 
 
 ## TASK 017 BCV
-srun python ircad_run_all_cotr_agno.py
-# srun python ircad_run_all_cotr_agno_bis.py
-# srun python ircad_run_all_nnformer.py
+# srun python ircad_run_all_cotr_agno.py
+srun python ircad_run_all_cotr_agno_bis.py
 # srun python ircad_run_all_nnformerextgt1v6.py
 # srun python ircad_run_all_unet.py
+# srun python ircad_run_all_nnformer.py
