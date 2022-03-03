@@ -3,8 +3,8 @@
 #SBATCH --gpus=1
 #SBATCH --partition=long
 #SBATCH --time=100:00:00 
-#SBATCH --output=logs/cotr.out # output file name
-#SBATCH --error=logs/cotr.err  # error file name
+#SBATCH --output=logs/cotrbis.out # output file name
+#SBATCH --error=logs/cotrbis.err  # error file name
 
 
 export nnUNet_raw_data_base="/scratch/lthemyr/nnUNetData/nnUNet_raw"
