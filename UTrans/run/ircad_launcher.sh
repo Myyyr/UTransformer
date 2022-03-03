@@ -3,8 +3,8 @@
 #SBATCH --gpus=1
 #SBATCH --partition=long
 #SBATCH --time=100:00:00 
-#SBATCH --output=logs/fine.out # output file name
-#SBATCH --error=logs/fine.err  # error file name
+#SBATCH --output=logs/cotr.out # output file name
+#SBATCH --error=logs/cotr.err  # error file name
 
 
 export nnUNet_raw_data_base="/scratch/lthemyr/nnUNetData/nnUNet_raw"
@@ -21,8 +21,8 @@ source /home/lthemyr/cotr/bin/activate
 # srun nnUNet_plan_and_preprocess -t 001 --verify_dataset_integrity
 
 ## EVAL
-cd /home/lthemyr/UTransformer/UTrans/inference
-srun python tumour.py /scratch/lthemyr FINEV6_2_IN_LeakyReLU
+# cd /home/lthemyr/UTransformer/UTrans/inference
+# srun python tumour.py /scratch/lthemyr FINEV6_2_IN_LeakyReLU
 # srun python tumour.py /scratch/lthemyr NNFORMER_IN_LeakyReLU
 
 ## TRAIN
@@ -34,3 +34,12 @@ srun python tumour.py /scratch/lthemyr FINEV6_2_IN_LeakyReLU
 
 ## Train nnf brats 
 # srun python brats_run_all_nnformergt1.py
+
+
+
+## TASK 017 BCV
+srun python ircad_run_all_cotr_agno.py
+# srun python ircad_run_all_cotr_agno_bis.py
+# srun python ircad_run_all_nnformer.py
+# srun python ircad_run_all_nnformerextgt1v6.py
+# srun python ircad_run_all_unet.py
