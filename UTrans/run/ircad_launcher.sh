@@ -3,8 +3,8 @@
 #SBATCH --gpus=1
 #SBATCH --partition=long
 #SBATCH --time=100:00:00 
-#SBATCH --output=logs/nnff4.out # output file name
-#SBATCH --error=logs/nnff4.err  # error file name
+#SBATCH --output=logs/cotrf2.out # output file name
+#SBATCH --error=logs/cotrf2.err  # error file name
 
 
 export nnUNet_raw_data_base="/scratch/lthemyr/nnUNetData/nnUNet_raw"
@@ -38,8 +38,7 @@ source /home/lthemyr/cotr/bin/activate
 
 
 ## TASK 017 BCV
-# srun python ircad_run_all_cotr_agno.py
+srun python ircad_run_all_cotr_agno.py
 # srun python ircad_run_all_cotr_agno_bis.py
 # srun python ircad_run_all_nnformerextgt1v6.py
-# srun python ircad_run_all_unet.py
-srun python ircad_run_all_nnformer.py
+# srun python ircad_run_all_nnformer.py
