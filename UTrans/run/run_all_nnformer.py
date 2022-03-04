@@ -26,3 +26,8 @@ run.main(gpu=g, network='3d_fullres', network_trainer='nnUNetTrainerV2_nnFormer'
 
 # g='1'
 # run.main(gpu=g, network='3d_fullres', network_trainer='nnUNetTrainerV2_nnFormer', task='017', fold=0, outpath='nnffNNFORMER', val=False, npz=True,dbg=True)
+
+
+# g='1'
+run.main(gpu=g, network='3d_fullres', network_trainer='nnUNetTrainerV2_nnFormer', task='017', fold=1, outpath='nnffNNFORMER', val=False, npz=True)
+run.main(gpu=g, network='3d_fullres', network_trainer='nnUNetTrainerV2_nnFormer', task='017', fold=1, outpath='nnffNNFORMER', val=True,  npz=True)
