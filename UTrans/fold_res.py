@@ -19,7 +19,9 @@ def main():
 
 	with open(path, 'r') as f:
 		data=json.load(f)['results']['all']
-		print(data.keys())
+		for res in data:
+			print(res.keys())
+			break
 		# idxs = ""
 		# ress = ""
 		# for i in range(1,args.clas):
