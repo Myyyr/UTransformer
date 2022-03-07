@@ -29,7 +29,7 @@ def main():
 	ret = ""
 	for res in data:
 		m = []
-		print(res.keys())
+		# print(res.keys())
 		for i in range(1,args.clas):
 			if i == 2:
 				m.append((float(res[str(i)][metric])+float(res[str(i+1)][metric]))/2)
