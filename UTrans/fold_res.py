@@ -41,7 +41,7 @@ def main():
 				m.append(float(res[str(i)][metric]))
 		m = np.mean(m)
 
-		ret += str(round(m*100,3))
+		ret += str(round(m*fact,3)) + " "
 	print(ret)
 		# idxs = ""
 		# ress = ""
