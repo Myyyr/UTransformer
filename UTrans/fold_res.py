@@ -17,11 +17,31 @@ def main():
 	path = os.path.join(args.path, "nnUNetData/nnUNet_trained_models/nnUNet/3d_fullres_nnUNetPlansv2.1/", "Task"+args.task)
 	path = os.path.join(path, args.model, "fold_"+args.fold, "validation_raw_postprocessed/summary.json")
 
+	metric = "Dice"
+	fact=100
+	if args.hd:
+		metric="Hausdorff Distance 95"
+		fact=1
+
 	with open(path, 'r') as f:
 		data=json.load(f)['results']['all']
-		for res in data:
-			print(res.keys())
-			break
+	ret = ""
+	for res in data:
+		m = []
+		print(res.keys())
+		for i in range(1,args.clas):
+			if i == 2:
+				m.append((float(res[str(i)][metric])+float(res[str(i+1)][metric]))/2)
+			if i == 3:
+				pass
+			if i in [5,9,10,12,13]:
+				pass
+			else:
+				m.append(float(res[str(i)][metric]))
+		m = np.mean(m)
+
+		ret += str(round(m*100,3))
+	print(ret)
 		# idxs = ""
 		# ress = ""
 		# for i in range(1,args.clas):
