@@ -2,6 +2,7 @@ import json
 import sys
 import argparse
 import os
+import numpy as np
 
 def main():
 	parser = argparse.ArgumentParser()
