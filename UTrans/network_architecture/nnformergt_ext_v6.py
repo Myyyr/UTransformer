@@ -855,6 +855,10 @@ class PatchEmbed(nn.Module):
         else:
             stride1=[2,2,2]
             stride2=[1,2,2]
+
+        # stride1=[patch_size[0],patch_size[1]//2,patch_size[2]//2]
+        # stride2=[patch_size[0]//2,patch_size[1]//2,patch_size[2]//2]
+        
         self.proj1 = project(in_chans,embed_dim//2,stride1,1,nn.GELU,nn.LayerNorm,False)
         self.proj2 = project(embed_dim//2,embed_dim,stride2,1,nn.GELU,nn.LayerNorm,True)
         
@@ -1184,11 +1188,11 @@ class swintransformer(SegmentationNetwork):
             self.imsize=[128,128,128]
             self.vt_map=(2,2,2)
             self.max_imsize=BRAIN_TUMOR_MAX
-            embed_dim=192
+            embed_dim=96
             depths=[2, 2, 2, 2]
-            num_heads=[6, 12, 24, 48]
+            num_heads=[3, 6, 12, 24]
             patch_size=[4,4,4]
-            window_size=[4,4,4,4]
+            window_size=[4,4,8,4]
         
         
         self._deep_supervision = deep_supervision
