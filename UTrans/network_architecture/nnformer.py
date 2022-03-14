@@ -723,7 +723,7 @@ class SwinTransformer(nn.Module):
                     pretrain_img_size[2] // patch_size[2] // 2 ** i_layer),
                 depth=depths[i_layer],
                 num_heads=num_heads[i_layer],
-                window_size=window_size,
+                window_size=window_size[i_layer],
                 mlp_ratio=mlp_ratio,
                 qkv_bias=qkv_bias,
                 qk_scale=qk_scale,
@@ -836,7 +836,7 @@ class encoder(nn.Module):
                     pretrain_img_size[2] // patch_size[2] // 2 ** (len(depths)-i_layer-1)),
                 depth=depths[i_layer],
                 num_heads=num_heads[i_layer],
-                window_size=window_size,
+                window_size=window_size[i_layer],
                 mlp_ratio=mlp_ratio,
                 qkv_bias=qkv_bias,
                 qk_scale=qk_scale,
@@ -930,7 +930,7 @@ class swintransformer(SegmentationNetwork):
         if dataset=="SYNAPSE":
             self.imsize=[64,128,128]
             self.vt_map=(3,5,5)
-            self.max_imsize=SYNAPSE_MAX
+            # self.max_imsize=SYNAPSE_MAX
             embed_dim=192
             depths=[2, 2, 2, 2]
             num_heads=[6, 12, 24, 48]
@@ -939,7 +939,7 @@ class swintransformer(SegmentationNetwork):
         elif dataset=="BRAIN_TUMOR":
             self.imsize=[128,128,128]
             self.vt_map=(2,2,2)
-            self.max_imsize=BRAIN_TUMOR_MAX
+            # self.max_imsize=BRAIN_TUMOR_MAX
             embed_dim=96
             depths=[2, 2, 2, 2]
             num_heads=[3, 6, 12, 24]
@@ -947,8 +947,8 @@ class swintransformer(SegmentationNetwork):
             window_size=[4,4,8,4]
 
 
-        self.model_down=SwinTransformer(pretrain_img_size=imsize,window_size=4,embed_dim=embed_dim,patch_size=patch_size,depths=depths,num_heads=num_heads,in_chans=input_channels)
-        self.encoder=encoder(pretrain_img_size=imsize,embed_dim=embed_dim,window_size=4,patch_size=patch_size,num_heads=[24,12,6],depths=[2,2,2])
+        self.model_down=SwinTransformer(pretrain_img_size=imsize,window_size=window_size,embed_dim=embed_dim,patch_size=patch_size,depths=depths,num_heads=num_heads,in_chans=input_channels)
+        self.encoder=encoder(pretrain_img_size=imsize,embed_dim=embed_dim,window_size=window_size,patch_size=patch_size,num_heads=[12,6,3],depths=[2,2,2])
    
         self.final=[]
         self.final.append(final_patch_expanding(embed_dim*2**0,num_classes,patch_size=(2,4,4)))
