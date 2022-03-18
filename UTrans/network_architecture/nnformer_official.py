@@ -919,7 +919,7 @@ class nnFormer(SegmentationNetwork):
         patch_size=patch_size
         window_size=window_size
         self.model_down=Encoder(pretrain_img_size=crop_size,window_size=window_size,embed_dim=embed_dim,patch_size=patch_size,depths=depths,num_heads=num_heads,in_chans=input_channels)
-        self.decoder=Decoder(pretrain_img_size=crop_size,embed_dim=embed_dim,window_size=window_size[::-1][1:],patch_size=patch_size,num_heads=num_heads[::-1][1:],depths=depths[::-1][1:])
+        self.decoder=Decoder(pretrain_img_size=crop_size,embed_dim=embed_dim,window_size=window_size[::-1][1:],patch_size=patch_size,num_heads=num_heads[::-1][:-1],depths=depths[::-1][1:])
         
         self.final=[]
         if self.do_ds:
@@ -953,5 +953,6 @@ class nnFormer(SegmentationNetwork):
         else:
             seg_outputs.append(self.final[0](out[-1]))
             return seg_outputs[-1]
+        
         
         
